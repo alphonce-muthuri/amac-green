@@ -1,0 +1,3 @@
+id,user_id,first_name,last_name,email,phone,customer_type,organization_name,address,city,country,accept_marketing,created_at,updated_at
+d232d62f-2444-40f7-be2b-0af619e63884,755f015d-ddec-42d6-8e97-142a9f3e4bee,Kevin,Ochieng,lunique604@gmail.com,0748410076,individual,,Nairobi,Naiorbi,Kenya,false,2025-07-07 12:19:31.313122+00,2025-07-07 12:19:31.313122+00
+d8a3a3ea-59f9-4cb3-af4c-d2ef5e117efe,43740533-361e-4b59-b791-3632a204e29a,Silas,kibet,silaskibet254@gmail.com,0758313512,individual,,silaskibet254@gmail.com,Nairobi,Kenya,true,2025-07-31 16:25:56.011097+00,2025-07-31 16:25:56.011097+00

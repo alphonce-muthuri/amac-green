@@ -1,0 +1,2 @@
+id,product_id,user_id,rating,title,comment,is_verified_purchase,helpful_votes,created_at,updated_at
+1203c847-172b-4fa7-8393-b5bcc44ca8cc,01a01b31-e551-4751-ab81-b29d10457141,3a705c09-ab4f-41e9-a2db-53b580d897b0,5,Test Review,Great product,false,0,2025-07-31 22:25:31.543258+00,2025-07-31 22:25:31.543258+00

@@ -1,0 +1,11 @@
+id,name,description,slug,parent_id,is_active,created_at,updated_at
+005fd53c-7e91-4289-bad0-f28d34d0206c,Batteries,Energy storage batteries and systems,batteries,,true,2025-07-07 14:15:28.247216+00,2025-07-07 14:15:28.247216+00
+0b9f588d-f83e-42fb-ac4c-e59690abd27b,Mounting Systems,Solar panel mounting and racking systems,mounting-systems,,true,2025-07-07 14:15:28.247216+00,2025-07-07 14:15:28.247216+00
+2a10c385-1020-4df8-bc42-24fa97d85737,Inverters,Solar inverters and power converters,inverters,,true,2025-07-07 14:15:28.247216+00,2025-07-07 14:15:28.247216+00
+2b1ff947-862d-4322-83c0-e9d0c18408eb,Monitoring Systems,Energy monitoring and management systems,monitoring-systems,,true,2025-07-07 14:15:28.247216+00,2025-07-07 14:15:28.247216+00
+4dc75ddc-cf56-4ae4-9155-2073027c15f9,Cables & Accessories,"Solar cables, connectors, and accessories",cables-accessories,,true,2025-07-07 14:15:28.247216+00,2025-07-07 14:15:28.247216+00
+51354d0b-b84c-4740-a173-6a2bbc8a66fb,LPG Equipment,"LPG cylinders, regulators, and accessories",lpg-equipment,,true,2025-07-07 14:15:28.247216+00,2025-07-07 14:15:28.247216+00
+ada8a739-1a87-465e-a9d5-9aab8b01f7a5,Solar Panels,Photovoltaic solar panels and modules,solar-panels,,true,2025-07-07 14:15:28.247216+00,2025-07-07 14:15:28.247216+00
+bdcdad79-a513-47b2-9f40-e54c0625970f,Charge Controllers,Solar charge controllers and regulators,charge-controllers,,true,2025-07-07 14:15:28.247216+00,2025-07-07 14:15:28.247216+00
+cae80791-4606-4abb-845b-ea4583cce608,Wind Energy,Wind turbines and wind energy systems,wind-energy,,true,2025-07-07 14:15:28.247216+00,2025-07-07 14:15:28.247216+00
+d7b6f5cc-3677-4b11-b005-61505de204a1,Hydropower,Small hydropower systems and equipment,hydropower,,true,2025-07-07 14:15:28.247216+00,2025-07-07 14:15:28.247216+00
