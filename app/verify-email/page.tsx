@@ -95,12 +95,15 @@ function VerifyEmailContent() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className={`p-4 rounded-md ${verificationStatus === "success"
-                ? "bg-green-50 text-green-700 border border-green-200"
-                : verificationStatus === "error"
-                  ? "bg-red-50 text-red-700 border border-red-200"
-                  : "bg-blue-50 text-blue-700 border border-blue-200"
-              }`}>
+            <div
+              className={`p-4 rounded-md ${
+                verificationStatus === "success"
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : verificationStatus === "error"
+                    ? "bg-red-50 text-red-700 border border-red-200"
+                    : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              }`}
+            >
               <p className="text-sm">{message}</p>
             </div>
 

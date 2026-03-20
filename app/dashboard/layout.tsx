@@ -49,7 +49,7 @@ export default function DashboardLayout({
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-gray-600 font-medium">Loading your dashboard...</p>
@@ -72,8 +72,8 @@ export default function DashboardLayout({
         return pathname.startsWith(href)
     }
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50">
             {/* Mobile sidebar overlay */}
             <div className={cn(
                 "fixed inset-0 z-50 lg:hidden transition-opacity duration-300",
@@ -88,15 +88,15 @@ export default function DashboardLayout({
                     sidebarOpen ? "translate-x-0" : "-translate-x-full"
                 )}>
                     {/* Mobile Sidebar Header */}
-                    <div className="bg-gradient-to-br from-blue-600 to-cyan-600 px-6 py-6">
+                    <div className="bg-gradient-to-br from-emerald-600 to-teal-600 px-6 py-6">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                    <Zap className="w-6 h-6 text-white" />
+                                    <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                        <Zap className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <span className="text-lg font-bold text-white">EVEREADY</span>
-                                    <p className="text-xs text-blue-100">ICEP Platform</p>
+                                        <span className="text-lg font-bold text-white">AMAC Green</span>
+                                        <p className="text-xs text-emerald-100">Renewable Energy Platform</p>
                                 </div>
                             </div>
                             <Button
@@ -111,14 +111,14 @@ export default function DashboardLayout({
                         
                         {/* User Info in Mobile */}
                         <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-white to-blue-100 rounded-full flex items-center justify-center">
-                                <User className="h-6 w-6 text-blue-600" />
+                            <div className="w-12 h-12 bg-gradient-to-br from-white to-emerald-100 rounded-full flex items-center justify-center">
+                                <User className="h-6 w-6 text-emerald-700" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-bold text-white truncate">
                                     {user?.user_metadata?.first_name || "Customer"}
                                 </p>
-                                <p className="text-xs text-blue-100">Customer Account</p>
+                                <p className="text-xs text-emerald-100">Customer Account</p>
                             </div>
                         </div>
                     </div>
@@ -165,27 +165,27 @@ export default function DashboardLayout({
             <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
                 <div className="flex flex-col flex-grow bg-white border-r-2 border-gray-200 shadow-xl">
                     {/* Desktop Header */}
-                    <div className="bg-gradient-to-br from-blue-600 to-cyan-600 px-6 py-6">
+                    <div className="bg-gradient-to-br from-emerald-600 to-teal-600 px-6 py-6">
                         <Link href="/" className="flex items-center gap-3 mb-6">
                             <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
                                 <Zap className="w-7 h-7 text-white" />
                             </div>
                             <div>
-                                <span className="text-xl font-bold text-white">EVEREADY</span>
-                                <p className="text-xs text-blue-100">ICEP Platform</p>
+                                <span className="text-xl font-bold text-white">AMAC Green</span>
+                                <p className="text-xs text-emerald-100">Renewable Energy Platform</p>
                             </div>
                         </Link>
                         
                         {/* User Info */}
                         <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                            <div className="w-14 h-14 bg-gradient-to-br from-white to-blue-100 rounded-full flex items-center justify-center">
-                                <User className="h-7 w-7 text-blue-600" />
+                            <div className="w-14 h-14 bg-gradient-to-br from-white to-emerald-100 rounded-full flex items-center justify-center">
+                                <User className="h-7 w-7 text-emerald-700" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-bold text-white truncate">
                                     {user?.user_metadata?.first_name || "Customer"}
                                 </p>
-                                <p className="text-xs text-blue-100">Customer Account</p>
+                                <p className="text-xs text-emerald-100">Customer Account</p>
                                 <Badge className="mt-1 bg-green-500 hover:bg-green-500 text-white text-xs">
                                     Active
                                 </Badge>
@@ -220,7 +220,7 @@ export default function DashboardLayout({
                     <div className="border-t p-4">
                         <Button
                             variant="outline"
-                            className="w-full border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-semibold"
+                                className="w-full border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-semibold"
                             onClick={handleSignOut}
                         >
                             <LogOut className="h-4 w-4 mr-2" />
@@ -230,7 +230,7 @@ export default function DashboardLayout({
                 </div>
             </div>
 
-            {/* Main content */}
+                {/* Main content */}
             <div className="lg:pl-72">
                 {/* Mobile header */}
                 <div className="sticky top-0 z-40 flex h-16 bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-200 lg:hidden">
@@ -243,11 +243,11 @@ export default function DashboardLayout({
                     </Button>
                     <div className="flex flex-1 items-center justify-center px-4">
                         <Link href="/" className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
+                            <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center">
                                 <Zap className="w-5 h-5 text-white" />
                             </div>
                             <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                                EVEREADY
+                                AMAC Green
                             </span>
                         </Link>
                     </div>

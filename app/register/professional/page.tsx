@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { FileUpload } from "@/components/ui/file-upload"
 import { registerProfessional } from "@/app/actions/auth"
+import { SiteHeader } from "@/components/site-header"
 
 export default function ProfessionalRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -114,32 +115,33 @@ export default function ProfessionalRegistration() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <SiteHeader />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="mb-6">
-            <Link href="/register" className="flex items-center text-green-600 hover:text-green-700 mb-4">
+            <Link href="/register" className="flex items-center text-emerald-600 hover:text-emerald-700 font-medium mb-4 transition-colors">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to registration options
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Professional Registration</h1>
-            <p className="text-gray-600 mt-2">
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tighter">Professional Registration</h1>
+            <p className="text-gray-600 mt-2 tracking-tight">
               Register as a verified professional for bulk pricing and priority support
             </p>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Professional Information</CardTitle>
+          <Card className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm hover:border-emerald-200/80 transition-colors overflow-hidden">
+            <CardHeader className="border-b border-gray-200/70 bg-white/80">
+              <CardTitle className="text-xl tracking-tighter">Professional Information</CardTitle>
               <CardDescription>Provide your professional credentials for verification</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               {message && (
                 <div
-                  className={`mb-4 p-4 rounded-md ${
+                  className={`mb-4 p-4 rounded-xl border ${
                     message.type === "success"
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "bg-red-50 text-red-700 border border-red-200"
+                      ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
+                      : "bg-red-50 text-red-800 border-red-200/80"
                   }`}
                 >
                   {message.text}
@@ -280,16 +282,16 @@ export default function ProfessionalRegistration() {
                       maxSize={10}
                     />
                     
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-blue-700 mb-2">Required Documents:</h4>
-                      <ul className="text-sm text-blue-600 space-y-1">
+                    <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200/60">
+                      <h4 className="font-semibold text-emerald-800 mb-2">Required Documents:</h4>
+                      <ul className="text-sm text-emerald-700 space-y-1">
                         <li>• Professional License/Certificate</li>
                         <li>• EPRA License (if applicable)</li>
                         <li>• Company Registration Certificate</li>
                         <li>• Insurance Certificate</li>
                         <li>• Project Portfolio (optional)</li>
                       </ul>
-                      <p className="text-xs text-blue-500 mt-2">
+                      <p className="text-xs text-emerald-600 mt-2">
                         Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max 10MB each)
                       </p>
                     </div>
@@ -305,11 +307,11 @@ export default function ProfessionalRegistration() {
                   />
                   <Label htmlFor="acceptTerms" className="text-sm">
                     I agree to the{" "}
-                    <Link href="/terms" className="text-green-600 hover:underline">
+                    <Link href="/terms" className="text-emerald-600 hover:text-emerald-700 font-medium">
                       Terms of Service
                     </Link>{" "}
                     and{" "}
-                    <Link href="/privacy" className="text-green-600 hover:underline">
+                    <Link href="/privacy" className="text-emerald-600 hover:text-emerald-700 font-medium">
                       Privacy Policy
                     </Link>
                   </Label>
@@ -317,7 +319,7 @@ export default function ProfessionalRegistration() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all"
                   disabled={!formData.acceptTerms || isSubmitting}
                 >
                   {isSubmitting ? "Submitting Application..." : "Submit Application"}
@@ -328,7 +330,7 @@ export default function ProfessionalRegistration() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full"
+                      className="w-full rounded-full border-emerald-300 text-emerald-700 hover:bg-emerald-50"
                       onClick={() => router.push("/login")}
                     >
                       Go to Login Page

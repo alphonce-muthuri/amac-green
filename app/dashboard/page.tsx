@@ -377,14 +377,14 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-6">
             <p className="text-gray-600 mb-4">
-              Our support team is here to help you with any questions or concerns.
+              Our AMAC Green support team is here to help you with any questions or concerns.
             </p>
             <div className="space-y-2">
               <Button variant="outline" className="w-full justify-start border-2">
-                📧 support@eveready-icep.com
+                📧 support@amacgreen.energy
               </Button>
               <Button variant="outline" className="w-full justify-start border-2">
-                📞 +254 123 456 789
+                📞 +254 700 123 456
               </Button>
             </div>
           </CardContent>

@@ -277,7 +277,7 @@ export default function SuperAdminDashboard() {
                     </div>
                     
                     <p className="text-lg text-gray-700 mb-4">
-                      Real-time analytics and performance metrics for EVEREADY ICEP Platform
+                      Real-time analytics and performance metrics for the AMAC Green platform
                     </p>
 
                     {/* Quick KPI Pills */}

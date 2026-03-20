@@ -1,1 +1,1 @@
-# EVEREADY ICEP Platform
+# AMAC Green & Renewable Energy Platform

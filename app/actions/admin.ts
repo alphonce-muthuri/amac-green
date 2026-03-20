@@ -283,7 +283,7 @@ export async function getDashboardStats() {
 }
 
 export async function checkAdminAccess(email: string) {
-  const adminEmails = ["admin@eveready.com", "admin@icep.com", "lunique604@gmail.com"]
+  const adminEmails = ["admin@amacgreen.energy", "lunique604@gmail.com"]
 
   return adminEmails.includes(email.toLowerCase())
 }

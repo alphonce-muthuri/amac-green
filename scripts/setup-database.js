@@ -37,7 +37,7 @@ async function runSqlFile(filename) {
 }
 
 async function setupDatabase() {
-  console.log("🚀 Setting up EVEREADY ICEP Platform database...")
+  console.log("🚀 Setting up AMAC Green & Renewable Energy Platform database...")
 
   try {
     // Run SQL files in order

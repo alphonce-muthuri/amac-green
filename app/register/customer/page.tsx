@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { registerCustomer } from "@/app/actions/auth"
+import { SiteHeader } from "@/components/site-header"
 
 export default function CustomerRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -59,30 +60,31 @@ export default function CustomerRegistration() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <SiteHeader />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="mb-6">
-            <Link href="/register" className="flex items-center text-blue-600 hover:text-blue-700 mb-4">
+            <Link href="/register" className="flex items-center text-emerald-600 hover:text-emerald-700 font-medium mb-4 transition-colors">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to registration options
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Customer Registration</h1>
-            <p className="text-gray-600 mt-2">Create your account to start shopping for renewable energy products</p>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tighter">Customer Registration</h1>
+            <p className="text-gray-600 mt-2 tracking-tight">Create your account to start shopping for renewable energy products</p>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
+          <Card className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm hover:border-emerald-200/80 transition-colors overflow-hidden">
+            <CardHeader className="border-b border-gray-200/70 bg-white/80">
+              <CardTitle className="text-xl tracking-tighter">Personal Information</CardTitle>
               <CardDescription>Please provide your details to create your account</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               {message && (
                 <div
-                  className={`mb-4 p-4 rounded-md ${
+                  className={`mb-4 p-4 rounded-xl border ${
                     message.type === "success"
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "bg-red-50 text-red-700 border border-red-200"
+                      ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
+                      : "bg-red-50 text-red-800 border-red-200/80"
                   }`}
                 >
                   {message.text}
@@ -237,11 +239,11 @@ export default function CustomerRegistration() {
                     />
                     <Label htmlFor="acceptTerms" className="text-sm">
                       I agree to the{" "}
-                      <Link href="/terms" className="text-blue-600 hover:underline">
+                      <Link href="/terms" className="text-emerald-600 hover:text-emerald-700 font-medium">
                         Terms of Service
                       </Link>{" "}
                       and{" "}
-                      <Link href="/privacy" className="text-blue-600 hover:underline">
+                      <Link href="/privacy" className="text-emerald-600 hover:text-emerald-700 font-medium">
                         Privacy Policy
                       </Link>
                     </Label>
@@ -250,7 +252,7 @@ export default function CustomerRegistration() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all"
                   disabled={!formData.acceptTerms || isSubmitting}
                 >
                   {isSubmitting ? "Creating Account..." : "Create Account"}
@@ -261,7 +263,7 @@ export default function CustomerRegistration() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full"
+                      className="w-full rounded-full border-emerald-300 text-emerald-700 hover:bg-emerald-50"
                       onClick={() => router.push("/login")}
                     >
                       Go to Login Page

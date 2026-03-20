@@ -33,6 +33,10 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  const isDarkHeroPage = pathname === "/" || pathname === "/register"
+  const onDarkHero = isDarkHeroPage && !scrolled
+  const useLightHeaderStyles = !onDarkHero
+
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/"
@@ -52,9 +56,9 @@ export function SiteHeader() {
     <>
       <header 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled 
-            ? "bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-200/50" 
-            : "bg-white/95 backdrop-blur-md border-b border-gray-100"
+          onDarkHero
+            ? "bg-transparent border-b border-transparent shadow-none"
+            : `bg-white/80 backdrop-blur-xl border-b border-gray-200/50 ${scrolled ? "shadow-lg" : "shadow-none"}`
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,11 +69,11 @@ export function SiteHeader() {
               className="group relative z-10 transition-all duration-300 hover:scale-105"
             >
               <Image
-                src="/images/logo.png"
-                alt="EVEREADY Logo"
+                src="/images/logo/AMAC-Green-logo.png"
+                alt="AMAC Green & Renewable Energy logo"
                 width={120}
                 height={60}
-                className="h-12 w-auto object-contain"
+                className={`h-12 w-auto object-contain transition-all duration-300 ${!useLightHeaderStyles ? "brightness-0 invert" : ""}`}
               />
             </Link>
 
@@ -79,19 +83,19 @@ export function SiteHeader() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
-                    isActive(item.href)
-                      ? "text-emerald-600"
-                      : "text-gray-700 hover:text-emerald-600"
+                  className={`px-4 py-2 text-sm rounded-lg transition-all duration-300 ${
+                    isActive(item.href) ? "font-bold tracking-tight" : "font-medium"
+                  } ${
+                    useLightHeaderStyles
+                      ? isActive(item.href)
+                        ? "text-emerald-600"
+                        : "text-gray-700 hover:text-emerald-600"
+                      : isActive(item.href)
+                        ? "text-white"
+                        : "text-white/90 hover:text-white"
                   }`}
                 >
-                  <span className="relative z-10">{item.name}</span>
-                  {isActive(item.href) && (
-                    <span className="absolute inset-0 bg-emerald-50 rounded-lg"></span>
-                  )}
-                  {!isActive(item.href) && (
-                    <span className="absolute inset-0 bg-gray-50 rounded-lg opacity-0 hover:opacity-100 transition-opacity duration-300"></span>
-                  )}
+                  {item.name}
                 </Link>
               ))}
             </nav>
@@ -104,8 +108,8 @@ export function SiteHeader() {
                 className="relative group"
                 aria-label="View cart"
               >
-                <div className="relative p-2.5 rounded-xl bg-gray-50 group-hover:bg-emerald-50 transition-all duration-300 group-hover:scale-105">
-                  <ShoppingCart className="w-5 h-5 text-gray-700 group-hover:text-emerald-600 transition-colors" />
+                <div className="relative p-2.5 rounded-xl transition-all duration-300 group-hover:scale-105 bg-transparent">
+                  <ShoppingCart className={`w-5 h-5 transition-colors ${useLightHeaderStyles ? "text-gray-700 group-hover:text-emerald-600" : "text-white group-hover:text-white"}`} />
                   {getItemCount() > 0 && (
                     <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-full shadow-lg animate-pulse">
                       {getItemCount()}
@@ -121,7 +125,7 @@ export function SiteHeader() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      className="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
+                      className={useLightHeaderStyles ? "text-gray-700 hover:text-emerald-600 hover:bg-emerald-50" : "text-white/90 hover:text-white hover:bg-white/10"}
                       asChild
                     >
                       <Link href="/vendor">
@@ -132,7 +136,7 @@ export function SiteHeader() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className="border-gray-300 text-gray-700 hover:border-red-300 hover:text-red-600 hover:bg-red-50"
+                      className={useLightHeaderStyles ? "border-gray-300 text-gray-700 hover:border-red-300 hover:text-red-600 hover:bg-red-50" : "border-white/60 text-white hover:bg-white/10 hover:text-white"}
                       onClick={handleSignOut}
                     >
                       <LogOut className="h-4 w-4 mr-2" />
@@ -144,17 +148,17 @@ export function SiteHeader() {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      className="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50"
+                      className={useLightHeaderStyles ? "text-gray-700 hover:text-emerald-600 hover:bg-emerald-50" : "text-white/90 hover:text-white hover:bg-white/10"}
                       asChild
                     >
                       <Link href="/login">Login</Link>
                     </Button>
                     <Button 
                       size="sm"
-                      className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md hover:shadow-lg transition-all duration-300"
+                      className={useLightHeaderStyles ? "bg-emerald-800 hover:bg-emerald-600 text-white shadow-md hover:shadow-lg transition-all duration-300 rounded-full px-8 " : "bg-white text-gray-900 hover:bg-white/90 shadow-md border border-white/20 rounded-full px-8 "}
                       asChild
                     >
-                      <Link href="/register">Get Started</Link>
+                      <Link href="/register">Get started</Link>
                     </Button>
                   </>
                 )}
@@ -166,12 +170,12 @@ export function SiteHeader() {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="lg:hidden p-2.5 hover:bg-emerald-50 rounded-xl"
+                    className={`lg:hidden p-2.5 rounded-xl ${useLightHeaderStyles ? "hover:bg-emerald-50" : "hover:bg-white/10"}`}
                   >
                     {isOpen ? (
-                      <X className="h-6 w-6 text-gray-700" />
+                      <X className={`h-6 w-6 ${useLightHeaderStyles ? "text-gray-700" : "text-white"}`} />
                     ) : (
-                      <Menu className="h-6 w-6 text-gray-700" />
+                      <Menu className={`h-6 w-6 ${useLightHeaderStyles ? "text-gray-700" : "text-white"}`} />
                     )}
                     <span className="sr-only">Toggle menu</span>
                   </Button>
@@ -181,10 +185,10 @@ export function SiteHeader() {
                   className="w-full sm:w-96 p-0 bg-gradient-to-br from-white to-gray-50"
                 >
                   {/* Mobile Menu Header */}
-                  <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-emerald-600 to-teal-600 flex justify-center">
+                  <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-emerald-700 to-lime-600 flex justify-center">
                     <Image
-                      src="/images/logo.png"
-                      alt="EVEREADY Logo"
+                      src="/images/logo/AMAC-Green-logo.png"
+                      alt="AMAC Green & Renewable Energy logo"
                       width={100}
                       height={50}
                       className="h-10 w-auto object-contain"
@@ -199,10 +203,10 @@ export function SiteHeader() {
                           key={item.name}
                           href={item.href}
                           onClick={() => setIsOpen(false)}
-                          className={`group flex items-center justify-between px-4 py-3.5 rounded-xl font-medium transition-all duration-300 ${
+                          className={`group flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-300 ${
                             isActive(item.href)
-                              ? "bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-600 shadow-sm"
-                              : "text-gray-700 hover:bg-gray-50"
+                              ? "font-bold tracking-tight text-emerald-600"
+                              : "font-medium text-gray-700 hover:bg-gray-50"
                           }`}
                         >
                           <span className="text-base">{item.name}</span>

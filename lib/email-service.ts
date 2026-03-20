@@ -41,8 +41,8 @@ export const emailTemplates = {
             <p style="font-size: 16px; margin-bottom: 20px;">Dear ${data.name},</p>
             
             <p style="font-size: 16px; margin-bottom: 20px;">
-              Great news! Your vendor application for <strong>${data.companyName}</strong> has been approved by our admin team. 
-              You can now start selling your renewable energy products on the EVEREADY ICEP platform.
+              Great news! Your vendor application for <strong>${data.companyName}</strong> has been approved by our admin team.
+              You can now start selling your renewable energy products on the AMAC Green platform.
             </p>
             
             <div style="background: #f0f9ff; border-left: 4px solid #16a34a; padding: 20px; margin: 20px 0; border-radius: 5px;">
@@ -63,14 +63,14 @@ export const emailTemplates = {
             
             <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
               If you have any questions, please contact our support team at 
-              <a href="mailto:support@evereadyea.co.ke" style="color: #16a34a;">support@evereadyea.co.ke</a>
+              <a href="mailto:support@amacgreen.energy" style="color: #16a34a;">support@amacgreen.energy</a>
             </p>
             
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
             <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              EVEREADY ICEP - Kenya's Leading Renewable Energy Marketplace<br>
-              Nairobi, Kenya | www.evereadyea.co.ke
+              AMAC Green & Renewable Energy - Kenya's Clean Energy Marketplace<br>
+              Nairobi, Kenya | www.amacgreen.energy
             </p>
           </div>
         </body>
@@ -121,14 +121,14 @@ export const emailTemplates = {
             
             <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
               If you have any questions, please contact our support team at 
-              <a href="mailto:support@evereadyea.co.ke" style="color: #2563eb;">support@evereadyea.co.ke</a>
+              <a href="mailto:support@amacgreen.energy" style="color: #2563eb;">support@amacgreen.energy</a>
             </p>
             
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
             <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              EVEREADY ICEP - Kenya's Leading Renewable Energy Marketplace<br>
-              Nairobi, Kenya | www.evereadyea.co.ke
+              AMAC Green & Renewable Energy - Kenya's Clean Energy Marketplace<br>
+              Nairobi, Kenya | www.amacgreen.energy
             </p>
           </div>
         </body>
@@ -185,14 +185,14 @@ export const emailTemplates = {
             
             <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
               If you have any questions, please contact our support team at 
-              <a href="mailto:support@evereadyea.co.ke" style="color: #7c3aed;">support@evereadyea.co.ke</a>
+              <a href="mailto:support@amacgreen.energy" style="color: #7c3aed;">support@amacgreen.energy</a>
             </p>
             
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
             <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              EVEREADY ICEP - Kenya's Leading Renewable Energy Marketplace<br>
-              Nairobi, Kenya | www.evereadyea.co.ke
+              AMAC Green & Renewable Energy - Kenya's Clean Energy Marketplace<br>
+              Nairobi, Kenya | www.amacgreen.energy
             </p>
           </div>
         </body>
@@ -267,14 +267,14 @@ export const emailTemplates = {
             
             <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
               Best regards,<br>
-              The EVEREADY ICEP Team
+              The AMAC Green Team
             </p>
             
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
             <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              EVEREADY ICEP - Kenya's Leading Renewable Energy Marketplace<br>
-              Nairobi, Kenya | www.evereadyicep.co.ke
+              AMAC Green & Renewable Energy - Kenya's Clean Energy Marketplace<br>
+              Nairobi, Kenya | www.amacgreen.energy
             </p>
           </div>
         </body>
@@ -338,14 +338,14 @@ export const emailTemplates = {
             
             <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
               Best regards,<br>
-              The EVEREADY ICEP Team
+              The AMAC Green Team
             </p>
             
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
             <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              EVEREADY ICEP - Kenya's Leading Renewable Energy Marketplace<br>
-              Nairobi, Kenya | www.evereadyicep.co.ke
+              AMAC Green & Renewable Energy - Kenya's Clean Energy Marketplace<br>
+              Nairobi, Kenya | www.amacgreen.energy
             </p>
           </div>
         </body>
@@ -545,10 +545,10 @@ export async function sendTestEmail(email: string) {
   const mailOptions = {
     from: `${process.env.BREVO_FROM_NAME} <${process.env.BREVO_FROM_EMAIL}>`,
     to: email,
-    subject: 'Test Email from EVEREADY ICEP',
+    subject: 'Test Email from AMAC Green',
     html: `
       <h1>Test Email</h1>
-      <p>This is a test email from EVEREADY ICEP to verify email configuration.</p>
+      <p>This is a test email from AMAC Green to verify email configuration.</p>
       <p>If you received this email, the email service is working correctly!</p>
     `,
   }
