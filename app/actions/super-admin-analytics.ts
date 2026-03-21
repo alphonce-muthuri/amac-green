@@ -20,6 +20,9 @@ export interface PlatformAnalytics {
   deliveryRevenue: number
   revenueGrowth: number
   orderGrowth: number
+  financingByStatus: Array<{ status: string; count: number; percentage: number }>
+  fulfillmentByStage: Array<{ status: string; count: number; percentage: number }>
+  ordersByCounty: Array<{ county: string; count: number; percentage: number }>
 }
 
 export interface AnalyticsFilters {
@@ -42,7 +45,7 @@ export async function getPlatformAnalytics(filters?: AnalyticsFilters): Promise<
 
     let ordersQuery = supabaseAdmin
       .from('orders')
-      .select('id, status, created_at, total_amount, payment_status')
+      .select('id, status, created_at, total_amount, payment_status, financing_status, fulfillment_stage, shipping_city')
 
     // Apply date filters
     if (filters?.startDate) {
@@ -159,6 +162,19 @@ export async function getPlatformAnalytics(filters?: AnalyticsFilters): Promise<
     // Calculate orders by status
     const ordersByStatus = calculateOrdersByStatus(ordersData || [])
 
+    const financingByStatus = calculateByField(
+      ordersData || [],
+      (o) => (o as { financing_status?: string }).financing_status || "none",
+      "financing"
+    )
+    const fulfillmentByStage = calculateByField(
+      ordersData || [],
+      (o) => (o as { fulfillment_stage?: string }).fulfillment_stage || "order_received",
+      "fulfillment"
+    )
+
+    const ordersByCounty = calculateOrdersByShippingCity(ordersData || [])
+
     // Calculate average order value
     const paidOrders = revenueData?.length || 0
     const averageOrderValue = paidOrders > 0 ? totalRevenue / paidOrders : 0
@@ -192,7 +208,10 @@ export async function getPlatformAnalytics(filters?: AnalyticsFilters): Promise<
       platformCommission,
       deliveryRevenue,
       revenueGrowth,
-      orderGrowth
+      orderGrowth,
+      financingByStatus,
+      fulfillmentByStage,
+      ordersByCounty,
     }
 
     console.log('[SUPER_ADMIN] Analytics calculated successfully')
@@ -261,6 +280,44 @@ function calculateRevenueByPaymentMethod(orders: any[]): Array<{ method: string;
       percentage: totalRevenue > 0 ? (revenue / totalRevenue) * 100 : 0
     }))
     .sort((a, b) => b.revenue - a.revenue)
+}
+
+function calculateOrdersByShippingCity(
+  orders: { shipping_city?: string | null }[]
+): Array<{ county: string; count: number; percentage: number }> {
+  const counts: { [key: string]: number } = {}
+  orders.forEach((o) => {
+    const c = (o.shipping_city || "").trim() || "Unknown"
+    counts[c] = (counts[c] || 0) + 1
+  })
+  const total = orders.length
+  return Object.entries(counts)
+    .map(([county, count]) => ({
+      county,
+      count,
+      percentage: total > 0 ? (count / total) * 100 : 0,
+    }))
+    .sort((a, b) => b.count - a.count)
+}
+
+function calculateByField(
+  orders: any[],
+  getKey: (o: any) => string,
+  _label: string
+): Array<{ status: string; count: number; percentage: number }> {
+  const counts: { [key: string]: number } = {}
+  const total = orders.length
+  orders.forEach((order) => {
+    const k = getKey(order) || "unknown"
+    counts[k] = (counts[k] || 0) + 1
+  })
+  return Object.entries(counts)
+    .map(([status, count]) => ({
+      status: status.replace(/_/g, " "),
+      count,
+      percentage: total > 0 ? (count / total) * 100 : 0,
+    }))
+    .sort((a, b) => b.count - a.count)
 }
 
 function calculateOrdersByStatus(orders: any[]): Array<{ status: string; count: number; percentage: number }> {

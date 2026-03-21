@@ -5,6 +5,9 @@ export interface Order {
   status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "refunded"
   payment_status: "pending" | "paid" | "failed" | "refunded" | "partial"
   payment_method?: string
+  financing_status?: "none" | "pending" | "approved" | "declined" | "cancelled"
+  financing_reference?: string
+  fulfillment_stage?: string
 
   // Pricing
   subtotal: number

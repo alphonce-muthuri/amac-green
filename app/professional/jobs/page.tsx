@@ -25,7 +25,8 @@ import {
   CheckCircle2,
   Sparkles,
   Target,
-  Award
+  Award,
+  Calculator
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 
@@ -294,6 +295,7 @@ export default function AvailableJobsPage() {
                 <div className="flex items-center gap-3">
                   <Filter className="h-5 w-5 text-cyan-600" />
                   <select
+                    title="Filter by urgency"
                     value={filterUrgency}
                     onChange={(e) => setFilterUrgency(e.target.value)}
                     className="flex-1 h-12 px-4 border-2 border-cyan-300 rounded-lg focus:outline-none focus:border-cyan-500 text-base font-semibold"

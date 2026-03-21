@@ -42,7 +42,7 @@ export function useCart() {
   return ctx
 }
 
-const LS_KEY = "eveready_cart"
+const LS_KEY = "amac_green_cart"
 
 /* -------------------------------------------------------------------------- */
 /*                              Provider                                      */

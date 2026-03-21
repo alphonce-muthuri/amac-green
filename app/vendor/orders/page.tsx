@@ -20,9 +20,22 @@ import {
   TrendingUp,
   Filter
 } from "lucide-react"
-import { getVendorOrders, updateOrderStatus } from "@/app/actions/orders"
+import {
+  getVendorOrders,
+  updateOrderStatus,
+  updateOrderFulfillmentStage,
+  type FulfillmentStage,
+} from "@/app/actions/orders"
 import { supabase } from "@/lib/supabase"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Label } from "@/components/ui/label"
+
+const FULFILLMENT_OPTIONS: { value: FulfillmentStage; label: string }[] = [
+  { value: "order_received", label: "Order received" },
+  { value: "installation_in_progress", label: "Installation in progress" },
+  { value: "commissioned", label: "Commissioned" },
+  { value: "completed", label: "Completed" },
+]
 
 export default function VendorOrdersPage() {
   const [orders, setOrders] = useState([])
@@ -78,6 +91,15 @@ export default function VendorOrdersPage() {
       loadOrders()
     } else {
       alert(result.error)
+    }
+  }
+
+  const handleFulfillmentChange = async (orderId: string, stage: FulfillmentStage) => {
+    const result = await updateOrderFulfillmentStage(orderId, stage)
+    if (result.success) {
+      loadOrders()
+    } else {
+      alert(result.error ?? "Failed to update fulfilment stage")
     }
   }
 
@@ -294,6 +316,27 @@ export default function VendorOrdersPage() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-4 pb-4 border-b border-gray-200">
+                      <Label htmlFor={`fulfillment-${order.id}`} className="text-sm text-gray-700 shrink-0">
+                        Fulfilment stage
+                      </Label>
+                      <Select
+                        value={(order.fulfillment_stage as FulfillmentStage) || "order_received"}
+                        onValueChange={(v) => handleFulfillmentChange(order.id, v as FulfillmentStage)}
+                      >
+                        <SelectTrigger id={`fulfillment-${order.id}`} className="w-full sm:max-w-xs h-10 border-2 border-blue-200">
+                          <SelectValue placeholder="Stage" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FULFILLMENT_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     {/* Order Items */}

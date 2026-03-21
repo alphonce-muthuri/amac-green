@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
-import { User, ShoppingCart, Package, Settings, LogOut, Home, Menu, X, Zap, TrendingUp, CreditCard, Bell } from "lucide-react"
+import { User, ShoppingCart, Package, Settings, LogOut, Home, Menu, X, Zap, TrendingUp, CreditCard, Bell, Leaf } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -63,6 +63,9 @@ export default function DashboardLayout({
         { name: "Orders", href: "/dashboard/orders", icon: Package },
         { name: "Installations", href: "/dashboard/installations", icon: Settings },
         { name: "Profile", href: "/dashboard/profile", icon: User },
+        ...(process.env.NEXT_PUBLIC_ENABLE_DEMAND_PROFILE === "true"
+            ? [{ name: "Energy programme", href: "/dashboard/profile/energy", icon: Leaf }]
+            : []),
     ]
 
     const isActive = (href: string) => {

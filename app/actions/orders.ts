@@ -36,6 +36,10 @@ export async function createOrder(orderData: any, userId?: string) {
         order_number: `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
         status: "pending",
         payment_status: "pending",
+        financing_status:
+          orderData.payment_method === "kcb_financing_pending" || orderData.financing_mode === "pending"
+            ? "pending"
+            : "none",
         payment_method: orderData.payment_method,
         subtotal: subtotal,
         tax_amount: taxAmount,
@@ -145,6 +149,7 @@ export async function createOrder(orderData: any, userId?: string) {
         quantity: item.quantity,
         unit_price: product.price,
         total_price: itemTotal,
+        ...(item.package_id ? { package_id: item.package_id } : {}),
       })
     }
 
@@ -155,6 +160,11 @@ export async function createOrder(orderData: any, userId?: string) {
 
     // Generate order number
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`
+
+    const wantsFinancing =
+      orderData.payment_method === "kcb_financing_pending" || orderData.financing_mode === "pending"
+
+    const financingRequestedAt = new Date().toISOString()
 
     // Create order with minimal fields for simulation
     const orderInsert: any = {
@@ -179,11 +189,18 @@ export async function createOrder(orderData: any, userId?: string) {
       billing_address_line1: orderData.billing_address || orderData.shipping_address,
       billing_city: orderData.billing_city || orderData.shipping_city,
       billing_country: orderData.billing_country || orderData.shipping_country || "Kenya",
+      financing_status: wantsFinancing ? "pending" : "none",
+      financing_requested_at: wantsFinancing ? financingRequestedAt : null,
+      financing_reference: wantsFinancing ? `KCB-REQ-${Date.now().toString(36)}` : null,
+      fulfillment_stage: "order_received",
     }
 
     // Only add optional fields if they exist
     if (orderData.customer_phone) orderInsert.customer_phone = orderData.customer_phone
-    if (orderData.notes) orderInsert.notes = orderData.notes
+    if (orderData.notes) {
+      orderInsert.customer_notes = orderData.notes
+      orderInsert.notes = orderData.notes
+    }
     if (orderData.mpesa_phone) orderInsert.mpesa_phone = orderData.mpesa_phone
 
     console.log('[ORDER_DEBUG] Inserting order:', orderInsert)
@@ -503,6 +520,29 @@ export async function manuallyAssignDelivery(orderId: string) {
   } catch (error) {
     console.error('[MANUAL_DELIVERY] Error:', error)
     return { success: false, error: "Failed to manually assign delivery" }
+  }
+}
+
+export type FulfillmentStage =
+  | "order_received"
+  | "installation_in_progress"
+  | "commissioned"
+  | "completed"
+
+export async function updateOrderFulfillmentStage(orderId: string, fulfillment_stage: FulfillmentStage) {
+  try {
+    const { error } = await supabaseAdmin
+      .from("orders")
+      .update({
+        fulfillment_stage,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", orderId)
+
+    if (error) return { success: false, error: error.message }
+    return { success: true }
+  } catch {
+    return { success: false, error: "Failed to update fulfilment stage" }
   }
 }
 

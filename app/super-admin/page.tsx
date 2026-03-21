@@ -998,6 +998,78 @@ export default function SuperAdminDashboard() {
                 />
               </CardContent>
             </Card>
+
+            {analytics.financingByStatus?.length > 0 && (
+              <Card className="border-2 border-teal-200">
+                <div className="h-2 bg-gradient-to-r from-teal-500 to-cyan-500"></div>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Percent className="h-5 w-5 text-teal-600" />
+                    Financing status
+                  </CardTitle>
+                  <CardDescription>KCB financing pipeline (all orders in range)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <SimpleBarChart
+                    data={analytics.financingByStatus.map((row) => ({
+                      name: row.status,
+                      value: row.count,
+                      percentage: row.percentage,
+                    }))}
+                    height={220}
+                    showPercentage={true}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {analytics.fulfillmentByStage?.length > 0 && (
+              <Card className="border-2 border-cyan-200">
+                <div className="h-2 bg-gradient-to-r from-cyan-500 to-blue-500"></div>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="h-5 w-5 text-cyan-600" />
+                    Fulfilment stage
+                  </CardTitle>
+                  <CardDescription>Deployments (spec §4.5)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <SimpleBarChart
+                    data={analytics.fulfillmentByStage.map((row) => ({
+                      name: row.status,
+                      value: row.count,
+                      percentage: row.percentage,
+                    }))}
+                    height={220}
+                    showPercentage={true}
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+            {analytics.ordersByCounty?.length > 0 && (
+              <Card className="border-2 border-indigo-200">
+                <div className="h-2 bg-gradient-to-r from-indigo-500 to-violet-500"></div>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Globe className="h-5 w-5 text-indigo-600" />
+                    Orders by city (shipping)
+                  </CardTitle>
+                  <CardDescription>From order shipping_city</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <SimpleBarChart
+                    data={analytics.ordersByCounty.map((row) => ({
+                      name: row.county,
+                      value: row.count,
+                      percentage: row.percentage,
+                    }))}
+                    height={220}
+                    showPercentage={true}
+                  />
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Top Products */}

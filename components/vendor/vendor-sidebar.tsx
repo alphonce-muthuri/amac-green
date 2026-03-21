@@ -14,6 +14,7 @@ import {
   WarehouseIcon as Inventory,
   Truck,
   Store,
+  Layers,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils"
 const navigation = [
   { name: "Dashboard", href: "/vendor", icon: LayoutDashboard },
   { name: "Products", href: "/vendor/products", icon: Package },
+  { name: "Packages", href: "/vendor/packages", icon: Layers },
   { name: "Add Product", href: "/vendor/products/add", icon: Plus },
   { name: "Orders", href: "/vendor/orders", icon: ShoppingCart },
   { name: "Deliveries", href: "/vendor/deliveries", icon: Truck },

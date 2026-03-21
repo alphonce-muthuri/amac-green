@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SiteHeader } from "@/components/site-header"
 import { supabase } from "@/lib/supabase"
 import { markOrderAsPaid } from "@/app/actions/orders"
+import { showFinancingSimulationUi } from "@/lib/feature-flags"
 
 interface Order {
   id: string
@@ -19,6 +20,9 @@ interface Order {
   created_at: string
   mpesa_transaction_id?: string
   payment_notes?: string
+  mpesa_checkout_request_id?: string
+  financing_status?: string
+  financing_reference?: string
   order_items?: OrderItem[]
 }
 
@@ -133,6 +137,28 @@ function CheckoutSuccessContent() {
       console.error('[SUCCESS] Error verifying payment:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const simulateFinancing = async (outcome: "approved" | "declined") => {
+    if (!orderId) return
+    setUpdating(true)
+    try {
+      const response = await fetch("/api/kcb-financing/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, outcome }),
+      })
+      const result = await response.json()
+      if (result.success) {
+        await fetchOrder()
+      } else {
+        alert(result.error || "Financing simulation failed")
+      }
+    } catch (e) {
+      alert("Error: " + e)
+    } finally {
+      setUpdating(false)
     }
   }
 
@@ -329,11 +355,40 @@ function CheckoutSuccessContent() {
           {/* Success Header */}
           <div className="text-center mb-8">
             <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Confirmed!</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              {order.financing_status === "pending" ? "Financing application received" : "Order Confirmed!"}
+            </h1>
             <p className="text-gray-600">
-              Thank you for your order. We've received your payment and will process your order shortly.
+              {order.financing_status === "pending"
+                ? "Your KCB financing request is being processed. Complete payment after approval."
+                : "Thank you for your order. We've received your payment and will process your order shortly."}
             </p>
           </div>
+
+          {order.financing_status === "pending" && showFinancingSimulationUi() && (
+            <Card className="mb-6 border-amber-200 bg-amber-50">
+              <CardHeader>
+                <CardTitle className="text-amber-900 text-base">Simulate KCB financing (dev)</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2">
+                <Button size="sm" disabled={updating} onClick={() => simulateFinancing("approved")}>
+                  Approve financing
+                </Button>
+                <Button size="sm" variant="outline" disabled={updating} onClick={() => simulateFinancing("declined")}>
+                  Decline financing
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {order.financing_status === "approved" && order.payment_status === "pending" && (
+            <Card className="mb-6 border-emerald-200 bg-emerald-50">
+              <CardContent className="py-4 text-sm text-emerald-900">
+                Financing approved{order.financing_reference ? ` (${order.financing_reference})` : ""}. Complete payment
+                from your dashboard or use the test tools below.
+              </CardContent>
+            </Card>
+          )}
 
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Order Details */}

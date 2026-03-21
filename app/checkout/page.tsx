@@ -22,6 +22,11 @@ import { toast } from "@/hooks/use-toast"
 import { SiteHeader } from "@/components/site-header"
 import { KenyaLocationFields } from "@/components/checkout/kenya-location-fields"
 import { supabase } from "@/lib/supabase"
+import {
+  getEnhancedLocationCategorySlug,
+  getFinancingAutoApproveMsClient,
+  isFinancingCheckoutEnabled,
+} from "@/lib/feature-flags"
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -31,7 +36,9 @@ export default function CheckoutPage() {
   const [sameAsShipping, setSameAsShipping] = useState(true)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [successOrder, setSuccessOrder] = useState<any>(null)
-  const [hasGasYetuProduct, setHasGasYetuProduct] = useState(false)
+  const [needsEnhancedLocation, setNeedsEnhancedLocation] = useState(false)
+  const enableFinancingCheckout = isFinancingCheckoutEnabled()
+  const enhancedLocationSlug = getEnhancedLocationCategorySlug()
   const [isCheckingProducts, setIsCheckingProducts] = useState(true)
 
   const [formData, setFormData] = useState({
@@ -74,7 +81,7 @@ export default function CheckoutPage() {
     delivery_country: "Kenya",
     delivery_instructions: "",
 
-    // Gas Yetu Enhanced Location Fields
+    // Enhanced location fields (when cart has products in NEXT_PUBLIC_ENHANCED_LOCATION_CATEGORY_SLUG)
     county: "",
     sub_county: "",
     ward: "",
@@ -91,9 +98,9 @@ export default function CheckoutPage() {
   const tax = subtotal * 0.16
   const total = subtotal + shipping + tax
 
-  // Check if cart contains Gas Yetu products
+  // Show Kenya sub-location fields when any cart line is in the configured category (slug)
   useEffect(() => {
-    const checkForGasYetuProducts = async () => {
+    const checkEnhancedLocationCategory = async () => {
       if (items.length === 0) {
         setIsCheckingProducts(false)
         return
@@ -102,7 +109,6 @@ export default function CheckoutPage() {
       try {
         const productIds = items.map(item => item.productId)
         
-        // Fetch products with their categories
         const { data: products, error } = await supabase
           .from('products')
           .select(`
@@ -121,22 +127,21 @@ export default function CheckoutPage() {
           return
         }
 
-        // Check if any product is in Gas Yetu category
-        const hasGasYetu = products?.some((product: any) => 
-          product.product_categories?.slug === 'gas-yetu' ||
-          product.product_categories?.name === 'Gas Yetu'
-        )
+        const needsLoc = products?.some((product: any) => {
+          const cat = product.product_categories
+          return cat?.slug === enhancedLocationSlug
+        })
 
-        setHasGasYetuProduct(hasGasYetu || false)
+        setNeedsEnhancedLocation(needsLoc || false)
       } catch (error) {
-        console.error('Error checking for Gas Yetu products:', error)
+        console.error('Error checking enhanced location category:', error)
       } finally {
         setIsCheckingProducts(false)
       }
     }
 
-    checkForGasYetuProducts()
-  }, [items])
+    void checkEnhancedLocationCategory()
+  }, [items, enhancedLocationSlug])
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -166,7 +171,6 @@ export default function CheckoutPage() {
       newErrors.shipping_phone = "Please enter a valid Kenyan phone number"
     }
 
-    // M-Pesa phone validation
     if (formData.payment_method === "mpesa") {
       if (!formData.mpesa_phone) {
         newErrors.mpesa_phone = "M-Pesa phone number is required"
@@ -198,14 +202,13 @@ export default function CheckoutPage() {
       }
     }
 
-    // Gas Yetu Enhanced Location Validation
-    if (hasGasYetuProduct) {
-      if (!formData.county) newErrors.county = "County is required for Gas Yetu delivery"
-      if (!formData.sub_county) newErrors.sub_county = "Sub-County is required for Gas Yetu delivery"
-      if (!formData.ward) newErrors.ward = "Ward/Location is required for Gas Yetu delivery"
-      if (!formData.sub_location) newErrors.sub_location = "Sub-Location/Village/Estate is required for Gas Yetu delivery"
-      if (!formData.street_address) newErrors.street_address = "Street/Building/House Number is required for Gas Yetu delivery"
-      if (!formData.landmark) newErrors.landmark = "Landmark is required for Gas Yetu delivery"
+    if (needsEnhancedLocation) {
+      if (!formData.county) newErrors.county = "County is required for this product category delivery"
+      if (!formData.sub_county) newErrors.sub_county = "Sub-County is required for this product category delivery"
+      if (!formData.ward) newErrors.ward = "Ward/Location is required for this product category delivery"
+      if (!formData.sub_location) newErrors.sub_location = "Sub-Location/Village/Estate is required for this product category delivery"
+      if (!formData.street_address) newErrors.street_address = "Street/Building/House Number is required for this product category delivery"
+      if (!formData.landmark) newErrors.landmark = "Landmark is required for this product category delivery"
     }
 
     setErrors(newErrors)
@@ -293,20 +296,25 @@ export default function CheckoutPage() {
           delivery_country: formData.delivery_country,
         }
 
-      // Prepare Gas Yetu location data if applicable
-      const gasYetuLocationData = hasGasYetuProduct ? {
-        gas_yetu_county: formData.county,
-        gas_yetu_sub_county: formData.sub_county,
-        gas_yetu_ward: formData.ward,
-        gas_yetu_sub_location: formData.sub_location,
-        gas_yetu_street_address: formData.street_address,
-        gas_yetu_landmark: formData.landmark,
-        gas_yetu_delivery_instructions: formData.gas_delivery_instructions,
-      } : {}
+      const gasYetuLocationData = needsEnhancedLocation
+        ? {
+            gas_yetu_county: formData.county,
+            gas_yetu_sub_county: formData.sub_county,
+            gas_yetu_ward: formData.ward,
+            gas_yetu_sub_location: formData.sub_location,
+            gas_yetu_street_address: formData.street_address,
+            gas_yetu_landmark: formData.landmark,
+            gas_yetu_delivery_instructions: formData.gas_delivery_instructions,
+          }
+        : {}
 
       // Create order first
       const orderData = {
         ...formData,
+        payment_method:
+          formData.payment_method === "kcb_financing_pending"
+            ? "kcb_financing_pending"
+            : formData.payment_method,
         ...billingAddress,
         ...deliveryAddress,
         ...gasYetuLocationData,
@@ -333,6 +341,30 @@ export default function CheckoutPage() {
 
       if (!result.success) {
         throw new Error(result.error || "Failed to create order")
+      }
+
+      if (formData.payment_method === "kcb_financing_pending" && result.order?.id) {
+        await clearCart()
+        const ms = getFinancingAutoApproveMsClient()
+        if (ms > 0) {
+          window.setTimeout(() => {
+            void fetch("/api/kcb-financing/simulate", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ orderId: result.order.id, outcome: "approved" }),
+            })
+          }, ms)
+        }
+        toast({
+          title: "Financing application submitted",
+          description:
+            ms > 0
+              ? "Your application was sent. Simulated approval will run for development."
+              : "Your KCB financing application is pending review. Complete payment after approval.",
+        })
+        setIsProcessing(false)
+        router.push(`/checkout/success?order=${result.order.id}&financing=pending`)
+        return
       }
 
       // Check if delivery was auto-assigned (only in development)
@@ -818,8 +850,8 @@ export default function CheckoutPage() {
                             />
                           </div>
 
-                          {/* Gas Yetu Enhanced Location Fields */}
-                          {hasGasYetuProduct && (
+                          {/* Enhanced Kenya location (category slug from env) */}
+                          {needsEnhancedLocation && (
                             <KenyaLocationFields
                               formData={{
                                 county: formData.county,
@@ -870,7 +902,26 @@ export default function CheckoutPage() {
                             Cash on Delivery
                           </Label>
                         </div>
+                        {enableFinancingCheckout && (
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="kcb_financing_pending" id="kcb_financing" />
+                            <Label htmlFor="kcb_financing" className="flex items-center gap-2">
+                              <Calculator className="h-4 w-4" />
+                              KCB financing (apply first — pay after approval)
+                            </Label>
+                          </div>
+                        )}
                       </RadioGroup>
+
+                      {formData.payment_method === "kcb_financing_pending" && (
+                        <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900">
+                          <p className="font-medium">Financing path</p>
+                          <p className="mt-1 text-emerald-800/90">
+                            No payment is taken now. After KCB approval (or simulation), return to pay with M-Pesa or other
+                            methods from your order confirmation.
+                          </p>
+                        </div>
+                      )}
 
                       {formData.payment_method === "mpesa" && (
                         <div className="mt-4 space-y-4">
@@ -978,31 +1029,6 @@ export default function CheckoutPage() {
                             Place Order
                           </>
                         )}
-                      </Button>
-
-                      <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                          <span className="w-full border-t border-gray-300" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                          <span className="bg-white px-2 text-gray-500">or</span>
-                        </div>
-                      </div>
-
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="w-full border-blue-300 text-blue-600 hover:bg-blue-50 hover:text-blue-700" 
-                        disabled={isProcessing}
-                        onClick={() => {
-                          toast({
-                            title: "Financing Coming Soon",
-                            description: "Our financing options will be available soon. Please use regular payment for now.",
-                          })
-                        }}
-                      >
-                        <Calculator className="mr-2 h-4 w-4" />
-                        Start Financing
                       </Button>
 
                       <p className="text-xs text-gray-500 text-center">

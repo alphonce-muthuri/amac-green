@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { ALL_KENYA_COUNTIES, getSubCounties, getWards } from "@/lib/kenya-locations"
 
 interface KenyaLocationFieldsProps {
+  sectionTitle?: string
+  sectionDescription?: string
   formData: {
     county?: string
     sub_county?: string
@@ -21,7 +23,13 @@ interface KenyaLocationFieldsProps {
   onChange: (field: string, value: string) => void
 }
 
-export function KenyaLocationFields({ formData, errors, onChange }: KenyaLocationFieldsProps) {
+export function KenyaLocationFields({
+  sectionTitle = "Detailed delivery location",
+  sectionDescription = "Provide detailed location information for accurate delivery.",
+  formData,
+  errors,
+  onChange,
+}: KenyaLocationFieldsProps) {
   const [subCounties, setSubCounties] = useState<string[]>([])
   const [wards, setWards] = useState<string[]>([])
 
@@ -59,11 +67,9 @@ export function KenyaLocationFields({ formData, errors, onChange }: KenyaLocatio
     <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
       <div className="flex items-center gap-2 mb-2">
         <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
-        <h3 className="font-semibold text-blue-900">Gas Yetu Delivery Location Details</h3>
+        <h3 className="font-semibold text-blue-900">{sectionTitle}</h3>
       </div>
-      <p className="text-sm text-blue-700 mb-4">
-        Please provide detailed location information for accurate Gas Yetu product delivery
-      </p>
+      <p className="text-sm text-blue-700 mb-4">{sectionDescription}</p>
 
       {/* County */}
       <div className="space-y-2">
