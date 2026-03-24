@@ -137,10 +137,10 @@ export default function NewInstallationRequestPage() {
 
   const getUrgencyBadge = (urgency: string) => {
     switch(urgency) {
-      case "low": return <Badge className="bg-blue-100 text-blue-700 border-2 border-blue-300">Low - Flexible</Badge>
-      case "normal": return <Badge className="bg-green-100 text-green-700 border-2 border-green-300">Normal - 2 weeks</Badge>
-      case "high": return <Badge className="bg-amber-100 text-amber-700 border-2 border-amber-300">High - 1 week</Badge>
-      case "urgent": return <Badge className="bg-red-100 text-red-700 border-2 border-red-300">Urgent - ASAP</Badge>
+      case "low": return <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">Low - Flexible</Badge>
+      case "normal": return <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">Normal - 2 weeks</Badge>
+      case "high": return <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">High - 1 week</Badge>
+      case "urgent": return <Badge className="bg-rose-50 text-rose-700 border border-rose-200 rounded-full">Urgent - ASAP</Badge>
       default: return null
     }
   }
@@ -240,20 +240,20 @@ export default function NewInstallationRequestPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <Link href="/dashboard/installations">
-          <Button variant="outline" size="sm" className="border-2">
+          <Button variant="outline" size="sm" className="border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300">
             <ArrowLeft className="h-4 w-4 mr-2" />
             <span className="hidden sm:inline">Back to Installations</span>
             <span className="sm:hidden">Back</span>
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Request Installation Service</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-gray-900">Request Installation Service</h1>
           <p className="text-gray-600 mt-1">Select products and request professional installation</p>
         </div>
       </div>
 
       {/* Progress Steps */}
-      <Card className="border-2 border-emerald-200">
+      <Card className="border border-emerald-200">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -284,11 +284,11 @@ export default function NewInstallationRequestPage() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Product Selection */}
-          <Card className="border-2 border-gray-200">
-            <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-            <CardHeader className="bg-gradient-to-br from-emerald-50 to-teal-50 border-b">
+          <Card className="border border-emerald-200 overflow-hidden">
+            <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
+            <CardHeader className="bg-white border-b border-emerald-200">
               <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-emerald-600" />
+                <ShoppingCart className="h-4 w-4 text-emerald-600" />
                 Select Products for Installation
               </CardTitle>
               <CardDescription>Choose the renewable energy products you want professionally installed</CardDescription>
@@ -307,7 +307,7 @@ export default function NewInstallationRequestPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {products.map((product) => (
-                    <div key={product.id} className="border-2 rounded-xl p-4 hover:shadow-lg transition-all hover:border-emerald-300">
+                    <div key={product.id} className="border border-emerald-200 rounded-xl p-4 transition-all hover:border-emerald-300 bg-white">
                       <div className="flex items-start gap-3 mb-3">
                         <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
                           {product.primary_image ? (
@@ -322,7 +322,7 @@ export default function NewInstallationRequestPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-bold text-sm leading-tight text-gray-900 mb-1">{product.name}</h4>
-                          <Badge className="bg-emerald-100 text-emerald-700 text-xs font-semibold mb-2">
+                          <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold mb-2 rounded-full">
                             {product.category_name}
                           </Badge>
                           {product.short_description && (
@@ -336,7 +336,7 @@ export default function NewInstallationRequestPage() {
                         </p>
                         <Button 
                           size="sm" 
-                          className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+                          className="bg-emerald-600 hover:bg-emerald-700"
                           onClick={() => addProduct(product)}
                         >
                           <Plus className="h-4 w-4 mr-1" />
@@ -351,11 +351,11 @@ export default function NewInstallationRequestPage() {
           </Card>
 
           {/* Job Details Form */}
-          <Card className="border-2 border-gray-200">
-            <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-            <CardHeader className="bg-gradient-to-br from-blue-50 to-cyan-50 border-b">
+          <Card className="border border-emerald-200 overflow-hidden">
+            <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
+            <CardHeader className="bg-white border-b border-emerald-200">
               <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-blue-600" />
+                <MapPin className="h-4 w-4 text-emerald-600" />
                 Installation Details
               </CardTitle>
               <CardDescription>Provide details about your installation requirements</CardDescription>
@@ -369,7 +369,7 @@ export default function NewInstallationRequestPage() {
                     value={formData.title}
                     onChange={(e) => setFormData({...formData, title: e.target.value})}
                     placeholder="e.g., Solar Panel Installation for Home"
-                    className="mt-1 border-2"
+                    className="mt-1 border border-emerald-200"
                     required
                   />
                 </div>
@@ -382,7 +382,7 @@ export default function NewInstallationRequestPage() {
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                     placeholder="Describe your installation requirements, any special considerations, etc."
                     rows={4}
-                    className="mt-1 border-2"
+                    className="mt-1 border border-emerald-200"
                   />
                 </div>
 
@@ -394,7 +394,7 @@ export default function NewInstallationRequestPage() {
                       value={formData.location_address}
                       onChange={(e) => setFormData({...formData, location_address: e.target.value})}
                       placeholder="Full address"
-                      className="mt-1 border-2"
+                      className="mt-1 border border-emerald-200"
                       required
                     />
                   </div>
@@ -405,7 +405,7 @@ export default function NewInstallationRequestPage() {
                       value={formData.location_city}
                       onChange={(e) => setFormData({...formData, location_city: e.target.value})}
                       placeholder="City"
-                      className="mt-1 border-2"
+                      className="mt-1 border border-emerald-200"
                       required
                     />
                   </div>
@@ -421,14 +421,14 @@ export default function NewInstallationRequestPage() {
                         type="date"
                         value={formData.preferred_date}
                         onChange={(e) => setFormData({...formData, preferred_date: e.target.value})}
-                        className="pl-10 border-2"
+                        className="pl-10 border border-emerald-200"
                       />
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="urgency" className="text-sm font-bold text-gray-700">Urgency Level</Label>
                     <Select value={formData.urgency} onValueChange={(value) => setFormData({...formData, urgency: value})}>
-                      <SelectTrigger className="mt-1 border-2">
+                      <SelectTrigger className="mt-1 border border-emerald-200">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -448,15 +448,15 @@ export default function NewInstallationRequestPage() {
         {/* Sidebar - Selected Products & Summary */}
         <div className="space-y-6">
           {/* Selected Products */}
-          <Card className="border-2 border-purple-200 sticky top-4">
-            <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-            <CardHeader className="bg-gradient-to-br from-purple-50 to-pink-50 border-b">
+          <Card className="border border-emerald-200 sticky top-4 overflow-hidden">
+            <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
+            <CardHeader className="bg-white border-b border-emerald-200">
               <CardTitle className="text-lg flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <Package className="h-5 w-5 text-purple-600" />
+                  <Package className="h-4 w-4 text-emerald-600" />
                   Selected Products
                 </span>
-                <Badge className="bg-purple-100 text-purple-700 border-2 border-purple-300 font-bold">
+                <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded-full">
                   {selectedProducts.length}
                 </Badge>
               </CardTitle>
@@ -471,10 +471,10 @@ export default function NewInstallationRequestPage() {
               ) : (
                 <div className="space-y-3">
                   {selectedProducts.map((product) => (
-                    <div key={product.id} className="flex items-center justify-between p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                    <div key={product.id} className="flex items-center justify-between p-3 bg-emerald-50/40 rounded-lg border border-emerald-200">
                       <div className="flex-1 min-w-0 mr-3">
                         <p className="font-bold text-sm text-gray-900 truncate">{product.name}</p>
-                        <p className="text-xs text-purple-700 font-semibold">
+                        <p className="text-xs text-emerald-700 font-semibold">
                           KES {product.price.toLocaleString()} each
                         </p>
                       </div>
@@ -482,7 +482,7 @@ export default function NewInstallationRequestPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-8 w-8 p-0 border-2"
+                          className="h-8 w-8 p-0 border border-emerald-200"
                           onClick={() => updateQuantity(product.id, product.quantity - 1)}
                         >
                           <Minus className="h-3 w-3" />
@@ -491,7 +491,7 @@ export default function NewInstallationRequestPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-8 w-8 p-0 border-2"
+                          className="h-8 w-8 p-0 border border-emerald-200"
                           onClick={() => updateQuantity(product.id, product.quantity + 1)}
                         >
                           <Plus className="h-3 w-3" />
@@ -506,36 +506,36 @@ export default function NewInstallationRequestPage() {
 
           {/* Cost Summary */}
           {selectedProducts.length > 0 && (
-            <Card className="border-2 border-emerald-200">
-              <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-              <CardHeader className="bg-gradient-to-br from-emerald-50 to-teal-50 border-b">
+            <Card className="border border-emerald-200 overflow-hidden">
+              <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
+              <CardHeader className="bg-white border-b border-emerald-200">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-emerald-600" />
+                  <Zap className="h-4 w-4 text-emerald-600" />
                   Cost Summary
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 space-y-4">
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-white rounded-lg border-2">
+                  <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-emerald-200">
                     <span className="text-sm font-semibold text-gray-700">Products Total:</span>
                     <span className="text-lg font-bold text-gray-900">
                       KES {getTotalCost().toLocaleString()}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border-2 border-blue-200">
-                    <span className="text-sm font-semibold text-blue-700">Installation Cost:</span>
-                    <span className="text-sm text-blue-600 font-semibold">Via Professional Bids</span>
+                  <div className="flex justify-between items-center p-3 bg-emerald-50/50 rounded-lg border border-emerald-200">
+                    <span className="text-sm font-semibold text-emerald-700">Installation Cost:</span>
+                    <span className="text-sm text-emerald-600 font-semibold">Via Professional Bids</span>
                   </div>
                   {formData.urgency && (
-                    <div className="p-3 bg-gray-50 rounded-lg border-2">
+                    <div className="p-3 bg-gray-50 rounded-lg border border-emerald-200">
                       <p className="text-xs text-gray-600 mb-1">Urgency Level:</p>
                       {getUrgencyBadge(formData.urgency)}
                     </div>
                   )}
                 </div>
 
-                <div className="pt-4 border-t-2">
-                  <div className="bg-gradient-to-br from-emerald-100 to-teal-100 p-4 rounded-xl border-2 border-emerald-300 mb-4">
+                <div className="pt-4 border-t border-emerald-200">
+                  <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200 mb-4">
                     <p className="text-xs text-emerald-700 font-semibold mb-1">Product Cost</p>
                     <p className="text-3xl font-extrabold text-emerald-700">
                       KES {getTotalCost().toLocaleString()}
@@ -543,7 +543,7 @@ export default function NewInstallationRequestPage() {
                   </div>
 
                   <Button 
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 h-12 text-lg font-bold"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 h-12 text-lg font-bold"
                     onClick={handleSubmit}
                     disabled={isSubmitting || selectedProducts.length === 0 || !formData.title || !formData.location_address || !formData.location_city}
                   >
@@ -569,11 +569,11 @@ export default function NewInstallationRequestPage() {
           )}
 
           {/* Help Card */}
-          <Card className="border-2 border-blue-200">
+          <Card className="border border-emerald-200">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <AlertCircle className="h-5 w-5 text-blue-600" />
+                <div className="w-10 h-10 bg-emerald-50 rounded-full border border-emerald-200 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="h-4 w-4 text-emerald-600" />
                 </div>
                 <div>
                   <h4 className="font-bold text-sm text-gray-900 mb-1">Need Help?</h4>

@@ -73,6 +73,12 @@ export default function DashboardLayout({
         if (href === "/dashboard") {
             return pathname === "/dashboard"
         }
+        if (href === "/dashboard/profile") {
+            return pathname === "/dashboard/profile" || (pathname.startsWith("/dashboard/profile/") && !pathname.startsWith("/dashboard/profile/energy"))
+        }
+        if (href === "/dashboard/profile/energy") {
+            return pathname.startsWith("/dashboard/profile/energy")
+        }
         return pathname.startsWith(href)
     }
 

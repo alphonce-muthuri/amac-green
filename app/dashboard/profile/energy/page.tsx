@@ -16,8 +16,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { getProgramProfile, upsertProgramProfile, type ProgramProfile } from "@/app/actions/customer-program-profile"
+import { getProgramProfile, upsertProgramProfile } from "@/app/actions/customer-program-profile"
 import { toast } from "@/hooks/use-toast"
+
+type ProgramProfile = {
+  nationalIdOrReg?: string
+  county?: string
+  subCounty?: string
+  physicalAddress?: string
+  latitude?: number
+  longitude?: number
+  gridAccess?: "on_grid" | "off_grid" | "unreliable"
+  userType?: "institution" | "sme" | "household" | "individual"
+  facilityType?: string
+  monthlyKwh?: string
+  electricityUseTypes?: string[]
+  cookingFuelTypes?: string[]
+  cookingConsumption?: string
+  solarWaterPumping?: boolean
+  heatingProcessing?: string
+  monthlyEnergySpend?: string
+  paymentMethodPreference?: string
+  willingnessToFinance?: boolean
+}
 
 export default function EnergyProfilePage() {
   const [loading, setLoading] = useState(true)
@@ -57,7 +78,7 @@ export default function EnergyProfilePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="w-full px-4 py-8">
       <Link
         href="/dashboard/profile"
         className="inline-flex items-center text-sm text-emerald-700 hover:underline mb-6"

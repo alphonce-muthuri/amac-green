@@ -88,7 +88,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Loading profile...</p>
         </div>
       </div>
@@ -103,46 +103,51 @@ export default function ProfilePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-extrabold text-gray-900">Profile Settings</h1>
-        <p className="text-gray-600 mt-1">Manage your account information and preferences</p>
+        <h1 className="text-xl sm:text-2xl font-extrabold tracking-tighter text-gray-900">Profile Settings</h1>
+        <p className="text-sm text-gray-600 mt-1">Manage your account information and preferences</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Summary Card */}
-        <Card className="border-2 border-blue-200 lg:col-span-1">
-          <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+        <Card className="border border-emerald-200/60 lg:col-span-1 overflow-hidden">
+          <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
           <CardContent className="p-6">
             <div className="text-center">
               {/* Avatar */}
               <div className="relative inline-block mb-4">
-                <div className="w-32 h-32 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-4xl font-bold">
+                <div className="w-28 h-28 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center text-emerald-700 text-3xl font-bold">
                   {formData.first_name?.charAt(0) || "U"}{formData.last_name?.charAt(0) || ""}
                 </div>
-                <button className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full shadow-lg border-2 border-gray-200 flex items-center justify-center hover:bg-gray-50">
+                <button
+                  className="absolute bottom-0 right-0 w-9 h-9 bg-white rounded-full shadow-sm border border-emerald-200 flex items-center justify-center hover:bg-emerald-50"
+                  type="button"
+                  aria-label="Change profile photo"
+                  title="Change profile photo"
+                >
                   <Camera className="h-5 w-5 text-gray-600" />
                 </button>
               </div>
               
-              <h3 className="text-xl font-bold text-gray-900 mb-1">
+              <h3 className="text-lg font-bold text-gray-900 mb-1">
                 {formData.first_name} {formData.last_name}
               </h3>
               <p className="text-sm text-gray-600 mb-3">{formData.email}</p>
               
-              <Badge className="bg-green-100 text-green-700 border-2 border-green-300 font-bold mb-4">
+              <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold mb-4 rounded-full">
                 <Shield className="h-3 w-3 mr-1" />
                 Account Active
               </Badge>
 
               <div className="pt-4 border-t space-y-2">
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Member Since</span>
                   <span className="font-semibold text-gray-900">
                     {new Date(user.created_at).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-gray-600">Account Type</span>
-                  <Badge className="bg-blue-100 text-blue-700 border-2 border-blue-300 font-bold">
+                  <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
                     {user.user_metadata?.role || "Customer"}
                   </Badge>
                 </div>
@@ -154,42 +159,42 @@ export default function ProfilePage() {
         {/* Profile Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* Personal Information */}
-          <Card className="border-2 border-gray-200">
-            <div className="h-2 bg-gradient-to-r from-gray-700 to-gray-900"></div>
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b">
+          <Card className="border border-emerald-200/60 overflow-hidden">
+            <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
+            <CardHeader className="bg-white border-b border-emerald-200/60">
               <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-blue-600" />
-                Personal Information
+                <User className="h-4 w-4 text-emerald-600" />
+                <span className="text-lg">Personal Information</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="first_name" className="text-sm font-semibold text-gray-700">
+                  <Label htmlFor="first_name" className="text-xs sm:text-sm font-semibold text-gray-700">
                     First Name
                   </Label>
                   <Input
                     id="first_name"
                     value={formData.first_name}
                     onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                    className="border-2"
+                    className="border border-emerald-200"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="last_name" className="text-sm font-semibold text-gray-700">
+                  <Label htmlFor="last_name" className="text-xs sm:text-sm font-semibold text-gray-700">
                     Last Name
                   </Label>
                   <Input
                     id="last_name"
                     value={formData.last_name}
                     onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                    className="border-2"
+                    className="border border-emerald-200"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                <Label htmlFor="email" className="text-xs sm:text-sm font-semibold text-gray-700">
                   Email Address
                 </Label>
                 <div className="relative">
@@ -199,14 +204,14 @@ export default function ProfilePage() {
                     type="email"
                     value={formData.email}
                     disabled
-                    className="pl-10 border-2 bg-gray-50"
+                    className="pl-10 border border-emerald-200 bg-gray-50"
                   />
                 </div>
                 <p className="text-xs text-gray-500">Email cannot be changed</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone" className="text-sm font-semibold text-gray-700">
+                <Label htmlFor="phone" className="text-xs sm:text-sm font-semibold text-gray-700">
                   Phone Number
                 </Label>
                 <div className="relative">
@@ -215,7 +220,7 @@ export default function ProfilePage() {
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="pl-10 border-2"
+                    className="pl-10 border border-emerald-200"
                     placeholder="+254 123 456 789"
                   />
                 </div>
@@ -224,37 +229,37 @@ export default function ProfilePage() {
           </Card>
 
           {/* Address Information */}
-          <Card className="border-2 border-gray-200">
-            <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b">
+          <Card className="border border-emerald-200/60 overflow-hidden">
+            <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
+            <CardHeader className="bg-white border-b border-emerald-200/60">
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-emerald-600" />
-                Address Information
+                <span className="text-lg">Address Information</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="address" className="text-sm font-semibold text-gray-700">
+                <Label htmlFor="address" className="text-xs sm:text-sm font-semibold text-gray-700">
                   Street Address
                 </Label>
                 <Input
                   id="address"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="border-2"
+                  className="border border-emerald-200"
                   placeholder="123 Main Street"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="city" className="text-sm font-semibold text-gray-700">
+                <Label htmlFor="city" className="text-xs sm:text-sm font-semibold text-gray-700">
                   City
                 </Label>
                 <Input
                   id="city"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="border-2"
+                  className="border border-emerald-200"
                   placeholder="Nairobi"
                 />
               </div>
@@ -262,16 +267,16 @@ export default function ProfilePage() {
           </Card>
 
           {/* Security Settings */}
-          <Card className="border-2 border-gray-200">
-            <div className="h-2 bg-gradient-to-r from-red-500 to-rose-500"></div>
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b">
+          <Card className="border border-emerald-200/60 overflow-hidden">
+            <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
+            <CardHeader className="bg-white border-b border-emerald-200/60">
               <CardTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5 text-red-600" />
-                Security Settings
+                <Lock className="h-5 w-5 text-emerald-600" />
+                <span className="text-lg">Security Settings</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <Button variant="outline" className="w-full border-2">
+              <Button variant="outline" className="w-full border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300">
                 <Lock className="h-4 w-4 mr-2" />
                 Change Password
               </Button>
@@ -283,7 +288,7 @@ export default function ProfilePage() {
             <Button 
               onClick={handleSave} 
               disabled={saving}
-              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 flex-1"
+              className="bg-emerald-600 hover:bg-emerald-700 flex-1"
             >
               <Save className="h-4 w-4 mr-2" />
               {saving ? "Saving..." : "Save Changes"}
@@ -291,7 +296,7 @@ export default function ProfilePage() {
             <Button 
               variant="outline" 
               onClick={() => router.push("/dashboard")}
-              className="border-2"
+              className="border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300"
             >
               Cancel
             </Button>

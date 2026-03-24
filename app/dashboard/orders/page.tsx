@@ -92,35 +92,35 @@ export default function OrdersPage() {
     switch (status) {
       case "pending":
         return (
-          <Badge className="bg-amber-100 text-amber-700 border-2 border-amber-300 font-bold">
+          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
             <Clock className="h-3 w-3 mr-1" />
             Pending
           </Badge>
         )
       case "processing":
         return (
-          <Badge className="bg-blue-100 text-blue-700 border-2 border-blue-300 font-bold">
+          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
             <Package className="h-3 w-3 mr-1" />
             Processing
           </Badge>
         )
       case "in_transit":
         return (
-          <Badge className="bg-purple-100 text-purple-700 border-2 border-purple-300 font-bold">
+          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
             <Truck className="h-3 w-3 mr-1" />
             In Transit
           </Badge>
         )
       case "delivered":
         return (
-          <Badge className="bg-green-100 text-green-700 border-2 border-green-300 font-bold">
+          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
             <CheckCircle className="h-3 w-3 mr-1" />
             Delivered
           </Badge>
         )
       case "cancelled":
         return (
-          <Badge className="bg-red-100 text-red-700 border-2 border-red-300 font-bold">
+          <Badge className="bg-rose-50 hover:bg-rose-50 text-rose-700 hover:text-rose-700 border border-rose-200/70 hover:border-rose-200/70 font-bold rounded-full">
             <XCircle className="h-3 w-3 mr-1" />
             Cancelled
           </Badge>
@@ -150,13 +150,13 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900">Order History</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-gray-900">Order History</h1>
           <p className="text-gray-600 mt-1">View and track all your orders</p>
         </div>
         <Button 
           onClick={handleRefresh} 
           disabled={refreshing}
-          className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+          className="bg-emerald-600 hover:bg-emerald-700"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
           Refresh
@@ -165,29 +165,29 @@ export default function OrdersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-2 border-blue-200">
+        <Card className="border border-emerald-200/60">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
-                <Package className="h-6 w-6 text-white" />
+              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
+                <Package className="h-4 w-4 text-emerald-700" />
               </div>
               <div>
                 <p className="text-sm text-gray-600 font-semibold">Total Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
+                <p className="text-xl font-bold text-gray-900">{orders.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-amber-200">
+        <Card className="border border-emerald-200/60">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
-                <Clock className="h-6 w-6 text-white" />
+              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
+                <Clock className="h-4 w-4 text-emerald-700" />
               </div>
               <div>
                 <p className="text-sm text-gray-600 font-semibold">Pending</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-xl font-bold text-gray-900">
                   {orders.filter(o => o.status === "pending").length}
                 </p>
               </div>
@@ -195,15 +195,15 @@ export default function OrdersPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-purple-200">
+        <Card className="border border-emerald-200/60">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                <Truck className="h-6 w-6 text-white" />
+              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
+                <Truck className="h-4 w-4 text-emerald-700" />
               </div>
               <div>
                 <p className="text-sm text-gray-600 font-semibold">In Transit</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-xl font-bold text-gray-900">
                   {orders.filter(o => o.status === "in_transit").length}
                 </p>
               </div>
@@ -211,15 +211,15 @@ export default function OrdersPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-green-200">
+        <Card className="border border-emerald-200/60">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-white" />
+              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
+                <CheckCircle className="h-4 w-4 text-emerald-700" />
               </div>
               <div>
                 <p className="text-sm text-gray-600 font-semibold">Delivered</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-xl font-bold text-gray-900">
                   {orders.filter(o => o.status === "delivered").length}
                 </p>
               </div>
@@ -230,16 +230,16 @@ export default function OrdersPage() {
 
       {/* Orders List */}
       {orders.length === 0 ? (
-        <Card className="border-2 border-gray-200">
+        <Card className="border border-emerald-200/60">
           <CardContent className="text-center py-16">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Package className="h-10 w-10 text-blue-600" />
+            <div className="w-20 h-20 bg-emerald-50 rounded-full border border-emerald-200/60 flex items-center justify-center mx-auto mb-4">
+              <Package className="h-8 w-8 text-emerald-600" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">No orders yet</h3>
             <p className="text-gray-600 mb-4">Start shopping to see your orders here</p>
             <Button 
               onClick={() => router.push("/products")}
-              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+              className="bg-emerald-600 hover:bg-emerald-700"
             >
               Browse Products
             </Button>
@@ -248,8 +248,8 @@ export default function OrdersPage() {
       ) : (
         <div className="grid gap-4">
           {orders.map((order) => (
-            <Card key={order.id} className="border-2 border-gray-200 hover:shadow-xl transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-white border-b">
+            <Card key={order.id} className="border border-emerald-200/60 transition-all duration-300">
+              <CardHeader className="bg-emerald-50/40 border-b border-emerald-200/60">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-lg font-bold text-gray-900">
@@ -265,7 +265,7 @@ export default function OrdersPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900">
                       {new Intl.NumberFormat('en-KE', {
                         style: 'currency',
                         currency: 'KES',
@@ -275,11 +275,11 @@ export default function OrdersPage() {
                     <p className="text-sm text-gray-500 mt-1">Total amount</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="border-2">
+                    <Button variant="outline" size="sm" className="border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300">
                       <Eye className="h-4 w-4 mr-1" />
                       View Details
                     </Button>
-                    <Button variant="outline" size="sm" className="border-2">
+                    <Button variant="outline" size="sm" className="border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300">
                       <Download className="h-4 w-4 mr-1" />
                       Invoice
                     </Button>

@@ -5,7 +5,7 @@ import { cookies } from "next/headers"
 import { z } from "zod"
 
 /** Spec §4.1 — flexible JSON; validate top-level shape only. */
-export const programProfileSchema = z
+const programProfileSchema = z
   .object({
     nationalIdOrReg: z.string().optional(),
     county: z.string().optional(),
@@ -27,8 +27,6 @@ export const programProfileSchema = z
     willingnessToFinance: z.boolean().optional(),
   })
   .passthrough()
-
-export type ProgramProfile = z.infer<typeof programProfileSchema>
 
 export async function getProgramProfile() {
   try {
