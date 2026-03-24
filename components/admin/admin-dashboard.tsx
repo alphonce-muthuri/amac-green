@@ -72,7 +72,7 @@ export function AdminDashboard({ initialStats, onLogout }: AdminDashboardProps) 
                   <Zap className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-extrabold text-white">Admin Control Center</h1>
+                  <h1 className="text-3xl font-extrabold tracking-tighter text-white">Admin Control Center</h1>
                   <p className="text-emerald-400 text-sm font-medium">Manage applications, users & platform</p>
                 </div>
               </div>

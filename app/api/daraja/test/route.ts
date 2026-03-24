@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { darajaAPI } from "@/lib/daraja"
+import { darajaAPI, getDarajaCallbackUrl } from "@/lib/daraja"
 
 export async function GET() {
   try {
@@ -53,13 +53,13 @@ export async function POST(request: NextRequest) {
 
     console.log('[DARAJA_TEST] Testing STK Push with:', { phoneNumber, amount })
 
-    const callbackURL = `${process.env.NEXT_PUBLIC_SITE_URL}/api/daraja/callback`
-    
+    const callbackURL = getDarajaCallbackUrl()
+
     const response = await darajaAPI.initiateSTKPush({
       phoneNumber,
       amount,
-      accountReference: 'TEST-ORDER',
-      transactionDesc: 'Test Payment',
+      accountReference: "TESTORDER01",
+      transactionDesc: "Test pay",
       callbackURL
     })
 

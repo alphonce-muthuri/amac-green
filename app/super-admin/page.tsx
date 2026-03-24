@@ -241,8 +241,8 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-6">
           {/* Executive Header */}
           <div className="relative overflow-hidden">
             <Card className="border-2 border-blue-300 shadow-2xl">
@@ -267,10 +267,10 @@ export default function SuperAdminDashboard() {
                   {/* Platform Overview */}
                   <div className="flex-1 text-center lg:text-left">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-4">
-                      <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
                         Executive Dashboard
                       </h1>
-                      <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 text-sm px-4 py-1">
+                      <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 text-sm px-4 py-1 font-semibold tracking-tight">
                         <Globe className="h-3 w-3 mr-1" />
                         Platform Overview
                       </Badge>

@@ -9,6 +9,7 @@ import { SiteHeader } from "@/components/site-header"
 import { supabase } from "@/lib/supabase"
 import { markOrderAsPaid } from "@/app/actions/orders"
 import { showFinancingSimulationUi } from "@/lib/feature-flags"
+import { readSimulatedOrderSnapshot } from "@/lib/checkout-simulated-order"
 
 interface Order {
   id: string
@@ -274,10 +275,19 @@ function CheckoutSuccessContent() {
         .eq("id", orderId)
         .single()
 
+      if (!error && data) {
+        setOrder(data as Order)
+        return
+      }
+
       if (error) {
         console.error("Error fetching order:", error)
-      } else {
-        setOrder(data)
+      }
+
+      // ORDER_SIMULATION: order exists only in sessionStorage snapshot from checkout
+      const simulated = orderId ? readSimulatedOrderSnapshot(orderId) : null
+      if (simulated && typeof simulated === "object") {
+        setOrder(simulated as Order)
       }
     } catch (error) {
       console.error("Error fetching order:", error)
@@ -318,9 +328,9 @@ function CheckoutSuccessContent() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
         <SiteHeader />
-        <main className="flex-1 container mx-auto px-4 py-8">
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="max-w-2xl mx-auto text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
             <p>Loading order details...</p>
@@ -332,11 +342,11 @@ function CheckoutSuccessContent() {
 
   if (!order) {
     return (
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
         <SiteHeader />
-        <main className="flex-1 container mx-auto px-4 py-8">
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="max-w-2xl mx-auto text-center">
-            <h1 className="text-2xl font-bold mb-4">Order Not Found</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter mb-4">Order Not Found</h1>
             <p className="text-gray-600 mb-6">The order you're looking for could not be found.</p>
             <Button asChild className="bg-green-600 hover:bg-green-700">
               <a href="/products">Continue Shopping</a>
@@ -348,14 +358,14 @@ function CheckoutSuccessContent() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
       <SiteHeader />
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-4xl">
           {/* Success Header */}
           <div className="text-center mb-8">
-            <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <CheckCircle className="h-16 w-16 text-emerald-600 mx-auto mb-4" />
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-gray-900 mb-2">
               {order.financing_status === "pending" ? "Financing application received" : "Order Confirmed!"}
             </h1>
             <p className="text-gray-600">

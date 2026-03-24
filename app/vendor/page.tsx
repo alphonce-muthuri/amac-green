@@ -197,8 +197,8 @@ export default function VendorDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-6">
           {/* Hero Header */}
           <div className="relative overflow-hidden">
             <Card className="border-2 border-blue-300 shadow-2xl">
@@ -222,19 +222,22 @@ export default function VendorDashboard() {
                     </div>
 
                     <div>
-                      <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
+                      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-gray-900 mb-2">
                         Supplier Dashboard
                       </h1>
-                      <p className="text-lg text-gray-600">
-                        Welcome back, <span className="font-bold text-blue-700">{user?.user_metadata?.contact_person || user?.user_metadata?.first_name || "Vendor"}</span>
+                      <p className="text-base sm:text-lg text-gray-600 tracking-tight">
+                        Welcome back,{" "}
+                        <span className="font-bold text-blue-700 tracking-tight">
+                          {user?.user_metadata?.contact_person || user?.user_metadata?.first_name || "Vendor"}
+                        </span>
                       </p>
                       <div className="flex flex-wrap gap-2 mt-3">
-                        <Badge className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-2 border-blue-300">
+                        <Badge className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border-2 border-blue-300 font-semibold tracking-tight">
                           <Store className="h-3 w-3 mr-1" />
                           {applicationStatus?.company_name || "Your Store"}
                         </Badge>
                         {isApproved && (
-                          <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-2 border-green-300">
+                          <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-2 border-green-300 font-semibold tracking-tight">
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Verified Supplier
                           </Badge>

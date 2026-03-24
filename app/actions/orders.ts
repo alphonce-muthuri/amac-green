@@ -66,6 +66,7 @@ export async function createOrder(orderData: any, userId?: string) {
       return {
         success: true,
         message: "Order created successfully!",
+        simulation: true as const,
         order: mockOrder,
       }
     }

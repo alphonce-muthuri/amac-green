@@ -27,6 +27,7 @@ import {
   getFinancingAutoApproveMsClient,
   isFinancingCheckoutEnabled,
 } from "@/lib/feature-flags"
+import { persistSimulatedOrderSnapshot } from "@/lib/checkout-simulated-order"
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -150,32 +151,38 @@ export default function CheckoutPage() {
     }
   }
 
-  const validateForm = () => {
+  const normalizePhone = (s: string) => s.replace(/\s/g, "")
+
+  const validateForm = (): { ok: boolean; errors: Record<string, string>; messages: string[] } => {
     const newErrors: Record<string, string> = {}
+    const messages: string[] = []
+
+    const shipPhone = normalizePhone(formData.shipping_phone)
+    const mpesaPhone = normalizePhone(formData.mpesa_phone)
 
     // Required shipping fields
-    if (!formData.shipping_first_name) newErrors.shipping_first_name = "First name is required"
-    if (!formData.shipping_last_name) newErrors.shipping_last_name = "Last name is required"
-    if (!formData.shipping_email) newErrors.shipping_email = "Email is required"
-    if (!formData.shipping_phone) newErrors.shipping_phone = "Phone number is required"
-    if (!formData.shipping_address) newErrors.shipping_address = "Address is required"
-    if (!formData.shipping_city) newErrors.shipping_city = "City is required"
+    if (!formData.shipping_first_name?.trim()) newErrors.shipping_first_name = "First name is required"
+    if (!formData.shipping_last_name?.trim()) newErrors.shipping_last_name = "Last name is required"
+    if (!formData.shipping_email?.trim()) newErrors.shipping_email = "Email is required"
+    if (!shipPhone) newErrors.shipping_phone = "Phone number is required"
+    if (!formData.shipping_address?.trim()) newErrors.shipping_address = "Address is required"
+    if (!formData.shipping_city?.trim()) newErrors.shipping_city = "City is required"
 
     // Email validation
-    if (formData.shipping_email && !/\S+@\S+\.\S+/.test(formData.shipping_email)) {
+    if (formData.shipping_email?.trim() && !/\S+@\S+\.\S+/.test(formData.shipping_email.trim())) {
       newErrors.shipping_email = "Please enter a valid email"
     }
 
-    // Phone validation
-    if (formData.shipping_phone && !/^(\+254|0)[17]\d{8}$/.test(formData.shipping_phone)) {
-      newErrors.shipping_phone = "Please enter a valid Kenyan phone number"
+    // Phone validation (Safaricom-style 07/01… or +2547/2541…)
+    if (shipPhone && !/^(\+254|0)[17]\d{8}$/.test(shipPhone)) {
+      newErrors.shipping_phone = "Please enter a valid Kenyan phone number (e.g. 0712345678)"
     }
 
     if (formData.payment_method === "mpesa") {
-      if (!formData.mpesa_phone) {
+      if (!mpesaPhone) {
         newErrors.mpesa_phone = "M-Pesa phone number is required"
-      } else if (!/^(\+254|254|0)[17]\d{8}$/.test(formData.mpesa_phone)) {
-        newErrors.mpesa_phone = "Please enter a valid Kenyan M-Pesa phone number"
+      } else if (!/^(\+254|254|0)[17]\d{8}$/.test(mpesaPhone)) {
+        newErrors.mpesa_phone = "Please enter a valid Kenyan M-Pesa phone number (e.g. 0712345678)"
       }
     }
 
@@ -191,28 +198,33 @@ export default function CheckoutPage() {
 
     // Delivery address validation
     if (formData.needs_delivery && !formData.delivery_address_same) {
-      if (!formData.delivery_first_name) newErrors.delivery_first_name = "Delivery contact name is required"
-      if (!formData.delivery_phone) newErrors.delivery_phone = "Delivery contact phone is required"
-      if (!formData.delivery_address) newErrors.delivery_address = "Delivery address is required"
-      if (!formData.delivery_city) newErrors.delivery_city = "Delivery city is required"
+      const delPhone = normalizePhone(formData.delivery_phone)
+      if (!formData.delivery_first_name?.trim()) newErrors.delivery_first_name = "Delivery contact name is required"
+      if (!delPhone) newErrors.delivery_phone = "Delivery contact phone is required"
+      if (!formData.delivery_address?.trim()) newErrors.delivery_address = "Delivery address is required"
+      if (!formData.delivery_city?.trim()) newErrors.delivery_city = "Delivery city is required"
 
-      // Phone validation for delivery contact
-      if (formData.delivery_phone && !/^(\+254|0)[17]\d{8}$/.test(formData.delivery_phone)) {
+      if (delPhone && !/^(\+254|0)[17]\d{8}$/.test(delPhone)) {
         newErrors.delivery_phone = "Please enter a valid Kenyan phone number"
       }
     }
 
+    // Detailed location: required when cart includes this category (fields are always shown in that case)
     if (needsEnhancedLocation) {
-      if (!formData.county) newErrors.county = "County is required for this product category delivery"
-      if (!formData.sub_county) newErrors.sub_county = "Sub-County is required for this product category delivery"
-      if (!formData.ward) newErrors.ward = "Ward/Location is required for this product category delivery"
-      if (!formData.sub_location) newErrors.sub_location = "Sub-Location/Village/Estate is required for this product category delivery"
-      if (!formData.street_address) newErrors.street_address = "Street/Building/House Number is required for this product category delivery"
-      if (!formData.landmark) newErrors.landmark = "Landmark is required for this product category delivery"
+      if (!formData.county?.trim()) newErrors.county = "County is required for this product category delivery"
+      if (!formData.sub_county?.trim()) newErrors.sub_county = "Sub-County is required for this product category delivery"
+      if (!formData.ward?.trim()) newErrors.ward = "Ward/Location is required for this product category delivery"
+      if (!formData.sub_location?.trim()) newErrors.sub_location = "Sub-Location/Village/Estate is required for this product category delivery"
+      if (!formData.street_address?.trim()) newErrors.street_address = "Street/Building/House Number is required for this product category delivery"
+      if (!formData.landmark?.trim()) newErrors.landmark = "Landmark is required for this product category delivery"
+    }
+
+    for (const msg of Object.values(newErrors)) {
+      if (msg && !messages.includes(msg)) messages.push(msg)
     }
 
     setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return { ok: Object.keys(newErrors).length === 0, errors: newErrors, messages }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -238,10 +250,17 @@ export default function CheckoutPage() {
       return
     }
 
-    if (!validateForm()) {
+    const validation = validateForm()
+    if (!validation.ok) {
+      const hint =
+        validation.messages.slice(0, 4).join(" · ") ||
+        "Please fix the highlighted fields (scroll up if needed)."
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[checkout] validation failed", validation.errors)
+      }
       toast({
         title: "Form Validation Error",
-        description: "Please fix the errors in the form and try again.",
+        description: hint,
         variant: "destructive",
       })
       return
@@ -252,13 +271,18 @@ export default function CheckoutPage() {
     try {
       console.log('[CHECKOUT_DEBUG] Starting checkout process for user:', user.id)
 
+      const shipPhoneNorm = normalizePhone(formData.shipping_phone)
+      const mpesaPhoneNorm = normalizePhone(formData.mpesa_phone)
+      const billingPhoneNorm = normalizePhone(formData.billing_phone)
+      const deliveryPhoneNorm = normalizePhone(formData.delivery_phone)
+
       // Prepare billing address
       const billingAddress = sameAsShipping
         ? {
           billing_first_name: formData.shipping_first_name,
           billing_last_name: formData.shipping_last_name,
           billing_email: formData.shipping_email,
-          billing_phone: formData.shipping_phone,
+          billing_phone: shipPhoneNorm,
           billing_address: formData.shipping_address,
           billing_city: formData.shipping_city,
           billing_postal_code: formData.shipping_postal_code,
@@ -268,7 +292,7 @@ export default function CheckoutPage() {
           billing_first_name: formData.billing_first_name,
           billing_last_name: formData.billing_last_name,
           billing_email: formData.billing_email,
-          billing_phone: formData.billing_phone,
+          billing_phone: billingPhoneNorm,
           billing_address: formData.billing_address,
           billing_city: formData.billing_city,
           billing_postal_code: formData.billing_postal_code,
@@ -280,7 +304,7 @@ export default function CheckoutPage() {
         ? {
           delivery_first_name: formData.shipping_first_name,
           delivery_last_name: formData.shipping_last_name,
-          delivery_phone: formData.shipping_phone,
+          delivery_phone: shipPhoneNorm,
           delivery_address: formData.shipping_address,
           delivery_city: formData.shipping_city,
           delivery_postal_code: formData.shipping_postal_code,
@@ -289,7 +313,7 @@ export default function CheckoutPage() {
         : {
           delivery_first_name: formData.delivery_first_name,
           delivery_last_name: formData.delivery_last_name,
-          delivery_phone: formData.delivery_phone,
+          delivery_phone: deliveryPhoneNorm,
           delivery_address: formData.delivery_address,
           delivery_city: formData.delivery_city,
           delivery_postal_code: formData.delivery_postal_code,
@@ -311,6 +335,8 @@ export default function CheckoutPage() {
       // Create order first
       const orderData = {
         ...formData,
+        shipping_phone: shipPhoneNorm,
+        mpesa_phone: mpesaPhoneNorm,
         payment_method:
           formData.payment_method === "kcb_financing_pending"
             ? "kcb_financing_pending"
@@ -341,6 +367,20 @@ export default function CheckoutPage() {
 
       if (!result.success) {
         throw new Error(result.error || "Failed to create order")
+      }
+
+      if ("simulation" in result && result.simulation && result.order?.id) {
+        persistSimulatedOrderSnapshot(
+          result.order.id,
+          result.order as Record<string, unknown>,
+          items.map((item) => ({
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+          }))
+        )
       }
 
       if (formData.payment_method === "kcb_financing_pending" && result.order?.id) {
@@ -403,7 +443,7 @@ export default function CheckoutPage() {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              phoneNumber: formData.mpesa_phone,
+              phoneNumber: mpesaPhoneNorm,
               amount: total,
               orderId: result.order.id,
               customerName: `${formData.shipping_first_name} ${formData.shipping_last_name}`,
@@ -473,13 +513,16 @@ export default function CheckoutPage() {
 
   if (!user) {
     return (
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
         <SiteHeader />
-        <main className="flex-1 container mx-auto px-4 py-8">
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="max-w-md mx-auto text-center">
-            <h1 className="text-2xl font-bold mb-4">Sign In Required</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter mb-4">Sign In Required</h1>
             <p className="text-gray-600 mb-6">Please sign in to complete your checkout.</p>
-            <Button asChild className="bg-green-600 hover:bg-green-700">
+            <Button
+              asChild
+              className="bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300"
+            >
               <a href="/login?redirect=/checkout">Sign In</a>
             </Button>
           </div>
@@ -490,13 +533,16 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
         <SiteHeader />
-        <main className="flex-1 container mx-auto px-4 py-8">
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="max-w-md mx-auto text-center">
-            <h1 className="text-2xl font-bold mb-4">Cart is Empty</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter mb-4">Cart is Empty</h1>
             <p className="text-gray-600 mb-6">Add some items to your cart before checkout.</p>
-            <Button asChild className="bg-green-600 hover:bg-green-700">
+            <Button
+              asChild
+              className="bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300"
+            >
               <a href="/products">Browse Products</a>
             </Button>
           </div>
@@ -507,16 +553,16 @@ export default function CheckoutPage() {
 
   return (
     <>
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
         <SiteHeader />
-        <main className="flex-1 container mx-auto px-4 py-8">
-          <div className="max-w-6xl mx-auto">
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-6xl">
             <div className="mb-8">
               <Button variant="ghost" onClick={() => router.back()} className="mb-4">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Cart
               </Button>
-              <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-gray-900">Checkout</h1>
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -750,6 +796,27 @@ export default function CheckoutPage() {
                       <CardTitle>Delivery Options</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      {needsEnhancedLocation && (
+                        <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4 space-y-2">
+                          <p className="text-sm font-medium text-amber-950">
+                            Detailed location required (your cart includes products in the configured programme category)
+                          </p>
+                          <KenyaLocationFields
+                            formData={{
+                              county: formData.county,
+                              sub_county: formData.sub_county,
+                              ward: formData.ward,
+                              sub_location: formData.sub_location,
+                              street_address: formData.street_address,
+                              landmark: formData.landmark,
+                              delivery_instructions: formData.gas_delivery_instructions,
+                            }}
+                            errors={errors}
+                            onChange={handleInputChange}
+                          />
+                        </div>
+                      )}
+
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="needs-delivery"
@@ -849,23 +916,6 @@ export default function CheckoutPage() {
                               rows={2}
                             />
                           </div>
-
-                          {/* Enhanced Kenya location (category slug from env) */}
-                          {needsEnhancedLocation && (
-                            <KenyaLocationFields
-                              formData={{
-                                county: formData.county,
-                                sub_county: formData.sub_county,
-                                ward: formData.ward,
-                                sub_location: formData.sub_location,
-                                street_address: formData.street_address,
-                                landmark: formData.landmark,
-                                delivery_instructions: formData.gas_delivery_instructions,
-                              }}
-                              errors={errors}
-                              onChange={handleInputChange}
-                            />
-                          )}
 
                           <div className="bg-green-50 p-3 rounded-lg">
                             <p className="text-sm text-green-700">
@@ -984,7 +1034,7 @@ export default function CheckoutPage() {
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
                         {items.map((item) => (
-                          <div key={item.id} className="flex justify-between text-sm">
+                          <div key={item.productId} className="flex justify-between text-sm">
                             <span>
                               {item.name} x {item.quantity}
                             </span>

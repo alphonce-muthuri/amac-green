@@ -62,16 +62,16 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
         <SiteHeader />
         <main className="flex-1 flex items-center justify-center px-4 py-12">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-md rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+                <CheckCircle className="h-6 w-6 text-emerald-600" />
               </div>
-              <CardTitle>Check Your Email</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-xl font-bold tracking-tighter">Check Your Email</CardTitle>
+              <CardDescription className="text-sm text-gray-600 tracking-tight">
                 We've sent a password reset link to your email address
               </CardDescription>
             </CardHeader>
@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
               <div className="space-y-2">
                 <Button 
                   variant="outline" 
-                  className="w-full"
+                  className="w-full rounded-full border-2 border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
                   onClick={() => {
                     setSent(false)
                     setEmail("")
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
                 
                 <Button 
                   variant="ghost" 
-                  className="w-full"
+                  className="w-full rounded-full hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
                   onClick={() => router.push("/login")}
                 >
                   Back to Login
@@ -118,24 +118,24 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
       <SiteHeader />
       <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-2 mb-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push("/login")}
-                className="p-0 h-auto"
+                className="p-0 h-auto hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <span className="text-sm text-gray-600">Back to login</span>
             </div>
-            <CardTitle>Forgot Password?</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl font-bold tracking-tighter">Forgot Password?</CardTitle>
+            <CardDescription className="text-sm text-gray-600 tracking-tight">
               Enter your email address and we'll send you a link to reset your password
             </CardDescription>
           </CardHeader>
@@ -160,7 +160,11 @@ export default function ForgotPasswordPage() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300"
+                disabled={loading}
+              >
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -177,7 +181,7 @@ export default function ForgotPasswordPage() {
               <div className="text-center">
                 <p className="text-sm text-gray-600">
                   Remember your password?{" "}
-                  <Link href="/login" className="text-purple-600 hover:text-purple-500 font-medium">
+                  <Link href="/login" className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
                     Sign in
                   </Link>
                 </p>

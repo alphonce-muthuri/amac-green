@@ -125,13 +125,13 @@ function ResetPasswordForm() {
 
     if (validating) {
         return (
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
                 <SiteHeader />
                 <main className="flex-1 flex items-center justify-center px-4 py-12">
-                    <Card className="w-full max-w-md">
+                    <Card className="w-full max-w-md rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm">
                         <CardContent className="flex items-center justify-center py-8">
                             <div className="text-center">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
                                 <p className="text-gray-600">Validating reset link...</p>
                             </div>
                         </CardContent>
@@ -143,16 +143,16 @@ function ResetPasswordForm() {
 
     if (success) {
         return (
-            <div className="flex flex-col min-h-screen">
+            <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
                 <SiteHeader />
                 <main className="flex-1 flex items-center justify-center px-4 py-12">
-                    <Card className="w-full max-w-md">
+                    <Card className="w-full max-w-md rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm">
                         <CardHeader className="text-center">
-                            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                                <CheckCircle className="h-6 w-6 text-green-600" />
+                            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+                                <CheckCircle className="h-6 w-6 text-emerald-600" />
                             </div>
-                            <CardTitle>Password Updated!</CardTitle>
-                            <CardDescription>
+                            <CardTitle className="text-xl font-bold tracking-tighter">Password Updated!</CardTitle>
+                            <CardDescription className="text-sm text-gray-600 tracking-tight">
                                 Your password has been successfully updated
                             </CardDescription>
                         </CardHeader>
@@ -171,13 +171,13 @@ function ResetPasswordForm() {
     }
 
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
             <SiteHeader />
             <main className="flex-1 flex items-center justify-center px-4 py-12">
-                <Card className="w-full max-w-md">
+                <Card className="w-full max-w-md rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm">
                     <CardHeader>
-                        <CardTitle>Reset Your Password</CardTitle>
-                        <CardDescription>
+                        <CardTitle className="text-xl font-bold tracking-tighter">Reset Your Password</CardTitle>
+                        <CardDescription className="text-sm text-gray-600 tracking-tight">
                             Enter your new password below
                         </CardDescription>
                     </CardHeader>
@@ -250,7 +250,11 @@ function ResetPasswordForm() {
                                 </div>
                             </div>
 
-                            <Button type="submit" className="w-full" disabled={loading}>
+                            <Button
+                                type="submit"
+                                className="w-full bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300"
+                                disabled={loading}
+                            >
                                 {loading ? (
                                     <>
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -273,13 +277,13 @@ function ResetPasswordForm() {
 
 function LoadingFallback() {
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
             <SiteHeader />
             <main className="flex-1 flex items-center justify-center px-4 py-12">
-                <Card className="w-full max-w-md">
+                <Card className="w-full max-w-md rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm">
                     <CardContent className="flex items-center justify-center py-8">
                         <div className="text-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
                             <p className="text-gray-600">Loading...</p>
                         </div>
                     </CardContent>

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabase"
+import { SiteHeader } from "@/components/site-header"
 
 function SetPasswordForm() {
   const searchParams = useSearchParams()
@@ -54,20 +55,23 @@ function SetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
-      <div className="container mx-auto px-4">
-        <div className="max-w-md mx-auto">
-          <Card>
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex flex-col">
+      <SiteHeader />
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full">
+          <Card className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm">
             <CardHeader>
-              <CardTitle>Set Your Password</CardTitle>
-              <CardDescription>{email ? `Set a password for ${email}` : "Set your account password"}</CardDescription>
+              <CardTitle className="text-xl font-bold tracking-tighter">Set Your Password</CardTitle>
+              <CardDescription className="text-sm text-gray-600 tracking-tight">
+                {email ? `Set a password for ${email}` : "Set your account password"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {message && (
                 <div
                   className={`mb-4 p-4 rounded-md ${
                     message.type === "success"
-                      ? "bg-green-50 text-green-700 border border-green-200"
+                      ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
                       : "bg-red-50 text-red-700 border border-red-200"
                   }`}
                 >
@@ -100,33 +104,38 @@ function SetPasswordForm() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  className="w-full bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? "Setting Password..." : "Set Password"}
                 </Button>
               </form>
             </CardContent>
           </Card>
         </div>
-      </div>
+      </main>
     </div>
   )
 }
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
-      <div className="container mx-auto px-4">
-        <div className="max-w-md mx-auto">
-          <Card>
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex flex-col">
+      <SiteHeader />
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full">
+          <Card className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm">
             <CardContent className="flex items-center justify-center py-8">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
                 <p className="text-gray-600">Loading...</p>
               </div>
             </CardContent>
           </Card>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

@@ -142,11 +142,28 @@ class DarajaAPI {
       body: JSON.stringify(requestBody)
     })
 
-    if (!response.ok) {
-      throw new Error(`STK Push failed: ${response.statusText}`)
+    const rawBody = await response.text()
+    let data: STKPushResponse & { error?: string; errorMessage?: string; requestId?: string }
+
+    try {
+      data = JSON.parse(rawBody) as typeof data
+    } catch {
+      if (!response.ok) {
+        throw new Error(`STK Push failed: ${response.status} ${response.statusText} — ${rawBody.slice(0, 200)}`)
+      }
+      throw new Error('STK Push: invalid JSON response')
     }
 
-    const data: STKPushResponse = await response.json()
+    if (!response.ok) {
+      const hint =
+        data.errorMessage ||
+        data.error ||
+        (typeof data === 'object' && data !== null && 'response' in data
+          ? String((data as { response?: { errorMessage?: string } }).response?.errorMessage)
+          : null) ||
+        rawBody.slice(0, 300)
+      throw new Error(`STK Push failed (${response.status}): ${hint}`)
+    }
     
     if (data.ResponseCode !== '0') {
       throw new Error(`STK Push failed: ${data.ResponseDescription}`)
@@ -187,3 +204,28 @@ class DarajaAPI {
 
 export const darajaAPI = new DarajaAPI()
 export type { STKPushResponse, STKQueryResponse }
+
+/**
+ * Safaricom STK Push requires a **public** CallBackURL; `http://localhost/...` is rejected (400 Invalid CallBackURL).
+ * Set `MPESA_CALLBACK_URL` to the full HTTPS URL of this route, e.g. via ngrok:
+ * `https://xxxx.ngrok-free.app/api/daraja/callback`
+ */
+export function getDarajaCallbackUrl(): string {
+  const explicit = process.env.MPESA_CALLBACK_URL?.trim()
+  if (explicit) {
+    return explicit.replace(/\/$/, "")
+  }
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "")
+    .trim()
+    .replace(/\/$/, "")
+  return `${base}/api/daraja/callback`
+}
+
+export function isLikelyRejectedDarajaCallbackUrl(url: string): boolean {
+  try {
+    const { hostname } = new URL(url)
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]"
+  } catch {
+    return true
+  }
+}

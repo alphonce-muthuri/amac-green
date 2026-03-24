@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { supabase } from "@/lib/supabase"
-import { User, ShoppingCart, Package, Settings, LogOut, Home, Menu, X, Zap, TrendingUp, CreditCard, Bell, Leaf } from "lucide-react"
+import { User, ShoppingCart, Package, Settings, LogOut, Home, Menu, X, TrendingUp, CreditCard, Bell, Leaf } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -18,7 +19,7 @@ export default function DashboardLayout({
     const [loading, setLoading] = useState(true)
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const router = useRouter()
-    const pathname = usePathname()
+    const pathname = usePathname() || ""
 
     useEffect(() => {
         const getUser = async () => {
@@ -51,7 +52,7 @@ export default function DashboardLayout({
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
                 <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-gray-600 font-medium">Loading your dashboard...</p>
                 </div>
             </div>
@@ -91,29 +92,37 @@ export default function DashboardLayout({
                     sidebarOpen ? "translate-x-0" : "-translate-x-full"
                 )}>
                     {/* Mobile Sidebar Header */}
-                    <div className="bg-gradient-to-br from-emerald-600 to-teal-600 px-6 py-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                        <Zap className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                        <span className="text-lg font-bold text-white">AMAC Green</span>
-                                        <p className="text-xs text-emerald-100">Renewable Energy Platform</p>
-                                </div>
+                    <div className="bg-emerald-900 px-6 py-5 flex flex-col relative min-h-[190px]">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSidebarOpen(false)}
+                            className="absolute top-6 right-6 text-white hover:bg-white/20"
+                        >
+                            <X className="h-5 w-5" />
+                        </Button>
+
+                        <Link
+                            href="/"
+                            onClick={() => setSidebarOpen(false)}
+                            className="flex-1 flex items-center justify-left"
+                        >
+                            <div className="w-28 h-12 rounded-2xl flex items-center justify-center overflow-hidden">
+                                <Image
+                                    src="/images/logo/AMAC-Green-logo.png"
+                                    alt="AMAC Green logo"
+                                    width={320}
+                                    height={160}
+                                    className="h-24 w-auto object-contain brightness-0 invert"
+                                />
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setSidebarOpen(false)}
-                                className="text-white hover:bg-white/20"
-                            >
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </div>
-                        
+                        </Link>
+
+                        {/* Separator between brand and user */}
+                        <div className="h-px bg-emerald-400/70 mb-4" />
+
                         {/* User Info in Mobile */}
-                        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                        <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-gradient-to-br from-white to-emerald-100 rounded-full flex items-center justify-center">
                                 <User className="h-6 w-6 text-emerald-700" />
                             </div>
@@ -127,7 +136,7 @@ export default function DashboardLayout({
                     </div>
 
                     {/* Mobile Navigation */}
-                    <nav className="flex-1 px-4 py-6 space-y-2">
+                    <nav className="flex-1 pr-4 py-6 space-y-2">
                         {navigation.map((item) => {
                             const Icon = item.icon
                             const active = isActive(item.href)
@@ -136,14 +145,14 @@ export default function DashboardLayout({
                                     key={item.name}
                                     href={item.href}
                                     className={cn(
-                                        "group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200",
+                                        "group w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200",
                                         active
-                                            ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30"
-                                            : "text-gray-700 hover:bg-blue-50"
+                                            ? "bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-l-none rounded-r-full"
+                                            : "text-gray-700 hover:bg-emerald-50"
                                     )}
                                     onClick={() => setSidebarOpen(false)}
                                 >
-                                    <Icon className={cn("h-5 w-5", active ? "text-white" : "text-gray-400")} />
+                                    <Icon className={cn("h-5 w-5", active ? "text-emerald-700" : "text-gray-400")} />
                                     {item.name}
                                 </Link>
                             )
@@ -168,19 +177,24 @@ export default function DashboardLayout({
             <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
                 <div className="flex flex-col flex-grow bg-white border-r-2 border-gray-200 shadow-xl">
                     {/* Desktop Header */}
-                    <div className="bg-gradient-to-br from-emerald-600 to-teal-600 px-6 py-6">
-                        <Link href="/" className="flex items-center gap-3 mb-6">
-                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                                <Zap className="w-7 h-7 text-white" />
-                            </div>
-                            <div>
-                                <span className="text-xl font-bold text-white">AMAC Green</span>
-                                <p className="text-xs text-emerald-100">Renewable Energy Platform</p>
+                    <div className="bg-emerald-900 px-6 py-5 flex flex-col relative min-h-[190px]">
+                        <Link href="/" className="flex-1 flex items-center justify-left">
+                            <div className="w-28 h-12 rounded-2xl flex items-center justify-center overflow-hidden">
+                                <Image
+                                    src="/images/logo/AMAC-Green-logo.png"
+                                    alt="AMAC Green logo"
+                                    width={320}
+                                    height={160}
+                                    className="h-24 w-auto object-contain brightness-0 invert"
+                                />
                             </div>
                         </Link>
-                        
+
+                        {/* Separator between brand and user */}
+                        <div className="h-px bg-emerald-400/70 mb-4" />
+
                         {/* User Info */}
-                        <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                        <div className="flex items-center gap-3">
                             <div className="w-14 h-14 bg-gradient-to-br from-white to-emerald-100 rounded-full flex items-center justify-center">
                                 <User className="h-7 w-7 text-emerald-700" />
                             </div>
@@ -189,15 +203,12 @@ export default function DashboardLayout({
                                     {user?.user_metadata?.first_name || "Customer"}
                                 </p>
                                 <p className="text-xs text-emerald-100">Customer Account</p>
-                                <Badge className="mt-1 bg-green-500 hover:bg-green-500 text-white text-xs">
-                                    Active
-                                </Badge>
                             </div>
                         </div>
                     </div>
 
                     {/* Desktop Navigation */}
-                    <nav className="flex-1 px-4 py-6 space-y-2">
+                    <nav className="flex-1 pr-4 py-6 space-y-2">
                         {navigation.map((item) => {
                             const Icon = item.icon
                             const active = isActive(item.href)
@@ -206,13 +217,13 @@ export default function DashboardLayout({
                                     key={item.name}
                                     href={item.href}
                                     className={cn(
-                                        "group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200",
+                                        "group w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200",
                                         active
-                                            ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30 scale-105"
-                                            : "text-gray-700 hover:bg-blue-50 hover:scale-105"
+                                            ? "bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-l-none rounded-r-full"
+                                            : "text-gray-700 hover:bg-emerald-50"
                                     )}
                                 >
-                                    <Icon className={cn("h-5 w-5", active ? "text-white" : "text-gray-400 group-hover:text-blue-500")} />
+                                    <Icon className={cn("h-5 w-5", active ? "text-emerald-700" : "text-gray-400 group-hover:text-emerald-500")} />
                                     {item.name}
                                 </Link>
                             )
@@ -246,10 +257,16 @@ export default function DashboardLayout({
                     </Button>
                     <div className="flex flex-1 items-center justify-center px-4">
                         <Link href="/" className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center">
-                                <Zap className="w-5 h-5 text-white" />
+                            <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden">
+                                <Image
+                                    src="/images/logo/AMAC-Green-logo.png"
+                                    alt="AMAC Green logo"
+                                    width={160}
+                                    height={80}
+                                    className="h-10 w-auto object-contain brightness-0 invert"
+                                />
                             </div>
-                            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                            <span className="text-base font-bold bg-gradient-to-r from-green-500 via-emerald-800 to-emerald-900 bg-clip-text text-transparent">
                                 AMAC Green
                             </span>
                         </Link>
@@ -260,6 +277,7 @@ export default function DashboardLayout({
                         onClick={handleSignOut}
                     >
                         <LogOut className="h-5 w-5 text-gray-600" />
+                        <span className="text-xs font-semibold text-gray-600 whitespace-nowrap">Sign Out</span>
                     </Button>
                 </div>
 

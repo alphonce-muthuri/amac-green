@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { CheckCircle, XCircle, Mail, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { de } from "date-fns/locale"
+import { SiteHeader } from "@/components/site-header"
 
 function VerifyEmailContent() {
   const [verificationStatus, setVerificationStatus] = useState<"loading" | "success" | "error">("loading")
@@ -68,10 +69,12 @@ function VerifyEmailContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        <Card>
-          <CardHeader className="text-center">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex flex-col">
+      <SiteHeader />
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full">
+          <Card className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm">
+            <CardHeader className="text-center">
             <div className="mx-auto mb-4 p-3 rounded-full w-fit">
               {verificationStatus === "loading" && (
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
@@ -83,18 +86,18 @@ function VerifyEmailContent() {
                 <XCircle className="h-8 w-8 text-red-600" />
               )}
             </div>
-            <CardTitle>
+              <CardTitle className="text-xl font-bold tracking-tighter">
               {verificationStatus === "loading" && "Verifying Email..."}
               {verificationStatus === "success" && "Email Verified!"}
               {verificationStatus === "error" && "Verification Failed"}
-            </CardTitle>
-            <CardDescription>
+              </CardTitle>
+              <CardDescription className="text-sm text-gray-600 tracking-tight">
               {verificationStatus === "loading" && "Please wait while we verify your email address."}
               {verificationStatus === "success" && "Your account is now active and ready to use."}
               {verificationStatus === "error" && "There was a problem verifying your email address."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
             <div
               className={`p-4 rounded-md ${
                 verificationStatus === "success"
@@ -107,9 +110,12 @@ function VerifyEmailContent() {
               <p className="text-sm">{message}</p>
             </div>
 
-            {verificationStatus === "success" && (
+              {verificationStatus === "success" && (
               <div className="space-y-3">
-                <Button className="w-full bg-green-600 hover:bg-green-700" asChild>
+                <Button
+                  className="w-full bg-emerald-800 hover:bg-emerald-600 text-white shadow-md hover:shadow-lg transition-all duration-300 rounded-full"
+                  asChild
+                >
                   <Link href="/login">
                     Continue to Login
                     <ArrowRight className="h-4 w-4 ml-2" />
@@ -119,13 +125,13 @@ function VerifyEmailContent() {
                   You will be automatically redirected in a few seconds...
                 </p>
               </div>
-            )}
+              )}
 
-            {verificationStatus === "error" && (
+              {verificationStatus === "error" && (
               <div className="space-y-3">
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full border-2 border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
                   onClick={resendVerification}
                 >
                   <Mail className="h-4 w-4 mr-2" />
@@ -135,34 +141,40 @@ function VerifyEmailContent() {
                   You can request a new verification email from the login page.
                 </p>
               </div>
-            )}
+              )}
 
-            <div className="text-center">
-              <Link href="/" className="text-sm text-gray-600 hover:text-gray-800">
+              <div className="text-center">
+              <Link href="/" className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
                 ← Back to Home
               </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     </div>
   )
 }
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
-          <Card>
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 p-3 rounded-full w-fit">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-              </div>
-              <CardTitle>Loading...</CardTitle>
-              <CardDescription>Please wait while we load the verification page.</CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex flex-col">
+        <SiteHeader />
+        <main className="flex-1 flex items-center justify-center px-4 py-12">
+          <div className="max-w-md w-full">
+            <Card className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm">
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 p-3 rounded-full w-fit">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                </div>
+                <CardTitle className="text-xl font-bold tracking-tighter">Loading...</CardTitle>
+                <CardDescription className="text-sm text-gray-600 tracking-tight">
+                  Please wait while we load the verification page.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </main>
       </div>
     }>
       <VerifyEmailContent />

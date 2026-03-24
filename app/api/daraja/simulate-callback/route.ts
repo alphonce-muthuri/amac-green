@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getDarajaCallbackUrl } from "@/lib/daraja"
 
 // Simulate a successful M-Pesa callback for testing
 export async function POST(request: NextRequest) {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Call our own callback endpoint
-        const callbackResponse = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/daraja/callback`, {
+        const callbackResponse = await fetch(getDarajaCallbackUrl(), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

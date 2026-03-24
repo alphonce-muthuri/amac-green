@@ -350,8 +350,8 @@ export default function ProfessionalDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-6">
           {/* Hero Profile Section */}
           <div className="relative overflow-hidden">
             <Card className="border-2 border-emerald-300 shadow-2xl">
@@ -375,17 +375,20 @@ export default function ProfessionalDashboard() {
 
                   <div className="flex-1 text-center md:text-left">
                     <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
-                      <h1 className="text-4xl font-extrabold text-gray-900">
+                      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-gray-900">
                         {applicationStatus?.company_name || "Professional"}
                       </h1>
-                      <Badge className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0 text-sm px-4 py-1">
+                      <Badge className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0 text-sm px-4 py-1 font-semibold tracking-tight">
                         {applicationStatus?.professional_type || "Installer"}
                       </Badge>
                     </div>
                     
-                    <p className="text-lg text-gray-600 mb-4">
-                      Welcome back, <span className="font-semibold">{user?.user_metadata?.contact_person || user?.user_metadata?.first_name || "Professional"}</span> 
-                      {isApproved ? " 🎯 Ready for new opportunities" : " ⏳ Application under review"}
+                    <p className="text-base sm:text-lg text-gray-600 mb-4 tracking-tight">
+                      Welcome back,{" "}
+                      <span className="font-semibold tracking-tight">
+                        {user?.user_metadata?.contact_person || user?.user_metadata?.first_name || "Professional"}
+                      </span>{" "}
+                      {isApproved ? "Ready for new opportunities." : "Application under review."}
                     </p>
 
                     <div className="flex flex-wrap justify-center md:justify-start gap-3">

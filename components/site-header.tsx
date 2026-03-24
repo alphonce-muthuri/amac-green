@@ -137,7 +137,11 @@ export function SiteHeader() {
                     <Button 
                       variant="outline" 
                       size="sm"
-                      className={useLightHeaderStyles ? "border-gray-300 text-gray-700 hover:border-red-300 hover:text-red-600 hover:bg-red-50" : "border-white/60 text-white hover:bg-white/10 hover:text-white"}
+                      className={
+                        useLightHeaderStyles
+                          ? "border-gray-300 bg-transparent text-gray-700 text-sm hover:border-red-300 hover:text-red-600 hover:bg-transparent"
+                          : "border-white/60 bg-transparent text-white text-sm hover:bg-transparent hover:text-white"
+                      }
                       onClick={handleSignOut}
                     >
                       <LogOut className="h-4 w-4 mr-2" />
@@ -235,7 +239,7 @@ export function SiteHeader() {
                           </Button>
                           <Button 
                             variant="outline"
-                            className="w-full justify-start border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                            className="w-full justify-start border-2 border-red-200 text-red-600 text-sm bg-transparent hover:bg-transparent hover:border-red-300"
                             onClick={() => {
                               handleSignOut()
                               setIsOpen(false)

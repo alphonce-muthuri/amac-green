@@ -372,14 +372,16 @@ export default function DeliveryDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       {/* Top Navigation Bar */}
       <nav className="bg-white border-b-2 border-indigo-200 sticky top-0 z-50 shadow-lg">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
                 <Truck className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-extrabold text-gray-900">Delivery Partner</h1>
+                <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-gray-900">
+                  Delivery Partner
+                </h1>
                 <p className="text-xs text-gray-600">Professional Dashboard</p>
               </div>
             </div>
@@ -408,8 +410,8 @@ export default function DeliveryDashboard() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-6">
           {/* Hero Section - Driver Profile Card */}
           <div className="relative overflow-hidden">
             <Card className="border-2 border-indigo-300 shadow-2xl">
@@ -435,16 +437,16 @@ export default function DeliveryDashboard() {
                   {/* Driver Info */}
                   <div className="flex-1 text-center md:text-left">
                     <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
-                      <h2 className="text-3xl font-extrabold text-gray-900">
+                      <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-gray-900">
                         {applicationStatus?.first_name || "Driver"} {applicationStatus?.last_name || ""}
                       </h2>
                       {getStatusBadge(applicationStatus?.status)}
                     </div>
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-gray-600 mb-4 tracking-tight">
                       {applicationStatus?.status === "approved" 
-                        ? "🚀 Active delivery partner • Ready for assignments"
+                        ? "Active delivery partner. Ready for assignments"
                         : applicationStatus?.status === "pending"
-                        ? "⏳ Application under review • We'll notify you soon"
+                        ? "Application under review. We'll notify you soon"
                         : "Contact support for assistance"}
                     </p>
 

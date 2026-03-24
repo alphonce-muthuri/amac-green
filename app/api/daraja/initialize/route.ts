@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { darajaAPI } from "@/lib/daraja"
+import { darajaAPI, getDarajaCallbackUrl, isLikelyRejectedDarajaCallbackUrl } from "@/lib/daraja"
 import { supabaseAdmin } from "@/lib/supabase-server"
 
 export async function POST(request: NextRequest) {
@@ -30,9 +30,21 @@ export async function POST(request: NextRequest) {
     })
 
     // Prepare STK Push parameters
-    const callbackURL = `${process.env.NEXT_PUBLIC_SITE_URL}/api/daraja/callback`
-    const accountReference = `ORDER-${orderId}`
-    const transactionDesc = `Payment for Order ${orderId}`
+    // Daraja STK: AccountReference max 12 chars, TransactionDesc max 13 (Safaricom returns HTTP 400 if exceeded)
+    const callbackURL = getDarajaCallbackUrl()
+    if (isLikelyRejectedDarajaCallbackUrl(callbackURL)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "M-Pesa STK requires a public HTTPS CallBackURL. localhost is rejected. Set MPESA_CALLBACK_URL in .env to your tunnel URL, e.g. https://xxxx.ngrok-free.app/api/daraja/callback (see .env.example).",
+        },
+        { status: 400 }
+      )
+    }
+    const orderKey = String(orderId).replace(/-/g, "")
+    const accountReference = orderKey.slice(0, 12)
+    const transactionDesc = (`Pay${orderKey.slice(0, 10)}`).slice(0, 13)
 
     // Initiate STK Push
     const stkResponse = await darajaAPI.initiateSTKPush({
