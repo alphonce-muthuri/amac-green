@@ -13,7 +13,24 @@ function createClient() {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          const anyCookieStore = cookieStore as any
+          if (typeof anyCookieStore.getAll === "function") {
+            return anyCookieStore.getAll()
+          }
+
+          // `cookies()` may not expose `getAll()` depending on Next version/runtime.
+          // Supabase SSR only needs an array of `{ name, value }`.
+          const asString = typeof anyCookieStore.toString === "function" ? anyCookieStore.toString() : ""
+          if (!asString || !asString.includes("=")) return []
+
+          return asString
+            .split(/;\s*/)
+            .filter(Boolean)
+            .map((pair: string) => {
+              const idx = pair.indexOf("=")
+              if (idx === -1) return { name: pair, value: "" }
+              return { name: pair.slice(0, idx), value: pair.slice(idx + 1) }
+            })
         },
         setAll(cookiesToSet) {
           try {
@@ -53,7 +70,22 @@ export async function testAuthentication() {
     })
     
     const cookieStore = cookies()
-    const allCookies = cookieStore.getAll()
+    const allCookies = (() => {
+      const anyCookieStore = cookieStore as any
+      if (typeof anyCookieStore.getAll === "function") return anyCookieStore.getAll()
+
+      const asString = typeof anyCookieStore.toString === "function" ? anyCookieStore.toString() : ""
+      if (!asString || !asString.includes("=")) return []
+
+      return asString
+        .split(/;\s*/)
+        .filter(Boolean)
+        .map((pair: string) => {
+          const idx = pair.indexOf("=")
+          if (idx === -1) return { name: pair, value: "" }
+          return { name: pair.slice(0, idx), value: pair.slice(idx + 1) }
+        })
+    })()
     console.log("[AUTH_TEST] Available cookies:", allCookies.map(c => ({ name: c.name, hasValue: !!c.value })))
     
     const supabase = createClient()

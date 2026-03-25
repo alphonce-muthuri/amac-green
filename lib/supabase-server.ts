@@ -27,20 +27,38 @@ export function createServerClient(cookieStore?: ReturnType<typeof cookies>) {
 
   // Only add cookies if cookieStore is provided
   if (cookieStore) {
-    // Build cookie string manually to ensure proper format
-    const cookiePairs: string[] = []
-    
-    // Get all cookies and format them properly
-    cookieStore.getAll().forEach(cookie => {
-      if (cookie.name && cookie.value) {
-        cookiePairs.push(`${cookie.name}=${cookie.value}`)
+    const anyCookieStore = cookieStore as any
+
+    // Next's `cookies()` API differs a bit between versions/transport.
+    // We only need a raw `Cookie` header string for Supabase client requests.
+    let cookieHeader: string | undefined
+
+    // Preferred: Next versions that expose `getAll()`
+    if (typeof anyCookieStore.getAll === "function") {
+      const cookiePairs: string[] = []
+      anyCookieStore.getAll().forEach((cookie: any) => {
+        if (cookie?.name && cookie?.value) cookiePairs.push(`${cookie.name}=${cookie.value}`)
+      })
+      if (cookiePairs.length > 0) cookieHeader = cookiePairs.join("; ")
+    } else if (typeof anyCookieStore.toString === "function") {
+      // Fallback: `toString()` often returns `name=value; name2=value2`
+      const asString = anyCookieStore.toString()
+      if (asString && asString.includes("=")) cookieHeader = asString
+    } else if (typeof anyCookieStore[Symbol.iterator] === "function") {
+      // Last resort: try iterating cookies (if supported)
+      const cookiePairs: string[] = []
+      for (const entry of anyCookieStore as any) {
+        const name = Array.isArray(entry) ? entry[0] : entry?.name
+        const value = Array.isArray(entry) ? entry[1] : entry?.value
+        if (name && value) cookiePairs.push(`${name}=${value}`)
       }
-    })
-    
-    if (cookiePairs.length > 0) {
+      if (cookiePairs.length > 0) cookieHeader = cookiePairs.join("; ")
+    }
+
+    if (cookieHeader) {
       config.global = {
         headers: {
-          cookie: cookiePairs.join('; ')
+          cookie: cookieHeader,
         },
       }
     }

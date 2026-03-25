@@ -8,7 +8,22 @@ export async function GET() {
 
   try {
     // Log all cookies
-    const allCookies = cookieStore.getAll()
+    const allCookies = (() => {
+      const anyCookieStore = cookieStore as any
+      if (typeof anyCookieStore.getAll === "function") return anyCookieStore.getAll()
+
+      const asString = typeof anyCookieStore.toString === "function" ? anyCookieStore.toString() : ""
+      if (!asString || !asString.includes("=")) return []
+
+      return asString
+        .split(/;\s*/)
+        .filter(Boolean)
+        .map((pair: string) => {
+          const idx = pair.indexOf("=")
+          if (idx === -1) return { name: pair, value: "" }
+          return { name: pair.slice(0, idx), value: pair.slice(idx + 1) }
+        })
+    })()
     console.log('🔍 All cookies:', allCookies.map(c => ({ name: c.name, value: c.value?.substring(0, 20) + '...' })))
 
     // Try to get session
