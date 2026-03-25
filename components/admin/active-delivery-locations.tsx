@@ -92,9 +92,9 @@ export function ActiveDeliveryLocations() {
 
   if (loading) {
     return (
-      <Card className="border-2 border-purple-200">
-        <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-        <CardHeader className="bg-gradient-to-br from-purple-50 to-pink-50">
+      <Card className="border border-purple-200/80 shadow-sm">
+        <div className="h-1 bg-purple-500"></div>
+        <CardHeader className="bg-purple-50/40">
           <CardTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5 text-purple-600" />
             Active Delivery Locations
@@ -123,7 +123,7 @@ export function ActiveDeliveryLocations() {
         <Button 
           onClick={handleRefresh} 
           disabled={refreshing}
-          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+          className="bg-purple-600 hover:bg-purple-700"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
           Refresh
@@ -131,7 +131,7 @@ export function ActiveDeliveryLocations() {
       </div>
 
       {locations.length === 0 ? (
-        <Card className="border-2 border-gray-200">
+        <Card className="border border-gray-200">
           <CardContent className="text-center py-16">
             <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Truck className="h-10 w-10 text-purple-600" />
@@ -146,13 +146,13 @@ export function ActiveDeliveryLocations() {
       ) : (
         <div className="grid gap-6">
           {locations.map((location) => (
-            <Card key={location.id} className="border-2 border-purple-200 hover:shadow-2xl transition-all duration-300 hover:border-purple-400">
-              <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+            <Card key={location.id} className="border border-purple-200/80 shadow-sm transition-shadow hover:shadow-md">
+              <div className="h-1 bg-purple-500"></div>
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-semibold text-lg">
                         {location.delivery_applications?.first_name?.charAt(0) || "D"}
                         {location.delivery_applications?.last_name?.charAt(0) || "P"}
                       </div>
@@ -164,14 +164,14 @@ export function ActiveDeliveryLocations() {
                           <Badge
                             className={`${
                               location.is_available 
-                                ? "bg-green-100 text-green-700 border-2 border-green-300" 
-                                : "bg-amber-100 text-amber-700 border-2 border-amber-300"
-                            } font-bold`}
+                                ? "bg-green-100 text-green-700 border border-green-300" 
+                                : "bg-amber-100 text-amber-700 border border-amber-300"
+                            } font-semibold hover:bg-inherit`}
                           >
                             {location.is_available ? "✓ Available" : "⏱ Busy"}
                           </Badge>
                           {location.is_online && (
-                            <Badge className="bg-emerald-100 text-emerald-700 border-2 border-emerald-300 font-bold">
+                            <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-300 font-semibold hover:bg-emerald-100">
                               ● Online
                             </Badge>
                           )}
@@ -181,19 +181,19 @@ export function ActiveDeliveryLocations() {
 
                     <div className="grid md:grid-cols-2 gap-6 mb-4">
                       <div className="space-y-3">
-                        <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Vehicle Info</h4>
-                        <div className="p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                        <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Vehicle Info</h4>
+                        <div className="p-3 bg-purple-50/60 rounded-lg border border-purple-200">
                           <p className="text-xs text-purple-700 font-semibold mb-1">Vehicle Type</p>
                           <p className="text-sm font-bold text-gray-900">{location.delivery_applications?.vehicle_type || "Unknown"}</p>
                         </div>
-                        <div className="p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                        <div className="p-3 bg-purple-50/60 rounded-lg border border-purple-200">
                           <p className="text-xs text-purple-700 font-semibold mb-1">License Plate</p>
                           <p className="text-sm font-bold text-gray-900">{location.delivery_applications?.vehicle_registration || "N/A"}</p>
                         </div>
                       </div>
 
                       <div className="space-y-3">
-                        <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Contact & Status</h4>
+                        <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Contact & Status</h4>
                         <div className="p-3 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-2 mb-1">
                             <Phone className="w-4 h-4 text-purple-600" />
@@ -211,7 +211,7 @@ export function ActiveDeliveryLocations() {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+                    <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-purple-600" />
                         <span className="text-xs font-semibold text-gray-700">
@@ -224,13 +224,13 @@ export function ActiveDeliveryLocations() {
                         </Badge>
                       )}
                       {location.speed && (
-                        <Badge className="bg-blue-100 text-blue-700 border-2 border-blue-300 text-xs font-bold">
+                        <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-xs font-semibold hover:bg-blue-100">
                           <Zap className="w-3 h-3 mr-1" />
                           {Math.round(location.speed)} km/h
                         </Badge>
                       )}
                       {location.battery_level && (
-                        <Badge className="bg-green-100 text-green-700 border-2 border-green-300 text-xs font-bold">
+                        <Badge className="bg-green-100 text-green-700 border border-green-300 text-xs font-semibold hover:bg-green-100">
                           <Battery className="w-3 h-3 mr-1" />
                           {location.battery_level}%
                         </Badge>
@@ -247,7 +247,7 @@ export function ActiveDeliveryLocations() {
                           `${location.delivery_applications?.first_name || "Unknown"} ${location.delivery_applications?.last_name || "Driver"}`,
                         )
                       }
-                      className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 flex-1 md:flex-none"
+                      className="bg-emerald-600 hover:bg-emerald-700 flex-1 md:flex-none"
                     >
                       <Navigation className="h-4 w-4 mr-2" />
                       View on Map
@@ -255,7 +255,7 @@ export function ActiveDeliveryLocations() {
                     <Button
                       onClick={() => window.open(`tel:${location.delivery_applications?.phone || ""}`, "_self")}
                       disabled={!location.delivery_applications?.phone}
-                      className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 flex-1 md:flex-none"
+                      className="bg-blue-600 hover:bg-blue-700 flex-1 md:flex-none"
                     >
                       <Phone className="h-4 w-4 mr-2" />
                       Call Driver

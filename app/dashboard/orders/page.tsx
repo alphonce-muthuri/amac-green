@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -24,33 +24,7 @@ export default function OrdersPage() {
   const [refreshing, setRefreshing] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    checkUser()
-  }, [])
-
-  const checkUser = async () => {
-    try {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser()
-
-      if (error || !user) {
-        router.push("/login")
-        return
-      }
-
-      setUser(user)
-      await loadOrders(user.id)
-    } catch (error) {
-      console.error("Error checking user:", error)
-      router.push("/login")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const loadOrders = async (userId: string) => {
+  const loadOrders = useCallback(async (_userId: string) => {
     // Mock orders for now - replace with actual data fetch
     const mockOrders: Order[] = [
       {
@@ -79,7 +53,33 @@ export default function OrdersPage() {
       },
     ]
     setOrders(mockOrders)
-  }
+  }, [])
+
+  const checkUser = useCallback(async () => {
+    try {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser()
+
+      if (error || !user) {
+        router.push("/login")
+        return
+      }
+
+      setUser(user)
+      await loadOrders(user.id)
+    } catch (error) {
+      console.error("Error checking user:", error)
+      router.push("/login")
+    } finally {
+      setLoading(false)
+    }
+  }, [router, loadOrders])
+
+  useEffect(() => {
+    void checkUser()
+  }, [checkUser])
 
   const handleRefresh = async () => {
     if (!user) return

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,7 +25,6 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import Image from "next/image"
 
 interface Product {
   id: string
@@ -311,9 +311,11 @@ export default function NewInstallationRequestPage() {
                       <div className="flex items-start gap-3 mb-3">
                         <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
                           {product.primary_image ? (
-                            <img 
+                            <Image 
                               src={product.primary_image} 
                               alt={product.name}
+                              width={80}
+                              height={80}
                               className="w-full h-full object-cover"
                             />
                           ) : (

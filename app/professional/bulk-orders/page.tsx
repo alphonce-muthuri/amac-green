@@ -112,7 +112,7 @@ export default function BulkOrdersPage() {
     <div className="p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Bulk Orders</h1>
+          <h1 className="text-2xl md:text-xl font-bold tracking-tight tracking-tight text-gray-900">Bulk Orders</h1>
           <p className="text-gray-600 mt-2">
             Access professional pricing and place bulk orders for your projects
           </p>

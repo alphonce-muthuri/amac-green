@@ -88,7 +88,7 @@ export default function VendorPackagesPage() {
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
           <Package className="h-7 w-7" />
           System packages
         </h1>
@@ -244,3 +244,6 @@ function AddLineForm({
     </form>
   )
 }
+
+
+

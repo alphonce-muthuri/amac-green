@@ -40,21 +40,21 @@ export function VendorApplications() {
     switch (status) {
       case "pending":
         return (
-          <Badge className="bg-orange-100 text-orange-700 border-2 border-orange-300 font-bold">
+          <Badge className="bg-orange-100 text-orange-700 border border-orange-300 font-semibold hover:bg-orange-100">
             <Clock className="h-4 w-4 mr-1" />
             Pending Review
           </Badge>
         )
       case "approved":
         return (
-          <Badge className="bg-green-100 text-green-700 border-2 border-green-300 font-bold">
+          <Badge className="bg-green-100 text-green-700 border border-green-300 font-semibold hover:bg-green-100">
             <CheckCircle className="h-4 w-4 mr-1" />
             Approved
           </Badge>
         )
       case "rejected":
         return (
-          <Badge className="bg-red-100 text-red-700 border-2 border-red-300 font-bold">
+          <Badge className="bg-red-100 text-red-700 border border-red-300 font-semibold hover:bg-red-100">
             <XCircle className="h-4 w-4 mr-1" />
             Rejected
           </Badge>
@@ -83,14 +83,14 @@ export function VendorApplications() {
           </h2>
           <p className="text-gray-600 mt-1">Review and manage supplier applications</p>
         </div>
-        <Button onClick={loadApplications} className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700">
+        <Button onClick={loadApplications} className="bg-orange-600 hover:bg-orange-700">
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
       </div>
 
       {applications.length === 0 ? (
-        <Card className="border-2 border-gray-200">
+        <Card className="border border-gray-200">
           <CardContent className="text-center py-16">
             <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Building2 className="h-10 w-10 text-orange-600" />
@@ -102,13 +102,13 @@ export function VendorApplications() {
       ) : (
         <div className="grid gap-6">
           {applications.map((app) => (
-            <Card key={app.id} className="border-2 border-orange-200 hover:shadow-2xl transition-all duration-300 hover:border-orange-400">
-              <div className="h-2 bg-gradient-to-r from-orange-500 to-red-500"></div>
-              <CardHeader className="bg-gradient-to-br from-orange-50 to-red-50">
+            <Card key={app.id} className="border border-orange-200/80 shadow-sm transition-shadow hover:shadow-md">
+              <div className="h-1 bg-orange-500"></div>
+              <CardHeader className="bg-orange-50/40">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-2xl font-bold text-gray-900 mb-2">{app.company_name}</CardTitle>
-                    <CardDescription className="text-base">
+                    <CardTitle className="text-xl font-semibold text-gray-900 mb-2">{app.company_name}</CardTitle>
+                    <CardDescription className="text-sm">
                       <span className="font-semibold text-orange-700">Contact:</span> {app.contact_person} • 
                       <span className="font-semibold text-orange-700 ml-2">Type:</span> {app.business_type}
                     </CardDescription>
@@ -119,7 +119,7 @@ export function VendorApplications() {
               <CardContent className="p-6">
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
                   <div className="space-y-3">
-                    <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-3">Contact Information</h4>
+                    <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide mb-3">Contact Information</h4>
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                         <Mail className="h-5 w-5 text-orange-600" />
@@ -149,7 +149,7 @@ export function VendorApplications() {
                     </div>
                   </div>
                   <div className="space-y-3">
-                    <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-3">Business Details</h4>
+                    <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide mb-3">Business Details</h4>
                     <div className="p-3 bg-gray-50 rounded-lg">
                       <p className="text-xs text-gray-500 mb-1">Tax ID</p>
                       <p className="text-sm font-semibold text-gray-900">{app.tax_id}</p>
@@ -168,7 +168,7 @@ export function VendorApplications() {
                 </div>
 
                 {app.description && (
-                  <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                  <div className="mb-6 p-4 bg-blue-50/60 border border-blue-200 rounded-lg">
                     <p className="text-sm text-gray-700 leading-relaxed">{app.description}</p>
                   </div>
                 )}
@@ -184,7 +184,7 @@ export function VendorApplications() {
                           key={index}
                           variant="outline"
                           onClick={() => window.open(doc.url, '_blank')}
-                          className="h-auto py-3 border-2 hover:border-orange-400 hover:bg-orange-50"
+                          className="h-auto py-3 border hover:border-orange-300 hover:bg-orange-50"
                         >
                           <FileText className="h-4 w-4 mr-2 text-orange-600" />
                           <span className="text-xs font-medium truncate">{doc.name}</span>
@@ -199,7 +199,7 @@ export function VendorApplications() {
                   <Button 
                     variant="outline" 
                     onClick={() => setSelectedApp(app)}
-                    className="border-2"
+                    className="border"
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     View Full Details
@@ -234,9 +234,9 @@ export function VendorApplications() {
       {/* Detail Modal */}
       {selectedApp && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto border-2 border-orange-300 shadow-2xl">
-            <div className="h-2 bg-gradient-to-r from-orange-500 to-red-500"></div>
-            <CardHeader className="bg-gradient-to-br from-orange-50 to-red-50 border-b">
+          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-orange-300 shadow-lg">
+            <div className="h-1 bg-orange-500"></div>
+            <CardHeader className="bg-orange-50/40 border-b">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-2xl font-bold text-gray-900">{selectedApp.company_name}</CardTitle>

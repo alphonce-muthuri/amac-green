@@ -1,7 +1,9 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useState, Suspense, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
+import Image from "next/image"
+import Link from "next/link"
 import { CheckCircle, Package, CreditCard, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -43,78 +45,39 @@ function CheckoutSuccessContent() {
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
 
-  const handleManualPayment = async () => {
-    if (!orderId) return
-    
-    setUpdating(true)
+  const fetchOrder = useCallback(async () => {
     try {
-      const result = await markOrderAsPaid(orderId)
-      if (result.success) {
-        // Refresh order data
-        await fetchOrder()
-        alert('Order marked as paid successfully! Check delivery dashboard.')
-      } else {
-        alert('Failed to mark order as paid: ' + result.error)
+      const { data, error } = await supabase
+        .from("orders")
+        .select(`
+          *,
+          order_items(*)
+        `)
+        .eq("id", orderId)
+        .single()
+
+      if (!error && data) {
+        setOrder(data as Order)
+        return
+      }
+
+      if (error) {
+        console.error("Error fetching order:", error)
+      }
+
+      // ORDER_SIMULATION: order exists only in sessionStorage snapshot from checkout
+      const simulated = orderId ? readSimulatedOrderSnapshot(orderId) : null
+      if (simulated && typeof simulated === "object") {
+        setOrder(simulated as Order)
       }
     } catch (error) {
-      alert('Error: ' + error)
+      console.error("Error fetching order:", error)
     } finally {
-      setUpdating(false)
-    }
-  }
-
-  const simulateCallback = async (type: 'success' | 'failure') => {
-    if (!order?.mpesa_checkout_request_id) return
-    
-    setUpdating(true)
-    try {
-      const response = await fetch('/api/daraja/simulate-callback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          checkoutRequestID: order.mpesa_checkout_request_id,
-          simulate: type
-        })
-      })
-
-      const result = await response.json()
-      
-      if (result.success) {
-        alert(`${type} callback simulated successfully!`)
-        // Refresh order data
-        await fetchOrder()
-      } else {
-        alert('Failed to simulate callback: ' + result.error)
-      }
-    } catch (error) {
-      alert('Error simulating callback: ' + error)
-    } finally {
-      setUpdating(false)
-    }
-  }
-
-  useEffect(() => {
-    if (orderId) {
-      // Check if this is a Paystack redirect
-      const paymentStatus = searchParams.get("payment")
-      const reference = searchParams.get("reference")
-      const isMpesa = searchParams.get("mpesa")
-      
-      if (paymentStatus === "success" && reference) {
-        // Verify Paystack payment
-        verifyPaystackPayment(reference)
-      } else if (isMpesa === "true") {
-        // Start M-Pesa payment verification polling
-        startMpesaVerification()
-      } else {
-        fetchOrder()
-      }
+      setLoading(false)
     }
   }, [orderId])
 
-  const verifyPaystackPayment = async (reference: string) => {
+  const verifyPaystackPayment = useCallback(async (reference: string) => {
     try {
       console.log('[SUCCESS] Verifying Paystack payment:', reference)
       
@@ -139,58 +102,9 @@ function CheckoutSuccessContent() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const simulateFinancing = async (outcome: "approved" | "declined") => {
-    if (!orderId) return
-    setUpdating(true)
-    try {
-      const response = await fetch("/api/kcb-financing/simulate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId, outcome }),
-      })
-      const result = await response.json()
-      if (result.success) {
-        await fetchOrder()
-      } else {
-        alert(result.error || "Financing simulation failed")
-      }
-    } catch (e) {
-      alert("Error: " + e)
-    } finally {
-      setUpdating(false)
-    }
-  }
-
-  const simulatePayment = async (simulate = 'success') => {
-    try {
-      console.log('[SUCCESS] Simulating payment:', simulate)
-      
-      const response = await fetch('/api/kcb-buni/simulate-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ orderId, simulate }),
-      })
-
-      const result = await response.json()
-      
-      if (result.success) {
-        console.log('[SUCCESS] Payment simulation successful')
-        // Refresh order data
-        await fetchOrder()
-        setLoading(false)
-      } else {
-        console.error('[SUCCESS] Payment simulation failed:', result.error)
-      }
-    } catch (error) {
-      console.error('[SUCCESS] Error simulating payment:', error)
-    }
-  }
-
-  const startMpesaVerification = () => {
+  const startMpesaVerification = useCallback(() => {
     console.log('[SUCCESS] Starting Daraja M-Pesa payment verification polling')
     
     const checkoutRequestID = searchParams.get("checkout")
@@ -262,37 +176,121 @@ function CheckoutSuccessContent() {
     
     // Start polling immediately
     pollPaymentStatus()
-  }
+  }, [orderId, searchParams, fetchOrder])
 
-  const fetchOrder = async () => {
+  const handleManualPayment = async () => {
+    if (!orderId) return
+    
+    setUpdating(true)
     try {
-      const { data, error } = await supabase
-        .from("orders")
-        .select(`
-          *,
-          order_items(*)
-        `)
-        .eq("id", orderId)
-        .single()
-
-      if (!error && data) {
-        setOrder(data as Order)
-        return
-      }
-
-      if (error) {
-        console.error("Error fetching order:", error)
-      }
-
-      // ORDER_SIMULATION: order exists only in sessionStorage snapshot from checkout
-      const simulated = orderId ? readSimulatedOrderSnapshot(orderId) : null
-      if (simulated && typeof simulated === "object") {
-        setOrder(simulated as Order)
+      const result = await markOrderAsPaid(orderId)
+      if (result.success) {
+        // Refresh order data
+        await fetchOrder()
+        alert('Order marked as paid successfully! Check delivery dashboard.')
+      } else {
+        alert('Failed to mark order as paid: ' + result.error)
       }
     } catch (error) {
-      console.error("Error fetching order:", error)
+      alert('Error: ' + error)
     } finally {
-      setLoading(false)
+      setUpdating(false)
+    }
+  }
+
+  const simulateCallback = async (type: 'success' | 'failure') => {
+    if (!order?.mpesa_checkout_request_id) return
+    
+    setUpdating(true)
+    try {
+      const response = await fetch('/api/daraja/simulate-callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          checkoutRequestID: order.mpesa_checkout_request_id,
+          simulate: type
+        })
+      })
+
+      const result = await response.json()
+      
+      if (result.success) {
+        alert(`${type} callback simulated successfully!`)
+        // Refresh order data
+        await fetchOrder()
+      } else {
+        alert('Failed to simulate callback: ' + result.error)
+      }
+    } catch (error) {
+      alert('Error simulating callback: ' + error)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!orderId) return
+    const paymentStatus = searchParams.get("payment")
+    const reference = searchParams.get("reference")
+    const isMpesa = searchParams.get("mpesa")
+
+    if (paymentStatus === "success" && reference) {
+      void verifyPaystackPayment(reference)
+    } else if (isMpesa === "true") {
+      startMpesaVerification()
+    } else {
+      void fetchOrder()
+    }
+  }, [orderId, searchParams, fetchOrder, verifyPaystackPayment, startMpesaVerification])
+
+  const simulateFinancing = async (outcome: "approved" | "declined") => {
+    if (!orderId) return
+    setUpdating(true)
+    try {
+      const response = await fetch("/api/kcb-financing/simulate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, outcome }),
+      })
+      const result = await response.json()
+      if (result.success) {
+        await fetchOrder()
+      } else {
+        alert(result.error || "Financing simulation failed")
+      }
+    } catch (e) {
+      alert("Error: " + e)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const simulatePayment = async (simulate = 'success') => {
+    try {
+      console.log('[SUCCESS] Simulating payment:', simulate)
+      
+      const response = await fetch('/api/kcb-buni/simulate-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId, simulate }),
+      })
+
+      const result = await response.json()
+      
+      if (result.success) {
+        console.log('[SUCCESS] Payment simulation successful')
+        // Refresh order data
+        await fetchOrder()
+        setLoading(false)
+      } else {
+        console.error('[SUCCESS] Payment simulation failed:', result.error)
+      }
+    } catch (error) {
+      console.error('[SUCCESS] Error simulating payment:', error)
     }
   }
 
@@ -349,7 +347,7 @@ function CheckoutSuccessContent() {
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter mb-4">Order Not Found</h1>
             <p className="text-gray-600 mb-6">The order you're looking for could not be found.</p>
             <Button asChild className="bg-green-600 hover:bg-green-700">
-              <a href="/products">Continue Shopping</a>
+              <Link href="/products">Continue Shopping</Link>
             </Button>
           </div>
         </main>
@@ -541,9 +539,11 @@ function CheckoutSuccessContent() {
                   {order.order_items.map((item) => (
                     <div key={item.id} className="flex items-center gap-4 p-4 border rounded-lg">
                       {item.product_image_url && (
-                        <img
+                        <Image
                           src={item.product_image_url}
                           alt={item.product_name}
+                          width={64}
+                          height={64}
                           className="w-16 h-16 object-cover rounded-lg"
                         />
                       )}
@@ -565,7 +565,7 @@ function CheckoutSuccessContent() {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
             <Button asChild className="bg-green-600 hover:bg-green-700">
-              <a href="/products">Continue Shopping</a>
+              <Link href="/products">Continue Shopping</Link>
             </Button>
             <Button variant="outline" asChild>
               <a href="/dashboard">View My Orders</a>

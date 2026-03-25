@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -77,24 +77,7 @@ export default function VendorSettings() {
     confirmPassword: ''
   })
 
-  useEffect(() => {
-    loadUserAndProfile()
-  }, [])
-
-  const loadUserAndProfile = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setUser(user)
-        await loadProfile(user.id)
-      }
-    } catch (error) {
-      console.error('Error loading user:', error)
-    }
-    setLoading(false)
-  }
-
-  const loadProfile = async (userId: string) => {
+  const loadProfile = useCallback(async (userId: string, contactEmail?: string | null) => {
     try {
       const { data, error } = await supabase
         .from('vendor_profiles')
@@ -110,7 +93,7 @@ export default function VendorSettings() {
           user_id: userId,
           business_name: '',
           business_description: '',
-          contact_email: user?.email || '',
+          contact_email: contactEmail || '',
           contact_phone: '',
           business_address: '',
           business_city: '',
@@ -141,7 +124,24 @@ export default function VendorSettings() {
     } catch (error) {
       console.error('Error loading profile:', error)
     }
-  }
+  }, [])
+
+  const loadUserAndProfile = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUser(user)
+        await loadProfile(user.id, user.email)
+      }
+    } catch (error) {
+      console.error('Error loading user:', error)
+    }
+    setLoading(false)
+  }, [loadProfile])
+
+  useEffect(() => {
+    void loadUserAndProfile()
+  }, [loadUserAndProfile])
 
   const saveProfile = async () => {
     if (!profile || !user) return
@@ -228,9 +228,9 @@ export default function VendorSettings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
-          <div className="w-20 h-20 relative mx-auto mb-6">
+          <div className="w-16 h-16 relative mx-auto mb-6">
             <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
             <Settings className="absolute inset-0 m-auto h-8 w-8 text-gray-600" />
@@ -243,9 +243,9 @@ export default function VendorSettings() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen bg-slate-50">
         <div className="container mx-auto px-4 py-6">
-          <Card className="max-w-md mx-auto border-2 border-red-300">
+          <Card className="max-w-md mx-auto border border-red-300">
             <CardContent className="text-center py-16">
               <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
               <h2 className="text-xl font-bold mb-2">Authentication Required</h2>
@@ -258,26 +258,22 @@ export default function VendorSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Hero Header */}
-          <div className="relative overflow-hidden">
-            <Card className="border-2 border-gray-300 shadow-2xl">
-              <div className="h-2 bg-gradient-to-r from-gray-500 via-slate-500 to-zinc-500 animate-gradient-x"></div>
-              
-              <CardContent className="relative p-6 sm:p-8">
-                <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-gray-600 via-slate-600 to-zinc-600 rounded-2xl flex items-center justify-center shadow-2xl">
-                    <Settings className="h-10 w-10 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Settings</h1>
-                    <p className="text-lg text-gray-600">Manage your business profile and preferences</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="pb-6 border-b border-blue-200">
+            <div className="flex items-center gap-6">
+              <div className="w-16 h-16 bg-slate-700 border border-slate-800 rounded-xl flex items-center justify-center shadow-sm">
+                <Settings className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tighter mb-2 bg-gradient-to-r from-blue-600 via-indigo-700 to-indigo-900 bg-clip-text text-transparent">
+                  Settings
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-600 tracking-tight">Manage your business profile and preferences</p>
+              </div>
+            </div>
           </div>
 
           <Tabs defaultValue="profile" className="space-y-6">
@@ -302,11 +298,11 @@ export default function VendorSettings() {
 
             {/* Profile Tab */}
             <TabsContent value="profile" className="space-y-6">
-              <Card className="border-2 border-blue-200">
-                <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-                <CardHeader className="bg-gradient-to-br from-blue-50 to-cyan-50 border-b-2">
+              <Card className="border border-blue-200">
+                <div className="h-2 bg-blue-500/30" />
+                <CardHeader className="bg-white border-b border-blue-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-blue-700 border border-blue-800 rounded-lg flex items-center justify-center">
                       <User className="h-5 w-5 text-white" />
                     </div>
                     <CardTitle className="text-xl">Personal Information</CardTitle>
@@ -321,7 +317,7 @@ export default function VendorSettings() {
                         type="email"
                         value={user.email || ''}
                         disabled
-                        className="bg-gray-50 border-2 h-11 mt-2"
+                        className="bg-gray-50 border h-11 mt-2"
                       />
                       <p className="text-sm text-gray-500 mt-1">Email cannot be changed</p>
                     </div>
@@ -333,7 +329,7 @@ export default function VendorSettings() {
                         value={profile?.contact_phone || ''}
                         onChange={(e) => setProfile(profile ? { ...profile, contact_phone: e.target.value } : null)}
                         placeholder="+254 700 000 000"
-                        className="border-2 h-11 mt-2"
+                        className="border h-11 mt-2"
                       />
                     </div>
                   </div>
@@ -343,11 +339,11 @@ export default function VendorSettings() {
 
             {/* Business Tab */}
             <TabsContent value="business" className="space-y-6">
-              <Card className="border-2 border-purple-200">
-                <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-                <CardHeader className="bg-gradient-to-br from-purple-50 to-pink-50 border-b-2">
+              <Card className="border border-purple-200">
+                <div className="h-2 bg-purple-500/30" />
+                <CardHeader className="bg-white border-b border-purple-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-purple-700 border border-purple-800 rounded-lg flex items-center justify-center">
                       <Store className="h-5 w-5 text-white" />
                     </div>
                     <CardTitle className="text-xl">Business Information</CardTitle>
@@ -361,7 +357,7 @@ export default function VendorSettings() {
                         value={profile?.business_name || ''}
                         onChange={(e) => setProfile(profile ? { ...profile, business_name: e.target.value } : null)}
                         placeholder="Your Business Name"
-                        className="border-2 h-11 mt-2"
+                        className="border h-11 mt-2"
                       />
                     </div>
                     <div>
@@ -370,7 +366,7 @@ export default function VendorSettings() {
                         value={profile?.tax_id || ''}
                         onChange={(e) => setProfile(profile ? { ...profile, tax_id: e.target.value } : null)}
                         placeholder="Tax ID Number"
-                        className="border-2 h-11 mt-2"
+                        className="border h-11 mt-2"
                       />
                     </div>
                   </div>
@@ -382,7 +378,7 @@ export default function VendorSettings() {
                       onChange={(e) => setProfile(profile ? { ...profile, business_description: e.target.value } : null)}
                       placeholder="Describe your business..."
                       rows={3}
-                      className="border-2 mt-2"
+                      className="border mt-2"
                     />
                   </div>
 
@@ -394,7 +390,7 @@ export default function VendorSettings() {
                         value={profile?.business_website || ''}
                         onChange={(e) => setProfile(profile ? { ...profile, business_website: e.target.value } : null)}
                         placeholder="https://yourwebsite.com"
-                        className="border-2 h-11 mt-2"
+                        className="border h-11 mt-2"
                       />
                     </div>
                     <div>
@@ -403,18 +399,18 @@ export default function VendorSettings() {
                         value={profile?.business_license || ''}
                         onChange={(e) => setProfile(profile ? { ...profile, business_license: e.target.value } : null)}
                         placeholder="License Number"
-                        className="border-2 h-11 mt-2"
+                        className="border h-11 mt-2"
                       />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-green-200">
-                <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
-                <CardHeader className="bg-gradient-to-br from-green-50 to-emerald-50 border-b-2">
+              <Card className="border border-green-200">
+                <div className="h-2 bg-emerald-500/30" />
+                <CardHeader className="bg-white border-b border-emerald-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-emerald-700 border border-emerald-800 rounded-lg flex items-center justify-center">
                       <MapPin className="h-5 w-5 text-white" />
                     </div>
                     <CardTitle className="text-xl">Business Address</CardTitle>
@@ -427,7 +423,7 @@ export default function VendorSettings() {
                       value={profile?.business_address || ''}
                       onChange={(e) => setProfile(profile ? { ...profile, business_address: e.target.value } : null)}
                       placeholder="123 Business Street"
-                      className="border-2 h-11 mt-2"
+                      className="border h-11 mt-2"
                     />
                   </div>
 
@@ -438,7 +434,7 @@ export default function VendorSettings() {
                         value={profile?.business_city || ''}
                         onChange={(e) => setProfile(profile ? { ...profile, business_city: e.target.value } : null)}
                         placeholder="Nairobi"
-                        className="border-2 h-11 mt-2"
+                        className="border h-11 mt-2"
                       />
                     </div>
                     <div>
@@ -447,7 +443,7 @@ export default function VendorSettings() {
                         value={profile?.business_state || ''}
                         onChange={(e) => setProfile(profile ? { ...profile, business_state: e.target.value } : null)}
                         placeholder="Nairobi County"
-                        className="border-2 h-11 mt-2"
+                        className="border h-11 mt-2"
                       />
                     </div>
                     <div>
@@ -456,7 +452,7 @@ export default function VendorSettings() {
                         value={profile?.business_country || 'Kenya'}
                         onValueChange={(value) => setProfile(profile ? { ...profile, business_country: value } : null)}
                       >
-                        <SelectTrigger className="border-2 h-11 mt-2">
+                        <SelectTrigger className="border h-11 mt-2">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -471,11 +467,11 @@ export default function VendorSettings() {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-orange-200">
-                <div className="h-2 bg-gradient-to-r from-orange-500 to-amber-500"></div>
-                <CardHeader className="bg-gradient-to-br from-orange-50 to-amber-50 border-b-2">
+              <Card className="border border-orange-200">
+                <div className="h-2 bg-orange-500/30" />
+                <CardHeader className="bg-white border-b border-orange-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-orange-600 to-amber-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-orange-700 border border-orange-800 rounded-lg flex items-center justify-center">
                       <Clock className="h-5 w-5 text-white" />
                     </div>
                     <CardTitle className="text-xl">Business Hours</CardTitle>
@@ -483,7 +479,7 @@ export default function VendorSettings() {
                 </CardHeader>
                 <CardContent className="p-6 space-y-3">
                   {Object.entries(profile?.business_hours || {}).map(([day, hours]) => (
-                    <div key={day} className="flex items-center justify-between p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl border-2 border-orange-200">
+                    <div key={day} className="flex items-center justify-between p-4 bg-orange-50 rounded-xl border border-orange-200">
                       <div className="flex items-center gap-4">
                         <span className="font-bold capitalize w-24">{day}</span>
                         <Switch
@@ -497,19 +493,19 @@ export default function VendorSettings() {
                             type="time"
                             value={hours.open}
                             onChange={(e) => updateBusinessHours(day, 'open', e.target.value)}
-                            className="w-28 border-2 h-10"
+                            className="w-28 border h-10"
                           />
                           <span className="font-semibold">to</span>
                           <Input
                             type="time"
                             value={hours.close}
                             onChange={(e) => updateBusinessHours(day, 'close', e.target.value)}
-                            className="w-28 border-2 h-10"
+                            className="w-28 border h-10"
                           />
                         </div>
                       )}
                       {hours.closed && (
-                        <Badge className="bg-red-600 text-white">Closed</Badge>
+                        <Badge className="rounded-full bg-red-600 text-white">Closed</Badge>
                       )}
                     </div>
                   ))}
@@ -519,11 +515,11 @@ export default function VendorSettings() {
 
             {/* Notifications Tab */}
             <TabsContent value="notifications" className="space-y-6">
-              <Card className="border-2 border-amber-200">
-                <div className="h-2 bg-gradient-to-r from-amber-500 to-yellow-500"></div>
-                <CardHeader className="bg-gradient-to-br from-amber-50 to-yellow-50 border-b-2">
+              <Card className="border border-amber-200">
+                <div className="h-2 bg-amber-500/30" />
+                <CardHeader className="bg-white border-b border-amber-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-amber-600 to-yellow-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-amber-700 border border-amber-800 rounded-lg flex items-center justify-center">
                       <Bell className="h-5 w-5 text-white" />
                     </div>
                     <CardTitle className="text-xl">Notification Preferences</CardTitle>
@@ -538,7 +534,7 @@ export default function VendorSettings() {
                     { key: 'marketing_emails', title: 'Marketing Emails', desc: 'Receive promotional and marketing emails' }
                   ].map((pref, index, arr) => (
                     <div key={pref.key}>
-                      <div className="flex items-center justify-between p-4 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl border-2 border-amber-200">
+                      <div className="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-200">
                         <div>
                           <Label className="text-base font-bold">{pref.title}</Label>
                           <p className="text-sm text-gray-600">{pref.desc}</p>
@@ -557,11 +553,11 @@ export default function VendorSettings() {
 
             {/* Security Tab */}
             <TabsContent value="security" className="space-y-6">
-              <Card className="border-2 border-red-200">
-                <div className="h-2 bg-gradient-to-r from-red-500 to-rose-500"></div>
-                <CardHeader className="bg-gradient-to-br from-red-50 to-rose-50 border-b-2">
+              <Card className="border border-red-200">
+                <div className="h-2 bg-red-500/30" />
+                <CardHeader className="bg-white border-b border-red-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-600 to-rose-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-red-700 border border-red-800 rounded-lg flex items-center justify-center">
                       <Shield className="h-5 w-5 text-white" />
                     </div>
                     <CardTitle className="text-xl">Change Password</CardTitle>
@@ -576,7 +572,7 @@ export default function VendorSettings() {
                         value={passwordData.newPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                         placeholder="Enter new password"
-                        className="border-2 h-11"
+                        className="border h-11"
                       />
                       <Button
                         type="button"
@@ -597,34 +593,34 @@ export default function VendorSettings() {
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                       placeholder="Confirm new password"
-                      className="border-2 h-11 mt-2"
+                      className="border h-11 mt-2"
                     />
                   </div>
 
                   <Button 
                     onClick={updatePassword}
                     disabled={saving || !passwordData.newPassword || !passwordData.confirmPassword}
-                    className="w-full h-12 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700"
+                    className="w-full h-12 bg-red-600 hover:bg-red-700 font-semibold"
                   >
                     {saving ? "Updating..." : "Update Password"}
                   </Button>
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-green-200">
-                <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
-                <CardHeader className="bg-gradient-to-br from-green-50 to-emerald-50 border-b-2">
+              <Card className="border border-green-200">
+                <div className="h-2 bg-emerald-500/30" />
+                <CardHeader className="bg-white border-b border-emerald-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-emerald-700 border border-emerald-800 rounded-lg flex items-center justify-center">
                       <CreditCard className="h-5 w-5 text-white" />
                     </div>
                     <CardTitle className="text-xl">Payment Methods</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 flex items-center justify-between">
+                  <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                         <span className="text-green-600 font-bold text-xl">M</span>
                       </div>
                       <div>
@@ -632,7 +628,7 @@ export default function VendorSettings() {
                         <p className="text-sm text-gray-600">Mobile money payments</p>
                       </div>
                     </div>
-                    <Badge className="bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+                    <Badge className="rounded-full bg-emerald-600 text-white border-0 hover:bg-emerald-600">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       Active
                     </Badge>
@@ -647,7 +643,7 @@ export default function VendorSettings() {
             <Button 
               onClick={saveProfile}
               disabled={saving}
-              className="h-14 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-base font-bold shadow-lg"
+              className="h-14 px-8 bg-indigo-600 hover:bg-indigo-700 text-base font-bold shadow-sm"
             >
               <Save className="h-5 w-5 mr-2" />
               {saving ? "Saving..." : "Save Changes"}
@@ -656,21 +652,8 @@ export default function VendorSettings() {
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 3s ease infinite;
-        }
-      `}</style>
-    </div>
+</div>
   )
 }
+
+

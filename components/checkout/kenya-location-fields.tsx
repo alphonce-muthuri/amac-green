@@ -47,7 +47,7 @@ export function KenyaLocationFields({
       setSubCounties([])
       setWards([])
     }
-  }, [formData.county])
+  }, [formData.county, formData.sub_county, onChange])
 
   // Update wards when sub-county changes
   useEffect(() => {
@@ -61,7 +61,7 @@ export function KenyaLocationFields({
     } else {
       setWards([])
     }
-  }, [formData.county, formData.sub_county])
+  }, [formData.county, formData.sub_county, formData.ward, onChange])
 
   return (
     <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">

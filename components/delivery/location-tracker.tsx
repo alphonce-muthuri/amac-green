@@ -95,7 +95,7 @@ export function DeliveryLocationTracker({ userId }: DeliveryLocationTrackerProps
     return () => {
       locationTracker.stopTracking()
     }
-  }, [isAvailable])
+  }, [isAvailable, userId])
 
   const startTracking = useCallback(async () => {
     if (!tracker) return

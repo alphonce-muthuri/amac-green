@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 
@@ -15,11 +15,7 @@ export default function DeliveryAuthGuard({ children }: DeliveryAuthGuardProps) 
   const [isAuthorized, setIsAuthorized] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const {
         data: { user },
@@ -43,7 +39,11 @@ export default function DeliveryAuthGuard({ children }: DeliveryAuthGuardProps) 
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    void checkAuth()
+  }, [checkAuth])
 
   if (isLoading) {
     return (

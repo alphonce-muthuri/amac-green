@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useCallback, useState, useEffect } from "react"
 import { Eye, EyeOff, ArrowLeft, Sparkles, Shield, Lock, Mail, Check } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -25,6 +25,27 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const router = useRouter()
+
+  const redirectToRoleDashboard = useCallback((role: string) => {
+    switch (role) {
+      case "vendor":
+        router.push("/vendor")
+        break
+      case "professional":
+        router.push("/professional")
+        break
+      case "admin":
+        router.push("/admin")
+        break
+      case "delivery":
+        router.push("/delivery")
+        break
+      case "customer":
+      default:
+        router.push("/dashboard")
+        break
+    }
+  }, [router])
 
   useEffect(() => {
     const checkUser = async () => {
@@ -53,29 +74,8 @@ export default function LoginPage() {
         setIsCheckingAuth(false)
       }
     }
-    checkUser()
-  }, [])
-
-  const redirectToRoleDashboard = (role: string) => {
-    switch (role) {
-      case "vendor":
-        router.push("/vendor")
-        break
-      case "professional":
-        router.push("/professional")
-        break
-      case "admin":
-        router.push("/admin")
-        break
-      case "delivery":
-        router.push("/delivery")
-        break
-      case "customer":
-      default:
-        router.push("/dashboard")
-        break
-    }
-  }
+    void checkUser()
+  }, [redirectToRoleDashboard])
 
   const handleResendVerification = async () => {
     if (!formData.email) {

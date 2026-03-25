@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Star, ThumbsUp, User } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -17,11 +17,7 @@ export function ReviewsList({ productId, refreshTrigger }: ReviewsListProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadReviews()
-  }, [productId, refreshTrigger])
-
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     setLoading(true)
     setError(null)
     
@@ -34,7 +30,11 @@ export function ReviewsList({ productId, refreshTrigger }: ReviewsListProps) {
     }
     
     setLoading(false)
-  }
+  }, [productId])
+
+  useEffect(() => {
+    void loadReviews()
+  }, [loadReviews, refreshTrigger])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {

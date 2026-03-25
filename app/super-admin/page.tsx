@@ -71,6 +71,7 @@ export default function SuperAdminDashboard() {
     loadAnalytics()
     loadVendors()
     loadCategories()
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only bootstrap; loadAnalytics reads filters via closure when invoked from applyFilters
   }, [])
 
   const loadAnalytics = async (customFilters?: AnalyticsFilters) => {
@@ -200,7 +201,7 @@ export default function SuperAdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-24 h-24 relative mx-auto mb-6">
             <div className="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
@@ -216,7 +217,7 @@ export default function SuperAdminDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <BarChart3 className="h-10 w-10 text-red-600" />
@@ -225,7 +226,7 @@ export default function SuperAdminDashboard() {
           <p className="text-gray-600 mb-6">{error}</p>
           <Button 
             onClick={() => loadAnalytics()}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            className="bg-blue-600 hover:bg-blue-700"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Retry Loading
@@ -240,61 +241,54 @@ export default function SuperAdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           {/* Executive Header */}
-          <div className="relative overflow-hidden">
-            <Card className="border-2 border-blue-300 shadow-2xl">
-              <div className="h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 animate-gradient-x"></div>
-              
-              {/* Background orbs */}
-              <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-indigo-400/10 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-purple-400/10 to-blue-400/10 rounded-full blur-3xl"></div>
-              
-              <CardContent className="relative p-6 sm:p-8">
+          <div className="pb-6 border-b border-slate-200">
+            <div className="relative p-6 sm:p-8 rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
                   {/* Executive Badge */}
                   <div className="relative">
-                    <div className="w-28 h-28 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl">
-                      <Sparkles className="h-14 w-14 text-white" />
+                    <div className="w-20 h-20 rounded-xl border border-blue-200 bg-blue-50 flex items-center justify-center">
+                      <Sparkles className="h-10 w-10 text-blue-600" />
                     </div>
-                    <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center border-4 border-white shadow-xl animate-pulse">
-                      <Activity className="h-6 w-6 text-white" />
+                    <div className="absolute -bottom-2 -right-2 w-9 h-9 rounded-lg border border-emerald-200 bg-emerald-50 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-emerald-600" />
                     </div>
                   </div>
 
                   {/* Platform Overview */}
                   <div className="flex-1 text-center lg:text-left">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-4">
-                      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tighter bg-gradient-to-r from-slate-700 via-blue-800 to-slate-900 bg-clip-text text-transparent">
                         Executive Dashboard
                       </h1>
-                      <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 text-sm px-4 py-1 font-semibold tracking-tight">
+                      <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-xs px-3 py-1 font-medium hover:bg-blue-50">
                         <Globe className="h-3 w-3 mr-1" />
                         Platform Overview
                       </Badge>
                     </div>
                     
-                    <p className="text-lg text-gray-700 mb-4">
+                    <p className="text-xs sm:text-sm text-slate-600 tracking-tight mb-4">
                       Real-time analytics and performance metrics for the AMAC Green platform
                     </p>
 
                     {/* Quick KPI Pills */}
                     <div className="flex flex-wrap justify-center lg:justify-start gap-3">
-                      <div className="flex items-center gap-2 bg-gradient-to-r from-green-100 to-emerald-100 px-4 py-2 rounded-full border-2 border-green-300">
+                      <div className="flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-200">
                         {getGrowthIcon(analytics.revenueGrowth)}
                         <span className="text-sm font-bold text-green-900">
                           {analytics.revenueGrowth.toFixed(1)}% Revenue Growth
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 bg-gradient-to-r from-blue-100 to-cyan-100 px-4 py-2 rounded-full border-2 border-blue-300">
+                      <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full border border-blue-200">
                         {getGrowthIcon(analytics.orderGrowth)}
                         <span className="text-sm font-bold text-blue-900">
                           {analytics.orderGrowth.toFixed(1)}% Order Growth
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 bg-gradient-to-r from-purple-100 to-pink-100 px-4 py-2 rounded-full border-2 border-purple-300">
+                      <div className="flex items-center gap-2 bg-violet-50 px-4 py-2 rounded-full border border-violet-200">
                         <Target className="h-4 w-4 text-purple-700" />
                         <span className="text-sm font-bold text-purple-900">
                           {analytics.conversionRate.toFixed(1)}% Conversion
@@ -307,7 +301,7 @@ export default function SuperAdminDashboard() {
                   <div className="flex flex-col gap-2">
                     <Button
                       onClick={() => setShowFilters(!showFilters)}
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                      className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Filter className="h-4 w-4 mr-2" />
                       {showFilters ? 'Hide' : 'Show'} Filters
@@ -316,21 +310,19 @@ export default function SuperAdminDashboard() {
                       onClick={() => loadAnalytics()}
                       disabled={loading}
                       variant="outline"
-                      className="border-2 border-blue-300"
+                      className="border border-slate-300"
                     >
                       <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                       Refresh
                     </Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+            </div>
           </div>
 
           {/* Filters Panel */}
           {showFilters && (
-            <Card className="border-2 border-indigo-200">
-              <div className="h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+            <Card className="border border-slate-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Filter className="h-5 w-5 text-indigo-600" />
@@ -347,7 +339,7 @@ export default function SuperAdminDashboard() {
                       type="date"
                       value={filters.startDate}
                       onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                      className="border-2"
+                      className="border"
                     />
                   </div>
                   <div>
@@ -357,13 +349,13 @@ export default function SuperAdminDashboard() {
                       type="date"
                       value={filters.endDate}
                       onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                      className="border-2"
+                      className="border"
                     />
                   </div>
                   <div>
                     <Label htmlFor="paymentMethod" className="font-semibold">Payment Method</Label>
                     <Select value={filters.paymentMethod} onValueChange={(value) => handleFilterChange('paymentMethod', value)}>
-                      <SelectTrigger className="border-2">
+                      <SelectTrigger className="border">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -377,7 +369,7 @@ export default function SuperAdminDashboard() {
                   <div>
                     <Label htmlFor="status" className="font-semibold">Order Status</Label>
                     <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
-                      <SelectTrigger className="border-2">
+                      <SelectTrigger className="border">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -392,7 +384,7 @@ export default function SuperAdminDashboard() {
                   <div>
                     <Label htmlFor="period" className="font-semibold">Time Period</Label>
                     <Select value={filters.period} onValueChange={(value) => handleFilterChange('period', value as any)}>
-                      <SelectTrigger className="border-2">
+                      <SelectTrigger className="border">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -405,11 +397,11 @@ export default function SuperAdminDashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 mt-6">
-                  <Button onClick={applyFilters} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                  <Button onClick={applyFilters} className="bg-blue-600 hover:bg-blue-700">
                     <Zap className="h-4 w-4 mr-2" />
                     Apply Filters
                   </Button>
-                  <Button variant="outline" onClick={resetFilters} className="border-2">
+                  <Button variant="outline" onClick={resetFilters} className="border">
                     Reset All
                   </Button>
                 </div>
@@ -420,9 +412,8 @@ export default function SuperAdminDashboard() {
           {/* Performance Selectors */}
           <div className="grid md:grid-cols-2 gap-6">
             {/* Vendor Performance */}
-            <Card className="border-2 border-indigo-200">
-              <div className="h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-              <CardHeader className="bg-gradient-to-br from-indigo-50 to-purple-50">
+            <Card className="border border-slate-200">
+              <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-indigo-900">
                   <Building2 className="h-6 w-6 text-indigo-600" />
                   Supplier Performance
@@ -434,7 +425,7 @@ export default function SuperAdminDashboard() {
                   <div>
                     <Label htmlFor="vendorSelect" className="font-semibold">Select Supplier</Label>
                     <Select value={selectedVendor} onValueChange={handleVendorSelect}>
-                      <SelectTrigger className="border-2">
+                    <SelectTrigger className="border">
                         <SelectValue placeholder="Choose supplier..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -453,7 +444,7 @@ export default function SuperAdminDashboard() {
                       variant="outline"
                       onClick={() => handleVendorSelect(selectedVendor)}
                       disabled={loadingVendor}
-                      className="w-full border-2"
+                      className="w-full border"
                     >
                       <RefreshCw className={`h-4 w-4 mr-2 ${loadingVendor ? 'animate-spin' : ''}`} />
                       Refresh Data
@@ -464,9 +455,8 @@ export default function SuperAdminDashboard() {
             </Card>
 
             {/* Category Performance */}
-            <Card className="border-2 border-emerald-200">
-              <div className="h-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
-              <CardHeader className="bg-gradient-to-br from-emerald-50 to-teal-50">
+            <Card className="border border-slate-200">
+              <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-emerald-900">
                   <Package className="h-6 w-6 text-emerald-600" />
                   Category Performance
@@ -478,7 +468,7 @@ export default function SuperAdminDashboard() {
                   <div>
                     <Label htmlFor="categorySelect" className="font-semibold">Select Category</Label>
                     <Select value={selectedCategory} onValueChange={handleCategorySelect}>
-                      <SelectTrigger className="border-2">
+                    <SelectTrigger className="border">
                         <SelectValue placeholder="Choose category..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -497,7 +487,7 @@ export default function SuperAdminDashboard() {
                       variant="outline"
                       onClick={() => handleCategorySelect(selectedCategory)}
                       disabled={loadingCategory}
-                      className="w-full border-2"
+                      className="w-full border"
                     >
                       <RefreshCw className={`h-4 w-4 mr-2 ${loadingCategory ? 'animate-spin' : ''}`} />
                       Refresh Data
@@ -513,17 +503,17 @@ export default function SuperAdminDashboard() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-3xl font-extrabold text-gray-900">{vendorPerformance.companyName}</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900">{vendorPerformance.companyName}</h2>
                   <p className="text-gray-600 mt-1">{vendorPerformance.vendorName}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   {vendorPerformance.rating > 0 && (
-                    <Badge className="bg-yellow-100 text-yellow-800 border-2 border-yellow-300">
+                    <Badge className="bg-yellow-50 text-yellow-800 border border-yellow-200 hover:bg-yellow-50">
                       <Star className="h-3 w-3 mr-1 fill-current" />
                       {vendorPerformance.rating.toFixed(1)} ({vendorPerformance.totalReviews})
                     </Badge>
                   )}
-                  <Badge className={`${getGrowthColor(vendorPerformance.revenueGrowth)} border-2 border-current`}>
+                  <Badge className={`${getGrowthColor(vendorPerformance.revenueGrowth)} border border-current hover:bg-transparent`}>
                     {getGrowthIcon(vendorPerformance.revenueGrowth)}
                     {vendorPerformance.revenueGrowth.toFixed(1)}%
                   </Badge>
@@ -531,14 +521,15 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="border-2 border-emerald-300">
-                  <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-                  <CardContent className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50">
+                <Card className="border border-emerald-200">
+                  <CardContent className="p-6 bg-emerald-50/50">
                     <div className="flex items-center justify-between mb-3">
-                      <DollarSign className="h-10 w-10 text-emerald-600" />
+                      <div className="w-10 h-10 rounded-xl border border-emerald-200 bg-emerald-100 flex items-center justify-center">
+                        <DollarSign className="h-5 w-5 text-emerald-700" />
+                      </div>
                     </div>
-                    <p className="text-sm font-semibold text-emerald-800 uppercase tracking-wide">Revenue</p>
-                    <p className="text-3xl font-extrabold text-emerald-900 mt-1">
+                    <p className="text-sm font-semibold text-emerald-800 uppercase tracking-normal">Revenue</p>
+                    <p className="text-2xl font-semibold text-emerald-900 mt-1">
                       KES {vendorPerformance.totalRevenue.toLocaleString()}
                     </p>
                     <p className="text-xs text-emerald-700 mt-2">
@@ -547,14 +538,15 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-sky-300">
-                  <div className="h-2 bg-gradient-to-r from-sky-500 to-blue-500"></div>
-                  <CardContent className="p-6 bg-gradient-to-br from-sky-50 to-blue-50">
+                <Card className="border border-sky-200">
+                  <CardContent className="p-6 bg-sky-50/50">
                     <div className="flex items-center justify-between mb-3">
-                      <ShoppingCart className="h-10 w-10 text-sky-600" />
+                      <div className="w-10 h-10 rounded-xl border border-sky-200 bg-sky-100 flex items-center justify-center">
+                        <ShoppingCart className="h-5 w-5 text-sky-700" />
+                      </div>
                     </div>
-                    <p className="text-sm font-semibold text-sky-800 uppercase tracking-wide">Orders</p>
-                    <p className="text-3xl font-extrabold text-sky-900 mt-1">
+                    <p className="text-sm font-semibold text-sky-800 uppercase tracking-normal">Orders</p>
+                    <p className="text-2xl font-semibold text-sky-900 mt-1">
                       {vendorPerformance.totalOrders.toLocaleString()}
                     </p>
                     <p className="text-xs text-sky-700 mt-2">
@@ -563,14 +555,15 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-violet-300">
-                  <div className="h-2 bg-gradient-to-r from-violet-500 to-purple-500"></div>
-                  <CardContent className="p-6 bg-gradient-to-br from-violet-50 to-purple-50">
+                <Card className="border border-violet-200">
+                  <CardContent className="p-6 bg-violet-50/50">
                     <div className="flex items-center justify-between mb-3">
-                      <Package className="h-10 w-10 text-violet-600" />
+                      <div className="w-10 h-10 rounded-xl border border-violet-200 bg-violet-100 flex items-center justify-center">
+                        <Package className="h-5 w-5 text-violet-700" />
+                      </div>
                     </div>
-                    <p className="text-sm font-semibold text-violet-800 uppercase tracking-wide">Products</p>
-                    <p className="text-3xl font-extrabold text-violet-900 mt-1">
+                    <p className="text-sm font-semibold text-violet-800 uppercase tracking-normal">Products</p>
+                    <p className="text-2xl font-semibold text-violet-900 mt-1">
                       {vendorPerformance.totalProducts}
                     </p>
                     <p className="text-xs text-violet-700 mt-2">
@@ -579,14 +572,15 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-amber-300">
-                  <div className="h-2 bg-gradient-to-r from-amber-500 to-orange-500"></div>
-                  <CardContent className="p-6 bg-gradient-to-br from-amber-50 to-orange-50">
+                <Card className="border border-amber-200">
+                  <CardContent className="p-6 bg-amber-50/50">
                     <div className="flex items-center justify-between mb-3">
-                      <Percent className="h-10 w-10 text-amber-600" />
+                      <div className="w-10 h-10 rounded-xl border border-amber-200 bg-amber-100 flex items-center justify-center">
+                        <Percent className="h-5 w-5 text-amber-700" />
+                      </div>
                     </div>
-                    <p className="text-sm font-semibold text-amber-800 uppercase tracking-wide">Conversion</p>
-                    <p className="text-3xl font-extrabold text-amber-900 mt-1">
+                    <p className="text-sm font-semibold text-amber-800 uppercase tracking-normal">Conversion</p>
+                    <p className="text-2xl font-semibold text-amber-900 mt-1">
                       {vendorPerformance.conversionRate.toFixed(1)}%
                     </p>
                     <p className="text-xs text-amber-700 mt-2">
@@ -597,8 +591,7 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="border-2 border-blue-200">
-                  <div className="h-2 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                <Card className="border border-slate-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <LineChart className="h-5 w-5 text-blue-600" />
@@ -619,8 +612,7 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-emerald-200">
-                  <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+                <Card className="border border-slate-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <TrendingUp className="h-5 w-5 text-emerald-600" />
@@ -650,17 +642,17 @@ export default function SuperAdminDashboard() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-3xl font-extrabold text-gray-900">{categoryPerformance.categoryName}</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900">{categoryPerformance.categoryName}</h2>
                   <p className="text-gray-600 mt-1">Category Analytics</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Badge className="bg-emerald-100 text-emerald-800 border-2 border-emerald-300">
+                  <Badge className="bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-50">
                     {categoryPerformance.totalProducts} Products
                   </Badge>
-                  <Badge className="bg-blue-100 text-blue-800 border-2 border-blue-300">
+                  <Badge className="bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-50">
                     {categoryPerformance.supplierCount} Suppliers
                   </Badge>
-                  <Badge className={`${getGrowthColor(categoryPerformance.revenueGrowth)} border-2 border-current`}>
+                  <Badge className={`${getGrowthColor(categoryPerformance.revenueGrowth)} border border-current hover:bg-transparent`}>
                     {getGrowthIcon(categoryPerformance.revenueGrowth)}
                     {categoryPerformance.revenueGrowth.toFixed(1)}%
                   </Badge>
@@ -668,14 +660,13 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="border-2 border-emerald-300">
-                  <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-                  <CardContent className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50">
+                <Card className="border border-emerald-200">
+                  <CardContent className="p-6 bg-emerald-50/50">
                     <div className="flex items-center justify-between mb-3">
                       <DollarSign className="h-10 w-10 text-emerald-600" />
                     </div>
-                    <p className="text-sm font-semibold text-emerald-800 uppercase tracking-wide">Revenue</p>
-                    <p className="text-3xl font-extrabold text-emerald-900 mt-1">
+                    <p className="text-sm font-semibold text-emerald-800 uppercase tracking-normal">Revenue</p>
+                    <p className="text-2xl font-semibold text-emerald-900 mt-1">
                       KES {categoryPerformance.totalRevenue.toLocaleString()}
                     </p>
                     <p className="text-xs text-emerald-700 mt-2">
@@ -684,14 +675,13 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-sky-300">
-                  <div className="h-2 bg-gradient-to-r from-sky-500 to-blue-500"></div>
-                  <CardContent className="p-6 bg-gradient-to-br from-sky-50 to-blue-50">
+                <Card className="border border-sky-200">
+                  <CardContent className="p-6 bg-sky-50/50">
                     <div className="flex items-center justify-between mb-3">
                       <ShoppingCart className="h-10 w-10 text-sky-600" />
                     </div>
-                    <p className="text-sm font-semibold text-sky-800 uppercase tracking-wide">Orders</p>
-                    <p className="text-3xl font-extrabold text-sky-900 mt-1">
+                    <p className="text-sm font-semibold text-sky-800 uppercase tracking-normal">Orders</p>
+                    <p className="text-2xl font-semibold text-sky-900 mt-1">
                       {categoryPerformance.totalOrders.toLocaleString()}
                     </p>
                     <p className="text-xs text-sky-700 mt-2">
@@ -700,14 +690,13 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-purple-300">
-                  <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-                  <CardContent className="p-6 bg-gradient-to-br from-purple-50 to-pink-50">
+                <Card className="border border-purple-200">
+                  <CardContent className="p-6 bg-purple-50/50">
                     <div className="flex items-center justify-between mb-3">
                       <Package className="h-10 w-10 text-purple-600" />
                     </div>
-                    <p className="text-sm font-semibold text-purple-800 uppercase tracking-wide">Products</p>
-                    <p className="text-3xl font-extrabold text-purple-900 mt-1">
+                    <p className="text-sm font-semibold text-purple-800 uppercase tracking-normal">Products</p>
+                    <p className="text-2xl font-semibold text-purple-900 mt-1">
                       {categoryPerformance.totalProducts}
                     </p>
                     <p className="text-xs text-purple-700 mt-2">
@@ -716,14 +705,13 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-orange-300">
-                  <div className="h-2 bg-gradient-to-r from-orange-500 to-red-500"></div>
-                  <CardContent className="p-6 bg-gradient-to-br from-orange-50 to-red-50">
+                <Card className="border border-orange-200">
+                  <CardContent className="p-6 bg-orange-50/50">
                     <div className="flex items-center justify-between mb-3">
                       <TrendingUp className="h-10 w-10 text-orange-600" />
                     </div>
-                    <p className="text-sm font-semibold text-orange-800 uppercase tracking-wide">Growth</p>
-                    <p className="text-3xl font-extrabold text-orange-900 mt-1">
+                    <p className="text-sm font-semibold text-orange-800 uppercase tracking-normal">Growth</p>
+                    <p className="text-2xl font-semibold text-orange-900 mt-1">
                       {categoryPerformance.orderGrowth.toFixed(1)}%
                     </p>
                     <p className="text-xs text-orange-700 mt-2">
@@ -734,8 +722,7 @@ export default function SuperAdminDashboard() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="border-2 border-blue-200">
-                  <div className="h-2 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+                <Card className="border border-slate-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <LineChart className="h-5 w-5 text-blue-600" />
@@ -761,8 +748,7 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-emerald-200">
-                  <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+                <Card className="border border-slate-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <BarChart3 className="h-5 w-5 text-emerald-600" />
@@ -773,9 +759,9 @@ export default function SuperAdminDashboard() {
                     {categoryPerformance.topProducts.length > 0 ? (
                       <div className="space-y-3">
                         {categoryPerformance.topProducts.map((product, index) => (
-                          <div key={product.id} className="flex items-center justify-between p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border-2 border-emerald-200">
+                          <div key={product.id} className="flex items-center justify-between p-3 bg-emerald-50/60 rounded-lg border border-emerald-200">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-teal-600 text-white rounded-full flex items-center justify-center font-bold">
+                              <div className="w-8 h-8 bg-emerald-600 text-white rounded-lg flex items-center justify-center font-bold">
                                 {index + 1}
                               </div>
                               <div>
@@ -806,14 +792,15 @@ export default function SuperAdminDashboard() {
 
           {/* Platform Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-2 border-green-300">
-              <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
-              <CardContent className="p-6 bg-gradient-to-br from-green-50 to-emerald-50">
+            <Card className="border border-green-200">
+              <CardContent className="p-6 bg-green-50/50">
                 <div className="flex items-center justify-between mb-3">
-                  <DollarSign className="h-12 w-12 text-green-600" />
+                  <div className="w-11 h-11 rounded-xl border border-green-200 bg-green-100 flex items-center justify-center">
+                    <DollarSign className="h-6 w-6 text-green-700" />
+                  </div>
                 </div>
-                <p className="text-sm font-semibold text-green-800 uppercase tracking-wide">Total Revenue</p>
-                <p className="text-4xl font-extrabold text-green-900 mt-2">
+                <p className="text-sm font-semibold text-green-800 uppercase tracking-normal">Total Revenue</p>
+                <p className="text-3xl font-semibold text-green-900 mt-2">
                   KES {analytics.totalRevenue.toLocaleString()}
                 </p>
                 <p className="text-xs text-green-700 mt-2">
@@ -822,14 +809,15 @@ export default function SuperAdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-blue-300">
-              <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-              <CardContent className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50">
+            <Card className="border border-blue-200">
+              <CardContent className="p-6 bg-blue-50/50">
                 <div className="flex items-center justify-between mb-3">
-                  <ShoppingCart className="h-12 w-12 text-blue-600" />
+                  <div className="w-11 h-11 rounded-xl border border-blue-200 bg-blue-100 flex items-center justify-center">
+                    <ShoppingCart className="h-6 w-6 text-blue-700" />
+                  </div>
                 </div>
-                <p className="text-sm font-semibold text-blue-800 uppercase tracking-wide">Total Orders</p>
-                <p className="text-4xl font-extrabold text-blue-900 mt-2">
+                <p className="text-sm font-semibold text-blue-800 uppercase tracking-normal">Total Orders</p>
+                <p className="text-3xl font-semibold text-blue-900 mt-2">
                   {analytics.totalOrders.toLocaleString()}
                 </p>
                 <p className="text-xs text-blue-700 mt-2">
@@ -838,14 +826,15 @@ export default function SuperAdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-purple-300">
-              <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-              <CardContent className="p-6 bg-gradient-to-br from-purple-50 to-pink-50">
+            <Card className="border border-purple-200">
+              <CardContent className="p-6 bg-purple-50/50">
                 <div className="flex items-center justify-between mb-3">
-                  <Target className="h-12 w-12 text-purple-600" />
+                  <div className="w-11 h-11 rounded-xl border border-purple-200 bg-purple-100 flex items-center justify-center">
+                    <Target className="h-6 w-6 text-purple-700" />
+                  </div>
                 </div>
-                <p className="text-sm font-semibold text-purple-800 uppercase tracking-wide">Conversion</p>
-                <p className="text-4xl font-extrabold text-purple-900 mt-2">
+                <p className="text-sm font-semibold text-purple-800 uppercase tracking-normal">Conversion</p>
+                <p className="text-3xl font-semibold text-purple-900 mt-2">
                   {analytics.conversionRate.toFixed(1)}%
                 </p>
                 <p className="text-xs text-purple-700 mt-2">
@@ -854,14 +843,15 @@ export default function SuperAdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-orange-300">
-              <div className="h-2 bg-gradient-to-r from-orange-500 to-amber-500"></div>
-              <CardContent className="p-6 bg-gradient-to-br from-orange-50 to-amber-50">
+            <Card className="border border-orange-200">
+              <CardContent className="p-6 bg-orange-50/50">
                 <div className="flex items-center justify-between mb-3">
-                  <Truck className="h-12 w-12 text-orange-600" />
+                  <div className="w-11 h-11 rounded-xl border border-orange-200 bg-orange-100 flex items-center justify-center">
+                    <Truck className="h-6 w-6 text-orange-700" />
+                  </div>
                 </div>
-                <p className="text-sm font-semibold text-orange-800 uppercase tracking-wide">Delivery</p>
-                <p className="text-4xl font-extrabold text-orange-900 mt-2">
+                <p className="text-sm font-semibold text-orange-800 uppercase tracking-normal">Delivery</p>
+                <p className="text-3xl font-semibold text-orange-900 mt-2">
                   KES {analytics.deliveryRevenue.toLocaleString()}
                 </p>
                 <p className="text-xs text-orange-700 mt-2">
@@ -873,45 +863,41 @@ export default function SuperAdminDashboard() {
 
           {/* Platform Users */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-2 border-blue-200 hover:shadow-xl transition-all">
-              <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-              <CardContent className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50">
+            <Card className="border border-blue-200">
+              <CardContent className="p-6 bg-blue-50/40">
                 <Users className="h-10 w-10 text-blue-600 mb-3" />
                 <p className="text-sm font-semibold text-blue-800">Customers</p>
-                <p className="text-3xl font-extrabold text-blue-900 mt-2">
+                <p className="text-2xl font-semibold text-blue-900 mt-2">
                   {analytics.totalCustomers.toLocaleString()}
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-green-200 hover:shadow-xl transition-all">
-              <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
-              <CardContent className="p-6 bg-gradient-to-br from-green-50 to-emerald-50">
+            <Card className="border border-green-200">
+              <CardContent className="p-6 bg-green-50/40">
                 <Building2 className="h-10 w-10 text-green-600 mb-3" />
                 <p className="text-sm font-semibold text-green-800">Suppliers</p>
-                <p className="text-3xl font-extrabold text-green-900 mt-2">
+                <p className="text-2xl font-semibold text-green-900 mt-2">
                   {analytics.totalVendors.toLocaleString()}
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-purple-200 hover:shadow-xl transition-all">
-              <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-              <CardContent className="p-6 bg-gradient-to-br from-purple-50 to-pink-50">
+            <Card className="border border-purple-200">
+              <CardContent className="p-6 bg-purple-50/40">
                 <UserCheck className="h-10 w-10 text-purple-600 mb-3" />
                 <p className="text-sm font-semibold text-purple-800">Professionals</p>
-                <p className="text-3xl font-extrabold text-purple-900 mt-2">
+                <p className="text-2xl font-semibold text-purple-900 mt-2">
                   {analytics.totalProfessionals.toLocaleString()}
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-orange-200 hover:shadow-xl transition-all">
-              <div className="h-2 bg-gradient-to-r from-orange-500 to-red-500"></div>
-              <CardContent className="p-6 bg-gradient-to-br from-orange-50 to-red-50">
+            <Card className="border border-orange-200">
+              <CardContent className="p-6 bg-orange-50/40">
                 <Truck className="h-10 w-10 text-orange-600 mb-3" />
                 <p className="text-sm font-semibold text-orange-800">Delivery Partners</p>
-                <p className="text-3xl font-extrabold text-orange-900 mt-2">
+                <p className="text-2xl font-semibold text-orange-900 mt-2">
                   {analytics.totalDeliveryPartners.toLocaleString()}
                 </p>
               </CardContent>
@@ -920,8 +906,7 @@ export default function SuperAdminDashboard() {
 
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-2 border-blue-200">
-              <div className="h-2 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+            <Card className="border border-slate-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <LineChart className="h-5 w-5 text-blue-600" />
@@ -938,8 +923,7 @@ export default function SuperAdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-emerald-200">
-              <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+            <Card className="border border-slate-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5 text-emerald-600" />
@@ -956,8 +940,7 @@ export default function SuperAdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-purple-200">
-              <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+            <Card className="border border-slate-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <PieChart className="h-5 w-5 text-purple-600" />
@@ -978,8 +961,7 @@ export default function SuperAdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-amber-200">
-              <div className="h-2 bg-gradient-to-r from-amber-500 to-orange-500"></div>
+            <Card className="border border-slate-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5 text-amber-600" />
@@ -1000,8 +982,7 @@ export default function SuperAdminDashboard() {
             </Card>
 
             {analytics.financingByStatus?.length > 0 && (
-              <Card className="border-2 border-teal-200">
-                <div className="h-2 bg-gradient-to-r from-teal-500 to-cyan-500"></div>
+              <Card className="border border-slate-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Percent className="h-5 w-5 text-teal-600" />
@@ -1024,8 +1005,7 @@ export default function SuperAdminDashboard() {
             )}
 
             {analytics.fulfillmentByStage?.length > 0 && (
-              <Card className="border-2 border-cyan-200">
-                <div className="h-2 bg-gradient-to-r from-cyan-500 to-blue-500"></div>
+              <Card className="border border-slate-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Package className="h-5 w-5 text-cyan-600" />
@@ -1048,8 +1028,7 @@ export default function SuperAdminDashboard() {
             )}
 
             {analytics.ordersByCounty?.length > 0 && (
-              <Card className="border-2 border-indigo-200">
-                <div className="h-2 bg-gradient-to-r from-indigo-500 to-violet-500"></div>
+              <Card className="border border-slate-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Globe className="h-5 w-5 text-indigo-600" />
@@ -1073,8 +1052,7 @@ export default function SuperAdminDashboard() {
           </div>
 
           {/* Top Products */}
-          <Card className="border-2 border-green-200">
-            <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
+          <Card className="border border-slate-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Award className="h-5 w-5 text-green-600" />
@@ -1084,9 +1062,9 @@ export default function SuperAdminDashboard() {
             <CardContent>
               <div className="grid sm:grid-cols-2 gap-4">
                 {analytics.topProducts.slice(0, 8).map((product, index) => (
-                  <div key={product.name} className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-200">
+                  <div key={product.name} className="flex items-center justify-between p-4 bg-green-50/60 rounded-lg border border-green-200">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-600 text-white rounded-full flex items-center justify-center font-bold">
+                      <div className="w-10 h-10 bg-green-600 text-white rounded-lg flex items-center justify-center font-bold">
                         {index + 1}
                       </div>
                       <div>
@@ -1105,16 +1083,6 @@ export default function SuperAdminDashboard() {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes gradient-x {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 3s ease infinite;
-        }
-      `}</style>
     </div>
   )
 }

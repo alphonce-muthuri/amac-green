@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -46,9 +47,11 @@ export function ProductViewModal({ product, isOpen, onClose }: ProductViewModalP
                   .sort((a: any, b: any) => a.sort_order - b.sort_order)
                   .map((image: any, index: number) => (
                     <div key={image.id} className="relative">
-                      <img
+                      <Image
                         src={image.image_url || "/placeholder.svg"}
                         alt={image.alt_text}
+                        width={400}
+                        height={128}
                         className="w-full h-32 object-cover rounded-lg"
                       />
                       {image.is_primary && <Badge className="absolute top-2 left-2 text-xs">Primary</Badge>}

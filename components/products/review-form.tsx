@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Star, Send, Edit, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,21 +26,22 @@ export function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
   const [userReview, setUserReview] = useState<Review | null>(null)
   const [isEditing, setIsEditing] = useState(false)
 
-  useEffect(() => {
-    if (user) {
-      loadUserReview()
-    }
-  }, [user, productId])
-
-  const loadUserReview = async () => {
-    const result = await getUserReview(productId, user?.id)
+  const loadUserReview = useCallback(async () => {
+    if (!user?.id) return
+    const result = await getUserReview(productId, user.id)
     if (result.success && result.data) {
       setUserReview(result.data)
       setRating(result.data.rating)
       setTitle(result.data.title || "")
       setComment(result.data.comment || "")
     }
-  }
+  }, [productId, user?.id])
+
+  useEffect(() => {
+    if (user) {
+      void loadUserReview()
+    }
+  }, [user, loadUserReview])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

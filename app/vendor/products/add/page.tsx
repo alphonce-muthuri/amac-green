@@ -120,25 +120,24 @@ export default function AddProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Hero Header */}
           <div className="relative overflow-hidden">
-            <Card className="border-2 border-purple-300 shadow-2xl">
-              <div className="h-2 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 animate-gradient-x"></div>
-              
+            <Card className="border border-purple-300 shadow-md">
+              <div className="h-2 bg-purple-500/30" />
               <CardContent className="relative p-6 sm:p-8">
                 <Link href="/vendor/products" className="inline-flex items-center text-purple-600 hover:text-purple-700 mb-4 font-semibold">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to Products
                 </Link>
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 rounded-2xl flex items-center justify-center shadow-2xl">
-                    <Plus className="h-10 w-10 text-white" />
+                  <div className="w-16 h-16 bg-purple-700 border border-purple-800 rounded-xl flex items-center justify-center shadow-md">
+                    <Plus className="h-8 w-8 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Add New Product</h1>
+                    <h1 className="text-xl font-semibold text-gray-900 mb-2">Add New Product</h1>
                     <p className="text-lg text-gray-600">Create a new product listing for your store</p>
                   </div>
                 </div>
@@ -148,11 +147,11 @@ export default function AddProductPage() {
 
           {/* Success/Error Message */}
           {message && (
-            <Card className={`border-2 ${
+            <Card className={`border ${
               message.type === "success"
-                ? "border-green-300 bg-gradient-to-br from-green-50 to-emerald-50"
-                : "border-red-300 bg-gradient-to-br from-red-50 to-rose-50"
-            } shadow-lg animate-in fade-in duration-200`}>
+                ? "border-emerald-200 bg-emerald-50"
+                : "border-red-200 bg-red-50"
+            } shadow-sm animate-in fade-in duration-200`}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -176,11 +175,11 @@ export default function AddProductPage() {
 
           <form action={handleSubmit} className="space-y-6">
             {/* Basic Information */}
-            <Card className="border-2 border-blue-200 shadow-xl">
-              <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-              <CardHeader className="bg-gradient-to-br from-blue-50 to-cyan-50 border-b-2">
+            <Card className="border border-blue-200 shadow-sm">
+              <div className="h-2 bg-blue-500/30" />
+            <CardHeader className="bg-white border-b border-blue-200">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-blue-700 border border-blue-800 rounded-lg flex items-center justify-center">
                     <Package className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -193,11 +192,11 @@ export default function AddProductPage() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-sm font-bold text-gray-900">Product Name *</Label>
-                    <Input id="name" name="name" required placeholder="e.g., Solar Panel 300W" className="border-2 h-11" />
+                    <Input id="name" name="name" required placeholder="e.g., Solar Panel 300W" className="border h-11" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="sku" className="text-sm font-bold text-gray-900">SKU</Label>
-                    <Input id="sku" name="sku" placeholder="e.g., SP-300W-001" className="border-2 h-11" />
+                    <Input id="sku" name="sku" placeholder="e.g., SP-300W-001" className="border h-11" />
                   </div>
                 </div>
 
@@ -208,7 +207,7 @@ export default function AddProductPage() {
                     name="shortDescription"
                     placeholder="Brief product description (max 500 characters)"
                     maxLength={500}
-                    className="border-2"
+                    className="border"
                   />
                 </div>
 
@@ -219,7 +218,7 @@ export default function AddProductPage() {
                     name="description"
                     placeholder="Detailed product description, features, and benefits"
                     rows={6}
-                    className="border-2"
+                    className="border"
                   />
                 </div>
 
@@ -227,7 +226,7 @@ export default function AddProductPage() {
                   <div className="space-y-2">
                     <Label htmlFor="categoryId" className="text-sm font-bold text-gray-900">Category</Label>
                     <Select name="categoryId" onValueChange={(value) => setFormData({ ...formData, categoryId: value })}>
-                      <SelectTrigger className="border-2 h-11">
+                      <SelectTrigger className="border h-11">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -243,7 +242,7 @@ export default function AddProductPage() {
                   <div className="space-y-2">
                     <Label htmlFor="status" className="text-sm font-bold text-gray-900">Status</Label>
                     <Select name="status" onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                      <SelectTrigger className="border-2 h-11">
+                      <SelectTrigger className="border h-11">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -259,9 +258,9 @@ export default function AddProductPage() {
             </Card>
 
             {/* Product Images */}
-            <Card className="border-2 border-purple-200 shadow-xl">
-              <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-              <CardHeader className="bg-gradient-to-br from-purple-50 to-pink-50 border-b-2">
+            <Card className="border border-purple-200 shadow-sm">
+              <div className="h-2 bg-purple-500/30" />
+            <CardHeader className="bg-white border-b border-purple-200">
                 <CardTitle className="text-xl">Product Images</CardTitle>
                 <CardDescription>Upload high-quality images (max 5)</CardDescription>
               </CardHeader>
@@ -274,9 +273,9 @@ export default function AddProductPage() {
             </Card>
 
             {/* Pricing */}
-            <Card className="border-2 border-green-200 shadow-xl">
-              <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
-              <CardHeader className="bg-gradient-to-br from-green-50 to-emerald-50 border-b-2">
+            <Card className="border border-green-200 shadow-sm">
+              <div className="h-2 bg-emerald-500/30" />
+            <CardHeader className="bg-white border-b border-emerald-200">
                 <CardTitle className="text-xl">Pricing</CardTitle>
                 <CardDescription>Set your product pricing</CardDescription>
               </CardHeader>
@@ -284,16 +283,16 @@ export default function AddProductPage() {
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="price" className="text-sm font-bold text-gray-900">Selling Price * (KSH)</Label>
-                    <Input id="price" name="price" type="number" step="0.01" required placeholder="29999" className="border-2 h-11" />
+                    <Input id="price" name="price" type="number" step="0.01" required placeholder="29999" className="border h-11" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="comparePrice" className="text-sm font-bold text-gray-900">Compare Price (KSH)</Label>
-                    <Input id="comparePrice" name="comparePrice" type="number" step="0.01" placeholder="39999" className="border-2 h-11" />
+                    <Input id="comparePrice" name="comparePrice" type="number" step="0.01" placeholder="39999" className="border h-11" />
                     <p className="text-xs text-gray-500">Original price for discounts</p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="costPrice" className="text-sm font-bold text-gray-900">Cost Price (KSH)</Label>
-                    <Input id="costPrice" name="costPrice" type="number" step="0.01" placeholder="19999" className="border-2 h-11" />
+                    <Input id="costPrice" name="costPrice" type="number" step="0.01" placeholder="19999" className="border h-11" />
                     <p className="text-xs text-gray-500">Your cost (private)</p>
                   </div>
                 </div>
@@ -301,9 +300,9 @@ export default function AddProductPage() {
             </Card>
 
             {/* Inventory */}
-            <Card className="border-2 border-orange-200 shadow-xl">
-              <div className="h-2 bg-gradient-to-r from-orange-500 to-amber-500"></div>
-              <CardHeader className="bg-gradient-to-br from-orange-50 to-amber-50 border-b-2">
+            <Card className="border border-orange-200 shadow-sm">
+              <div className="h-2 bg-orange-500/30" />
+            <CardHeader className="bg-white border-b border-orange-200">
                 <CardTitle className="text-xl">Inventory</CardTitle>
                 <CardDescription>Manage stock levels</CardDescription>
               </CardHeader>
@@ -323,11 +322,11 @@ export default function AddProductPage() {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="inventoryQuantity" className="text-sm font-bold text-gray-900">Current Stock</Label>
-                      <Input id="inventoryQuantity" name="inventoryQuantity" type="number" defaultValue="0" className="border-2 h-11" />
+                      <Input id="inventoryQuantity" name="inventoryQuantity" type="number" defaultValue="0" className="border h-11" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lowStockThreshold" className="text-sm font-bold text-gray-900">Low Stock Alert</Label>
-                      <Input id="lowStockThreshold" name="lowStockThreshold" type="number" defaultValue="5" className="border-2 h-11" />
+                      <Input id="lowStockThreshold" name="lowStockThreshold" type="number" defaultValue="5" className="border h-11" />
                       <p className="text-xs text-gray-500">Alert when stock falls below this</p>
                     </div>
                   </div>
@@ -336,9 +335,9 @@ export default function AddProductPage() {
             </Card>
 
             {/* Shipping */}
-            <Card className="border-2 border-teal-200 shadow-xl">
-              <div className="h-2 bg-gradient-to-r from-teal-500 to-cyan-500"></div>
-              <CardHeader className="bg-gradient-to-br from-teal-50 to-cyan-50 border-b-2">
+            <Card className="border border-teal-200 shadow-sm">
+              <div className="h-2 bg-teal-500/30" />
+            <CardHeader className="bg-white border-b border-teal-200">
                 <CardTitle className="text-xl">Shipping</CardTitle>
                 <CardDescription>Physical product details</CardDescription>
               </CardHeader>
@@ -346,19 +345,19 @@ export default function AddProductPage() {
                 <div className="grid md:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="weight" className="text-sm font-bold text-gray-900">Weight (kg)</Label>
-                    <Input id="weight" name="weight" type="number" step="0.01" placeholder="25.5" className="border-2 h-11" />
+                    <Input id="weight" name="weight" type="number" step="0.01" placeholder="25.5" className="border h-11" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="dimensionsLength" className="text-sm font-bold text-gray-900">Length (cm)</Label>
-                    <Input id="dimensionsLength" name="dimensionsLength" type="number" step="0.1" placeholder="165" className="border-2 h-11" />
+                    <Input id="dimensionsLength" name="dimensionsLength" type="number" step="0.1" placeholder="165" className="border h-11" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="dimensionsWidth" className="text-sm font-bold text-gray-900">Width (cm)</Label>
-                    <Input id="dimensionsWidth" name="dimensionsWidth" type="number" step="0.1" placeholder="99" className="border-2 h-11" />
+                    <Input id="dimensionsWidth" name="dimensionsWidth" type="number" step="0.1" placeholder="99" className="border h-11" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="dimensionsHeight" className="text-sm font-bold text-gray-900">Height (cm)</Label>
-                    <Input id="dimensionsHeight" name="dimensionsHeight" type="number" step="0.1" placeholder="4" className="border-2 h-11" />
+                    <Input id="dimensionsHeight" name="dimensionsHeight" type="number" step="0.1" placeholder="4" className="border h-11" />
                   </div>
                 </div>
 
@@ -368,23 +367,23 @@ export default function AddProductPage() {
                     id="shippingInfo"
                     name="shippingInfo"
                     placeholder="Special shipping instructions, delivery time, etc."
-                    className="border-2"
+                    className="border"
                   />
                 </div>
               </CardContent>
             </Card>
 
             {/* Specifications */}
-            <Card className="border-2 border-indigo-200 shadow-xl">
-              <div className="h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-              <CardHeader className="bg-gradient-to-br from-indigo-50 to-purple-50 border-b-2">
+            <Card className="border border-indigo-200 shadow-sm">
+              <div className="h-2 bg-indigo-500/30"></div>
+              <CardHeader className="bg-white border-b border-indigo-200">
                 <CardTitle className="text-xl">Specifications</CardTitle>
                 <CardDescription>Technical specifications and features</CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
                 <div className="space-y-4">
                   {specifications.map((spec, index) => (
-                    <div key={index} className="flex gap-4 items-end p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
+                    <div key={index} className="flex gap-4 items-end p-4 bg-gray-50 rounded-xl border border-gray-200">
                       <div className="flex-1">
                         <Label htmlFor={`spec-key-${index}`} className="text-sm font-bold">Specification</Label>
                         <Input
@@ -392,7 +391,7 @@ export default function AddProductPage() {
                           value={spec.key}
                           onChange={(e) => updateSpecification(index, "key", e.target.value)}
                           placeholder="e.g., Power Output"
-                          className="border-2 h-11 mt-1"
+                          className="border h-11 mt-1"
                         />
                       </div>
                       <div className="flex-1">
@@ -402,7 +401,7 @@ export default function AddProductPage() {
                           value={spec.value}
                           onChange={(e) => updateSpecification(index, "value", e.target.value)}
                           placeholder="e.g., 300W"
-                          className="border-2 h-11 mt-1"
+                          className="border h-11 mt-1"
                         />
                       </div>
                       <Button
@@ -411,13 +410,13 @@ export default function AddProductPage() {
                         size="sm"
                         onClick={() => removeSpecification(index)}
                         disabled={specifications.length === 1}
-                        className="h-11 border-2"
+                        className="h-11 border"
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
-                  <Button type="button" variant="outline" onClick={addSpecification} className="w-full border-2 border-indigo-300 hover:bg-indigo-50">
+                  <Button type="button" variant="outline" onClick={addSpecification} className="w-full border border-indigo-300 hover:bg-indigo-50">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Specification
                   </Button>
@@ -431,7 +430,7 @@ export default function AddProductPage() {
                     id="warrantyInfo"
                     name="warrantyInfo"
                     placeholder="Warranty terms, duration, and coverage details"
-                    className="border-2"
+                    className="border"
                   />
                 </div>
               </CardContent>
@@ -442,11 +441,11 @@ export default function AddProductPage() {
               <Button 
                 type="submit" 
                 disabled={isSubmitting} 
-                className="flex-1 h-14 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-base font-bold shadow-lg"
+                className="flex-1 h-14 bg-purple-600 hover:bg-purple-700 hover:bg-purple-700 text-base font-bold shadow-sm"
               >
                 {isSubmitting ? (
                   <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border border-white border-t-transparent mr-2"></div>
                     Creating Product...
                   </>
                 ) : (
@@ -457,28 +456,15 @@ export default function AddProductPage() {
                   </>
                 )}
               </Button>
-              <Button type="button" variant="outline" asChild className="h-14 border-2 font-bold">
+              <Button type="button" variant="outline" asChild className="h-14 border font-bold">
                 <Link href="/vendor/products">Cancel</Link>
               </Button>
             </div>
           </form>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 3s ease infinite;
-        }
-      `}</style>
-    </div>
+</div>
   )
 }
+
+

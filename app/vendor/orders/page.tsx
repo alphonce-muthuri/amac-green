@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -64,20 +65,20 @@ export default function VendorOrdersPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { color: "bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-300", icon: Clock },
-      confirmed: { color: "bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border-blue-300", icon: CheckCircle },
-      processing: { color: "bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 border-purple-300", icon: Package },
-      shipped: { color: "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-300", icon: Truck },
-      delivered: { color: "bg-gradient-to-r from-green-600 to-emerald-600 text-white border-green-700", icon: CheckCircle },
-      cancelled: { color: "bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-300", icon: AlertCircle },
-      refunded: { color: "bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-300", icon: AlertCircle },
+      pending: { color: "bg-amber-50 text-amber-900 border border-amber-200", icon: Clock },
+      confirmed: { color: "bg-blue-50 text-blue-800 border-blue-300", icon: CheckCircle },
+      processing: { color: "bg-purple-50 text-purple-800 border-purple-300", icon: Package },
+      shipped: { color: "bg-emerald-50 text-green-800 border-green-300", icon: Truck },
+      delivered: { color: "bg-emerald-600 hover:bg-emerald-700 text-white border-green-700", icon: CheckCircle },
+      cancelled: { color: "bg-red-50 text-red-800 border-red-300", icon: AlertCircle },
+      refunded: { color: "bg-gray-100 text-gray-800 border-gray-300", icon: AlertCircle },
     }
 
     const config = statusConfig[status] || statusConfig.pending
     const Icon = config.icon
 
     return (
-      <Badge className={`${config.color} border-2`}>
+      <Badge className={`${config.color} border`}>
         <Icon className="h-3 w-3 mr-1" />
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
@@ -125,9 +126,9 @@ export default function VendorOrdersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
-          <div className="w-20 h-20 relative mx-auto mb-6">
+          <div className="w-16 h-16 relative mx-auto mb-6">
             <div className="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
             <ShoppingCart className="absolute inset-0 m-auto h-8 w-8 text-blue-600" />
@@ -140,21 +141,20 @@ export default function VendorOrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Hero Header */}
           <div className="relative overflow-hidden">
-            <Card className="border-2 border-blue-300 shadow-2xl">
-              <div className="h-2 bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 animate-gradient-x"></div>
-              
+            <Card className="border border-blue-300 shadow-md">
+              <div className="h-2 bg-blue-500/30" />
               <CardContent className="relative p-6 sm:p-8">
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-600 via-cyan-600 to-teal-600 rounded-2xl flex items-center justify-center shadow-2xl">
-                    <ShoppingCart className="h-10 w-10 text-white" />
+                  <div className="w-16 h-16 bg-blue-700 border border-blue-800 rounded-xl flex items-center justify-center shadow-md">
+                    <ShoppingCart className="h-8 w-8 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Orders</h1>
+                    <h1 className="text-xl font-semibold text-gray-900 mb-2">Orders</h1>
                     <p className="text-lg text-gray-600">
                       Manage your <span className="font-bold text-blue-700">{orders.length}</span> product orders
                     </p>
@@ -166,65 +166,65 @@ export default function VendorOrdersPage() {
 
           {/* Stats Dashboard */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-2 border-blue-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+            <Card className="border border-blue-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-blue-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center">
-                    <ShoppingCart className="h-6 w-6 text-blue-600" />
+                  <div className="w-10 h-10 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center">
+                    <ShoppingCart className="h-5 w-5 text-blue-600" />
                   </div>
-                  <Badge className="bg-blue-600 text-white">Total</Badge>
+                  <Badge className="rounded-full bg-blue-600 text-white">Total</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-blue-700 mb-1">{stats.total}</p>
+                <p className="text-xl font-semibold text-blue-700 mb-1">{stats.total}</p>
                 <p className="text-sm text-gray-600">All Orders</p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-yellow-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-yellow-500 to-amber-500"></div>
+            <Card className="border border-yellow-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-amber-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-xl flex items-center justify-center">
-                    <Clock className="h-6 w-6 text-yellow-600 animate-pulse" />
+                  <div className="w-10 h-10 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-yellow-600 animate-pulse" />
                   </div>
-                  <Badge className="bg-yellow-600 text-white">Pending</Badge>
+                  <Badge className="rounded-full bg-yellow-600 text-white">Pending</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-yellow-700 mb-1">{stats.pending}</p>
+                <p className="text-xl font-semibold text-yellow-700 mb-1">{stats.pending}</p>
                 <p className="text-sm text-gray-600">Awaiting Action</p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-purple-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+            <Card className="border border-purple-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-purple-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
-                    <Package className="h-6 w-6 text-purple-600" />
+                  <div className="w-10 h-10 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-center">
+                    <Package className="h-5 w-5 text-purple-600" />
                   </div>
-                  <Badge className="bg-purple-600 text-white">Processing</Badge>
+                  <Badge className="rounded-full bg-purple-600 text-white">Processing</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-purple-700 mb-1">{stats.processing}</p>
+                <p className="text-xl font-semibold text-purple-700 mb-1">{stats.processing}</p>
                 <p className="text-sm text-gray-600">In Progress</p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-green-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
+            <Card className="border border-green-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-emerald-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center">
-                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  <div className="w-10 h-10 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
                   </div>
-                  <Badge className="bg-green-600 text-white">Completed</Badge>
+                  <Badge className="rounded-full bg-green-600 text-white">Completed</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-green-700 mb-1">{stats.completed}</p>
+                <p className="text-xl font-semibold text-green-700 mb-1">{stats.completed}</p>
                 <p className="text-sm text-gray-600">Delivered</p>
               </CardContent>
             </Card>
           </div>
 
           {/* Filters */}
-          <Card className="border-2 border-indigo-200">
+          <Card className="border border-indigo-200">
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
@@ -233,11 +233,11 @@ export default function VendorOrdersPage() {
                     placeholder="Search by order number or customer..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 h-12 border-2 border-indigo-300 focus:border-indigo-500"
+                    className="pl-12 h-12 border border-indigo-300 focus:border-indigo-500"
                   />
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full sm:w-48 h-12 border-2 border-indigo-300">
+                  <SelectTrigger className="w-full sm:w-48 h-12 border border-indigo-300">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -256,12 +256,12 @@ export default function VendorOrdersPage() {
 
           {/* Orders List */}
           {filteredOrders.length === 0 ? (
-            <Card className="border-2 border-gray-300">
+            <Card className="border border-gray-300">
               <CardContent className="text-center py-16">
-                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-24 h-24 bg-gray-50 border border-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Package className="h-12 w-12 text-gray-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">No Orders Found</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">No Orders Found</h3>
                 <p className="text-gray-600">
                   {statusFilter === "all" 
                     ? "You haven't received any orders yet" 
@@ -272,9 +272,9 @@ export default function VendorOrdersPage() {
           ) : (
             <div className="space-y-4">
               {filteredOrders.map((order) => (
-                <Card key={order.id} className="border-2 border-blue-200 hover:shadow-2xl hover:scale-[1.01] transition-all duration-300">
-                  <div className="h-1 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-                  <CardContent className="p-6">
+                <Card key={order.id} className="border border-blue-200 hover:shadow-md hover:scale-[1.01] transition-all duration-300">
+                  <div className="h-1 bg-blue-500/30" />
+              <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <h3 className="text-xl font-bold text-gray-900">Order #{order.order_number}</h3>
@@ -286,7 +286,7 @@ export default function VendorOrdersPage() {
                         {getStatusBadge(order.status)}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="border-2">
+                            <Button variant="outline" size="sm" className="border">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -326,7 +326,7 @@ export default function VendorOrdersPage() {
                         value={(order.fulfillment_stage as FulfillmentStage) || "order_received"}
                         onValueChange={(v) => handleFulfillmentChange(order.id, v as FulfillmentStage)}
                       >
-                        <SelectTrigger id={`fulfillment-${order.id}`} className="w-full sm:max-w-xs h-10 border-2 border-blue-200">
+                        <SelectTrigger id={`fulfillment-${order.id}`} className="w-full sm:max-w-xs h-10 border border-blue-200">
                           <SelectValue placeholder="Stage" />
                         </SelectTrigger>
                         <SelectContent>
@@ -342,11 +342,13 @@ export default function VendorOrdersPage() {
                     {/* Order Items */}
                     <div className="space-y-3 mb-4">
                       {order.order_items?.map((item) => (
-                        <div key={item.id} className="flex items-center gap-4 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border-2 border-blue-200">
-                          <img
+                        <div key={item.id} className="flex items-center gap-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                          <Image
                             src={item.product_image_url || "/placeholder.svg"}
                             alt={item.product_name}
-                            className="h-16 w-16 rounded-lg object-cover border-2 border-blue-300"
+                            width={64}
+                            height={64}
+                            className="h-16 w-16 rounded-lg object-cover border border-blue-300"
                           />
                           <div className="flex-1">
                             <h4 className="font-bold text-gray-900">{item.product_name}</h4>
@@ -359,12 +361,12 @@ export default function VendorOrdersPage() {
                     </div>
 
                     {/* Order Summary */}
-                    <div className="pt-4 border-t-2 border-gray-200">
+                    <div className="pt-4 border-t border-gray-200">
                       <div className="flex justify-between items-center">
                         <div className="text-sm text-gray-600">
                           {order.order_items?.length || 0} item(s)
                         </div>
-                        <div className="text-xl font-extrabold text-green-700">
+                        <div className="text-xl font-bold text-green-700">
                           Total: KSH {getOrderTotal(order).toFixed(2)}
                         </div>
                       </div>
@@ -376,21 +378,8 @@ export default function VendorOrdersPage() {
           )}
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 3s ease infinite;
-        }
-      `}</style>
-    </div>
+</div>
   )
 }
+
+

@@ -63,7 +63,7 @@ export function CustomerList() {
     const Icon = config.icon
 
     return (
-      <Badge className={`${config.color} border-2 font-semibold`}>
+      <Badge className={`${config.color} border font-semibold`}>
         <Icon className="h-3 w-3 mr-1" />
         {config.label}
       </Badge>
@@ -89,14 +89,14 @@ export function CustomerList() {
           </h2>
           <p className="text-gray-600 mt-1">View all registered customers</p>
         </div>
-        <Button onClick={loadCustomers} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
+        <Button onClick={loadCustomers} className="bg-blue-600 hover:bg-blue-700">
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
       </div>
 
       {customers.length === 0 ? (
-        <Card className="border-2 border-gray-200">
+        <Card className="border border-gray-200">
           <CardContent className="text-center py-16">
             <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Users className="h-10 w-10 text-blue-600" />
@@ -108,17 +108,17 @@ export function CustomerList() {
       ) : (
         <div className="grid gap-6">
           {customers.map((customer) => (
-            <Card key={customer.id} className="border-2 border-blue-200 hover:shadow-2xl transition-all duration-300 hover:border-blue-400">
-              <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-              <CardHeader className="bg-gradient-to-br from-blue-50 to-cyan-50">
+            <Card key={customer.id} className="border border-blue-200/80 shadow-sm transition-shadow hover:shadow-md">
+              <div className="h-1 bg-blue-500"></div>
+              <CardHeader className="bg-blue-50/40">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold text-lg">
                         {customer.first_name.charAt(0)}{customer.last_name.charAt(0)}
                       </div>
                       <div>
-                        <CardTitle className="text-2xl font-bold text-gray-900">
+                        <CardTitle className="text-xl font-semibold text-gray-900">
                           {customer.first_name} {customer.last_name}
                         </CardTitle>
                         {customer.organization_name && (
@@ -131,7 +131,7 @@ export function CustomerList() {
                   </div>
                   <div className="flex flex-col gap-2 items-end">
                     {getCustomerTypeBadge(customer.customer_type)}
-                    <Badge className="bg-gray-100 text-gray-700 border-2 border-gray-300 font-semibold text-xs">
+                    <Badge className="bg-gray-100 text-gray-700 border border-gray-300 font-semibold text-xs hover:bg-gray-100">
                       Joined {new Date(customer.created_at || "").toLocaleDateString()}
                     </Badge>
                   </div>
@@ -140,7 +140,7 @@ export function CustomerList() {
               <CardContent className="p-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-3">Contact Information</h4>
+                    <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide mb-3">Contact Information</h4>
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                         <Mail className="h-5 w-5 text-blue-600" />
@@ -171,9 +171,9 @@ export function CustomerList() {
                   </div>
 
                   <div className="space-y-3">
-                    <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-3">Customer Details</h4>
+                    <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide mb-3">Customer Details</h4>
                     {customer.organization_name && (
-                      <div className="p-3 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200">
+                      <div className="p-3 bg-blue-50/60 rounded-lg border border-blue-200">
                         <div className="flex items-center gap-2 mb-2">
                           <Building className="w-4 h-4 text-blue-600" />
                           <p className="text-xs text-blue-700 font-semibold">Organization</p>
@@ -189,7 +189,7 @@ export function CustomerList() {
                       <div className="flex items-center gap-2">
                         {customer.accept_marketing ? (
                           <>
-                            <Badge className="bg-green-100 text-green-700 border-2 border-green-300 font-semibold">
+                            <Badge className="bg-green-100 text-green-700 border border-green-300 font-semibold hover:bg-green-100">
                               <Heart className="h-3 w-3 mr-1" />
                               Subscribed
                             </Badge>
@@ -197,7 +197,7 @@ export function CustomerList() {
                           </>
                         ) : (
                           <>
-                            <Badge className="bg-gray-100 text-gray-700 border-2 border-gray-300 font-semibold">
+                            <Badge className="bg-gray-100 text-gray-700 border border-gray-300 font-semibold hover:bg-gray-100">
                               Not Subscribed
                             </Badge>
                             <span className="text-xs text-gray-600">No marketing emails</span>

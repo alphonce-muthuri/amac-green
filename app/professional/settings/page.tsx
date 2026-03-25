@@ -157,12 +157,12 @@ export default function ProfessionalSettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="w-20 h-20 relative mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-purple-200 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-            <Settings className="absolute inset-0 m-auto h-8 w-8 text-purple-600" />
+            <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+            <Settings className="absolute inset-0 m-auto h-8 w-8 text-teal-600" />
           </div>
           <p className="text-lg font-bold text-gray-900">Loading Settings</p>
           <p className="text-sm text-gray-600 mt-1">Preparing your preferences...</p>
@@ -172,30 +172,26 @@ export default function ProfessionalSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Hero Header */}
           <div className="relative overflow-hidden">
-            <Card className="border-2 border-purple-300 shadow-2xl">
-              <div className="h-2 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 animate-gradient-x"></div>
-              
-              <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-red-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
-              
+            <Card className="border border-emerald-300 shadow-sm">
+              <div className="h-2 bg-teal-500/30" />
               <CardContent className="relative p-6 sm:p-8">
                 <div className="flex items-center gap-6">
                   <div className="relative">
-                    <div className="w-20 h-20 bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 rounded-2xl flex items-center justify-center shadow-2xl">
+                    <div className="w-20 h-20 bg-teal-700 border border-teal-800 rounded-2xl flex items-center justify-center shadow-sm">
                       <Settings className="h-10 w-10 text-white" />
                     </div>
-                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
+                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-emerald-600 border border-emerald-700 rounded-full flex items-center justify-center border-4 border-white shadow-sm">
                       <CheckCircle2 className="h-4 w-4 text-white" />
                     </div>
                   </div>
 
                   <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 mb-1">
+                    <h1 className="text-xl font-bold tracking-tight text-gray-900 mb-1">
                       Account Settings
                     </h1>
                     <p className="text-base text-gray-600">
@@ -210,11 +206,11 @@ export default function ProfessionalSettingsPage() {
           {/* Success/Error Message */}
           {message && (
             <Card 
-              className={`border-2 ${
+              className={`border ${
                 message.type === "success"
-                  ? "border-green-300 bg-gradient-to-br from-green-50 to-emerald-50"
-                  : "border-red-300 bg-gradient-to-br from-red-50 to-rose-50"
-              } shadow-lg animate-in fade-in duration-200`}
+                  ? "border-emerald-200 bg-emerald-50"
+                  : "border-red-200 bg-red-50"
+              } shadow-sm animate-in fade-in duration-200`}
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
@@ -226,7 +222,7 @@ export default function ProfessionalSettingsPage() {
                     {message.type === "success" ? (
                       <CheckCircle2 className="h-5 w-5 text-green-600" />
                     ) : (
-                      <AlertCircle className="h-5 w-5 text-red-600" />
+                      <AlertCircle className="h-5 w-5 text-rose-600" />
                     )}
                   </div>
                   <p className={`font-semibold ${
@@ -240,11 +236,11 @@ export default function ProfessionalSettingsPage() {
           )}
 
           {/* Profile Information */}
-          <Card className="border-2 border-blue-200 shadow-xl">
-            <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-            <CardHeader className="bg-gradient-to-br from-blue-50 to-cyan-50 border-b-2">
+          <Card className="border border-teal-200 shadow-sm">
+            <div className="h-2 bg-teal-500/30" />
+            <CardHeader className="bg-teal-50/60 border-b-2">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-teal-700 border border-teal-800 rounded-xl flex items-center justify-center">
                   <User className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -258,7 +254,7 @@ export default function ProfessionalSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="companyName" className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-blue-600" />
+                      <Building2 className="h-4 w-4 text-teal-600" />
                       Company/Organization Name *
                     </Label>
                     <Input 
@@ -266,12 +262,12 @@ export default function ProfessionalSettingsPage() {
                       name="companyName" 
                       required 
                       defaultValue={profile?.company_name || ""}
-                      className="border-2 border-blue-200 focus:border-blue-500 h-11"
+                      className="border border-emerald-200 focus:border-emerald-500 h-11"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="contactPerson" className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                      <User className="h-4 w-4 text-blue-600" />
+                      <User className="h-4 w-4 text-teal-600" />
                       Contact Person *
                     </Label>
                     <Input 
@@ -279,7 +275,7 @@ export default function ProfessionalSettingsPage() {
                       name="contactPerson" 
                       required 
                       defaultValue={profile?.contact_person || ""}
-                      className="border-2 border-blue-200 focus:border-blue-500 h-11"
+                      className="border border-emerald-200 focus:border-emerald-500 h-11"
                     />
                   </div>
                 </div>
@@ -296,7 +292,7 @@ export default function ProfessionalSettingsPage() {
                       type="email" 
                       disabled 
                       value={user?.email || ""}
-                      className="bg-gray-100 border-2 border-gray-200 h-11"
+                      className="bg-gray-100 border border-gray-200 h-11"
                     />
                     <p className="text-xs text-gray-500 flex items-center gap-1">
                       <Lock className="h-3 w-3" />
@@ -305,7 +301,7 @@ export default function ProfessionalSettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone" className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-blue-600" />
+                      <Phone className="h-4 w-4 text-teal-600" />
                       Phone Number *
                     </Label>
                     <Input 
@@ -314,18 +310,18 @@ export default function ProfessionalSettingsPage() {
                       type="tel" 
                       required 
                       defaultValue={profile?.phone || ""}
-                      className="border-2 border-blue-200 focus:border-blue-500 h-11"
+                      className="border border-emerald-200 focus:border-emerald-500 h-11"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="professionalType" className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                    <Award className="h-4 w-4 text-blue-600" />
+                    <Award className="h-4 w-4 text-teal-600" />
                     Professional Type *
                   </Label>
                   <Select name="professionalType" defaultValue={profile?.professional_type || ""}>
-                    <SelectTrigger className="border-2 border-blue-200 h-11">
+                    <SelectTrigger className="border border-emerald-200 h-11">
                       <SelectValue placeholder="Select your professional category" />
                     </SelectTrigger>
                     <SelectContent>
@@ -341,27 +337,27 @@ export default function ProfessionalSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="licenseNumber" className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-blue-600" />
+                      <FileText className="h-4 w-4 text-teal-600" />
                       Professional License Number
                     </Label>
                     <Input 
                       id="licenseNumber" 
                       name="licenseNumber" 
                       defaultValue={profile?.license_number || ""}
-                      className="border-2 border-blue-200 focus:border-blue-500 h-11"
+                      className="border border-emerald-200 focus:border-emerald-500 h-11"
                       placeholder="Optional"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="epraLicense" className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-blue-600" />
+                      <Shield className="h-4 w-4 text-teal-600" />
                       EPRA License Number
                     </Label>
                     <Input 
                       id="epraLicense" 
                       name="epraLicense" 
                       defaultValue={profile?.epra_license || ""}
-                      className="border-2 border-blue-200 focus:border-blue-500 h-11"
+                      className="border border-emerald-200 focus:border-emerald-500 h-11"
                       placeholder="Optional"
                     />
                   </div>
@@ -369,7 +365,7 @@ export default function ProfessionalSettingsPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="address" className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-blue-600" />
+                    <MapPin className="h-4 w-4 text-teal-600" />
                     Business Address *
                   </Label>
                   <Input 
@@ -377,7 +373,7 @@ export default function ProfessionalSettingsPage() {
                     name="address" 
                     required 
                     defaultValue={profile?.address || ""}
-                    className="border-2 border-blue-200 focus:border-blue-500 h-11"
+                    className="border border-emerald-200 focus:border-emerald-500 h-11"
                   />
                 </div>
 
@@ -389,7 +385,7 @@ export default function ProfessionalSettingsPage() {
                       name="city" 
                       required 
                       defaultValue={profile?.city || ""}
-                      className="border-2 border-blue-200 focus:border-blue-500 h-11"
+                      className="border border-emerald-200 focus:border-emerald-500 h-11"
                     />
                   </div>
                   <div className="space-y-2">
@@ -399,7 +395,7 @@ export default function ProfessionalSettingsPage() {
                       name="country" 
                       required 
                       defaultValue={profile?.country || ""}
-                      className="border-2 border-blue-200 focus:border-blue-500 h-11"
+                      className="border border-emerald-200 focus:border-emerald-500 h-11"
                     />
                   </div>
                 </div>
@@ -407,7 +403,7 @@ export default function ProfessionalSettingsPage() {
                 <Button 
                   type="submit" 
                   disabled={saving}
-                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-base font-bold shadow-lg"
+                  className="w-full h-12 bg-teal-600 hover:bg-teal-700 hover:bg-teal-700 text-base font-bold shadow-sm"
                 >
                   <Save className="h-5 w-5 mr-2" />
                   {saving ? "Saving Changes..." : "Save Profile Changes"}
@@ -418,11 +414,11 @@ export default function ProfessionalSettingsPage() {
           </Card>
 
           {/* Account Status */}
-          <Card className="border-2 border-green-200 shadow-xl">
-            <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
-            <CardHeader className="bg-gradient-to-br from-green-50 to-emerald-50 border-b-2">
+          <Card className="border border-green-200 shadow-sm">
+            <div className="h-2 bg-emerald-500/30" />
+            <CardHeader className="bg-white border-b border-emerald-200">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-emerald-700 border border-emerald-800 rounded-xl flex items-center justify-center">
                   <Shield className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -434,18 +430,18 @@ export default function ProfessionalSettingsPage() {
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-xl border-2 border-purple-200">
+                  <div className="bg-teal-50/50 p-5 rounded-xl border border-emerald-200">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-semibold text-gray-700">Verification Status</span>
-                      <Star className="h-5 w-5 text-purple-600" />
+                      <Star className="h-5 w-5 text-teal-600" />
                     </div>
                     <Badge 
                       className={`text-base px-4 py-2 ${
                         profile?.status === "approved" 
-                          ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white" 
+                          ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
                           : profile?.status === "rejected"
-                          ? "bg-gradient-to-r from-red-600 to-rose-600 text-white"
-                          : "bg-gradient-to-r from-amber-600 to-orange-600 text-white animate-pulse"
+                          ? "bg-red-600 text-white"
+                          : "bg-orange-600 text-white "
                       }`}
                     >
                       {profile?.status === "approved" && <CheckCircle2 className="h-4 w-4 mr-1" />}
@@ -455,10 +451,10 @@ export default function ProfessionalSettingsPage() {
                     </Badge>
                   </div>
 
-                  <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-5 rounded-xl border-2 border-blue-200">
+                  <div className="bg-teal-50/60 p-5 rounded-xl border border-emerald-200">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-semibold text-gray-700">Application Date</span>
-                      <Calendar className="h-5 w-5 text-blue-600" />
+                      <Calendar className="h-5 w-5 text-teal-600" />
                     </div>
                     <p className="text-lg font-bold text-gray-900">
                       {profile?.created_at 
@@ -474,7 +470,7 @@ export default function ProfessionalSettingsPage() {
                 </div>
 
                 {profile?.status === "pending" && (
-                  <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-xl border-2 border-amber-300">
+                  <div className="bg-amber-50 p-6 rounded-xl border border-amber-300">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
                         <Clock className="h-6 w-6 text-amber-600" />
@@ -491,7 +487,7 @@ export default function ProfessionalSettingsPage() {
                 )}
 
                 {profile?.status === "approved" && (
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-300">
+                  <div className="bg-emerald-50 p-6 rounded-xl border border-green-300">
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
                         <CheckCircle2 className="h-6 w-6 text-green-600" />
@@ -510,11 +506,11 @@ export default function ProfessionalSettingsPage() {
           </Card>
 
           {/* Password Change */}
-          <Card className="border-2 border-purple-200 shadow-xl">
-            <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-            <CardHeader className="bg-gradient-to-br from-purple-50 to-pink-50 border-b-2">
+          <Card className="border border-teal-200 shadow-sm">
+            <div className="h-2 bg-teal-500/30" />
+            <CardHeader className="bg-teal-50/50 border-b-2">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-teal-700 border border-teal-800 rounded-xl flex items-center justify-center">
                   <Key className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -527,7 +523,7 @@ export default function ProfessionalSettingsPage() {
               <form action={handlePasswordChange} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="newPassword" className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                    <Lock className="h-4 w-4 text-purple-600" />
+                    <Lock className="h-4 w-4 text-teal-600" />
                     New Password *
                   </Label>
                   <Input 
@@ -537,12 +533,12 @@ export default function ProfessionalSettingsPage() {
                     required 
                     minLength={6}
                     placeholder="Enter new password (min. 6 characters)"
-                    className="border-2 border-purple-200 focus:border-purple-500 h-11"
+                    className="border border-emerald-200 focus:border-teal-500 h-11"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword" className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                    <Lock className="h-4 w-4 text-purple-600" />
+                    <Lock className="h-4 w-4 text-teal-600" />
                     Confirm New Password *
                   </Label>
                   <Input 
@@ -552,13 +548,13 @@ export default function ProfessionalSettingsPage() {
                     required 
                     minLength={6}
                     placeholder="Re-enter new password"
-                    className="border-2 border-purple-200 focus:border-purple-500 h-11"
+                    className="border border-emerald-200 focus:border-teal-500 h-11"
                   />
                 </div>
                 <Button 
                   type="submit" 
                   disabled={saving}
-                  className="w-full h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-base font-bold shadow-lg"
+                  className="w-full h-12 bg-teal-600 hover:bg-teal-700 text-base font-bold shadow-sm"
                 >
                   <Key className="h-5 w-5 mr-2" />
                   {saving ? "Updating Password..." : "Update Password"}
@@ -569,11 +565,11 @@ export default function ProfessionalSettingsPage() {
           </Card>
 
           {/* Document Management */}
-          <Card className="border-2 border-indigo-200 shadow-xl">
-            <div className="h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-            <CardHeader className="bg-gradient-to-br from-indigo-50 to-purple-50 border-b-2">
+          <Card className="border border-teal-200 shadow-sm overflow-hidden">
+            <div className="h-2 bg-indigo-500/30" />
+            <CardHeader className="bg-white border-b border-indigo-200">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-indigo-700 border border-indigo-800 rounded-xl flex items-center justify-center">
                   <FileText className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -584,7 +580,7 @@ export default function ProfessionalSettingsPage() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-6">
-                <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-xl border-2 border-gray-200">
+                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
                   <FileUpload
                     onFilesChange={setUploadedFiles}
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
@@ -593,7 +589,7 @@ export default function ProfessionalSettingsPage() {
                     maxSize={10}
                   />
                   <div className="mt-4 flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-gray-600">
                       Upload professional certificates, licenses, and other relevant documents.
                       <br />
@@ -605,14 +601,14 @@ export default function ProfessionalSettingsPage() {
                 <div className="grid sm:grid-cols-2 gap-3">
                   <Button 
                     variant="outline" 
-                    className="h-12 border-2 border-indigo-300 hover:bg-indigo-50"
+                    className="h-12 border border-teal-300 hover:bg-indigo-50"
                   >
                     <Upload className="h-5 w-5 mr-2" />
                     Upload Documents
                   </Button>
                   <Button 
                     variant="outline"
-                    className="h-12 border-2 border-purple-300 hover:bg-purple-50"
+                    className="h-12 border border-emerald-300 hover:bg-purple-50"
                   >
                     <Download className="h-5 w-5 mr-2" />
                     Download All
@@ -623,21 +619,6 @@ export default function ProfessionalSettingsPage() {
           </Card>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 3s ease infinite;
-        }
-      `}</style>
     </div>
   )
 }

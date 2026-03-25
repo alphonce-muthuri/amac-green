@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { supabase } from "@/lib/supabase"
@@ -34,11 +34,44 @@ export default function DashboardPage() {
   })
   const router = useRouter()
 
-  useEffect(() => {
-    checkUser()
-  }, [router])
+  const checkApplicationStatus = useCallback(async (user: any) => {
+    const userRole = user?.user_metadata?.role
 
-  const checkUser = async () => {
+    if (userRole === "vendor") {
+      const { data } = await supabase
+        .from("vendor_applications")
+        .select("status, created_at, company_name")
+        .eq("user_id", user.id)
+        .single()
+      setApplicationStatus(data)
+    } else if (userRole === "professional") {
+      const { data } = await supabase
+        .from("professional_applications")
+        .select("status, created_at, company_name")
+        .eq("user_id", user.id)
+        .single()
+      setApplicationStatus(data)
+    } else if (userRole === "delivery") {
+      const { data } = await supabase
+        .from("delivery_applications")
+        .select("status, created_at, first_name, last_name")
+        .eq("user_id", user.id)
+        .single()
+      setApplicationStatus(data)
+    }
+  }, [])
+
+  const loadStats = useCallback(async (_user: any) => {
+    // Mock stats for now - replace with actual data fetch
+    setStats({
+      totalOrders: 12,
+      pendingOrders: 2,
+      completedOrders: 10,
+      totalSpent: 45680,
+    })
+  }, [])
+
+  const checkUser = useCallback(async () => {
     try {
       const {
         data: { user },
@@ -81,44 +114,11 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router, checkApplicationStatus, loadStats])
 
-  const checkApplicationStatus = async (user: any) => {
-    const userRole = user?.user_metadata?.role
-
-    if (userRole === "vendor") {
-      const { data } = await supabase
-        .from("vendor_applications")
-        .select("status, created_at, company_name")
-        .eq("user_id", user.id)
-        .single()
-      setApplicationStatus(data)
-    } else if (userRole === "professional") {
-      const { data } = await supabase
-        .from("professional_applications")
-        .select("status, created_at, company_name")
-        .eq("user_id", user.id)
-        .single()
-      setApplicationStatus(data)
-    } else if (userRole === "delivery") {
-      const { data } = await supabase
-        .from("delivery_applications")
-        .select("status, created_at, first_name, last_name")
-        .eq("user_id", user.id)
-        .single()
-      setApplicationStatus(data)
-    }
-  }
-
-  const loadStats = async (user: any) => {
-    // Mock stats for now - replace with actual data fetch
-    setStats({
-      totalOrders: 12,
-      pendingOrders: 2,
-      completedOrders: 10,
-      totalSpent: 45680,
-    })
-  }
+  useEffect(() => {
+    void checkUser()
+  }, [checkUser])
 
   const getStatusBadge = (status: string) => {
     switch (status) {

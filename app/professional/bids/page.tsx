@@ -92,11 +92,11 @@ export default function MyBidsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
-        return "bg-gradient-to-r from-amber-500 to-orange-500 text-white animate-pulse"
+        return "bg-amber-600 text-white "
       case "accepted":
-        return "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+        return "bg-emerald-600 text-white"
       case "rejected":
-        return "bg-gradient-to-r from-red-500 to-rose-500 text-white"
+        return "bg-red-600 text-white"
       default:
         return "bg-gray-500 text-white"
     }
@@ -105,15 +105,15 @@ export default function MyBidsPage() {
   const getJobStatusBadge = (status: string) => {
     switch (status) {
       case "open":
-        return "bg-gradient-to-r from-blue-500 to-cyan-500 text-white"
+        return "bg-blue-600 text-white"
       case "bidding":
-        return "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+        return "bg-purple-600 text-white"
       case "assigned":
-        return "bg-gradient-to-r from-green-500 to-teal-500 text-white"
+        return "bg-teal-600 text-white"
       case "in_progress":
-        return "bg-gradient-to-r from-orange-500 to-amber-500 text-white"
+        return "bg-orange-600 text-white"
       case "completed":
-        return "bg-gradient-to-r from-emerald-600 to-green-700 text-white"
+        return "bg-emerald-700 text-white"
       default:
         return "bg-gray-500 text-white"
     }
@@ -136,7 +136,7 @@ export default function MyBidsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="w-20 h-20 relative mx-auto mb-6">
             <div className="absolute inset-0 border-4 border-teal-200 rounded-full"></div>
@@ -151,46 +151,42 @@ export default function MyBidsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Hero Header */}
           <div className="relative overflow-hidden">
-            <Card className="border-2 border-teal-300 shadow-2xl">
-              <div className="h-2 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 animate-gradient-x"></div>
-              
-              <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-teal-400/10 to-cyan-400/10 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-400/10 to-cyan-400/10 rounded-full blur-3xl"></div>
-              
+            <Card className="border border-teal-300 shadow-sm">
+              <div className="h-2 bg-teal-500/30" />
               <CardContent className="relative p-6 sm:p-8">
                 <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
                   <div className="flex items-center gap-6">
                     <div className="relative">
-                      <div className="w-24 h-24 bg-gradient-to-br from-teal-600 via-cyan-600 to-blue-600 rounded-2xl flex items-center justify-center shadow-2xl">
+                      <div className="w-24 h-24 bg-teal-700 border border-teal-800 rounded-2xl flex items-center justify-center shadow-sm">
                         <Target className="h-12 w-12 text-white" />
                       </div>
-                      <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
+                      <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-600 border border-emerald-700 rounded-full flex items-center justify-center border-4 border-white shadow-sm">
                         <CheckCircle2 className="h-5 w-5 text-white" />
                       </div>
                     </div>
 
                     <div>
-                      <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
+                      <h1 className="text-xl font-bold tracking-tight text-gray-900 mb-2">
                         My Bids
                       </h1>
                       <p className="text-lg text-gray-600">
                         Track all your <span className="font-bold text-teal-700">{stats.total}</span> submitted proposals
                       </p>
                       <div className="flex flex-wrap gap-2 mt-3">
-                        <Badge className="bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border-2 border-amber-300">
+                        <Badge className="bg-amber-50 text-amber-800 border border-amber-300">
                           <Clock className="h-3 w-3 mr-1" />
                           {stats.pending} Pending
                         </Badge>
-                        <Badge className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-2 border-green-300">
+                        <Badge className="bg-emerald-50 text-green-800 border border-green-300">
                           <CheckCircle2 className="h-3 w-3 mr-1" />
                           {stats.accepted} Accepted
                         </Badge>
-                        <Badge className="bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-2 border-red-300">
+                        <Badge className="bg-red-50 text-red-800 border border-red-300">
                           <XCircle className="h-3 w-3 mr-1" />
                           {stats.rejected} Rejected
                         </Badge>
@@ -199,8 +195,8 @@ export default function MyBidsPage() {
                   </div>
 
                   <div className="flex flex-col items-center gap-3">
-                    <div className="w-20 h-20 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-full flex items-center justify-center shadow-lg shadow-teal-500/50">
-                      <span className="text-3xl font-extrabold text-white">{winRate}%</span>
+                    <div className="w-20 h-20 bg-teal-600 border border-teal-700 rounded-full flex items-center justify-center shadow-sm shadow-sm">
+                      <span className="text-xl font-bold tracking-tight text-white">{winRate}%</span>
                     </div>
                     <Badge className="bg-teal-600 text-white">Win Rate</Badge>
                   </div>
@@ -211,58 +207,58 @@ export default function MyBidsPage() {
 
           {/* Stats Dashboard */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border-2 border-blue-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+            <Card className="border border-blue-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-blue-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center">
                     <BarChart3 className="h-6 w-6 text-blue-600" />
                   </div>
                   <Badge className="bg-blue-600 text-white">Total</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-blue-700 mb-1">{stats.total}</p>
+                <p className="text-xl font-bold tracking-tight text-blue-700 mb-1">{stats.total}</p>
                 <p className="text-sm text-gray-600">Bids Submitted</p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-amber-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-amber-500 to-orange-500"></div>
+            <Card className="border border-amber-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-orange-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center">
                     <Clock className="h-6 w-6 text-amber-600" />
                   </div>
-                  <Badge className="bg-amber-600 text-white animate-pulse">Pending</Badge>
+                  <Badge className="bg-amber-600 text-white ">Pending</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-amber-700 mb-1">{stats.pending}</p>
+                <p className="text-xl font-bold tracking-tight text-amber-700 mb-1">{stats.pending}</p>
                 <p className="text-sm text-gray-600">Awaiting Decision</p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-green-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
+            <Card className="border border-green-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-emerald-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center">
                     <Award className="h-6 w-6 text-green-600" />
                   </div>
                   <Badge className="bg-green-600 text-white">Won</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-green-700 mb-1">{stats.accepted}</p>
+                <p className="text-xl font-bold tracking-tight text-green-700 mb-1">{stats.accepted}</p>
                 <p className="text-sm text-gray-600">Accepted Bids</p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-emerald-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
+            <Card className="border border-emerald-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-teal-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-teal-50 border border-teal-200 rounded-xl flex items-center justify-center">
                     <DollarSign className="h-6 w-6 text-emerald-600" />
                   </div>
                   <Badge className="bg-emerald-600 text-white">Value</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-emerald-700 mb-1">
+                <p className="text-xl font-bold tracking-tight text-emerald-700 mb-1">
                   {(stats.acceptedValue / 1000).toFixed(0)}K
                 </p>
                 <p className="text-sm text-gray-600">Won Value (KSH)</p>
@@ -271,14 +267,14 @@ export default function MyBidsPage() {
           </div>
 
           {/* Filter */}
-          <Card className="border-2 border-purple-200">
+          <Card className="border border-emerald-200">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <Filter className="h-5 w-5 text-purple-600" />
+                <Filter className="h-5 w-5 text-teal-600" />
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="flex-1 h-12 px-4 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 text-base font-semibold"
+                  className="flex-1 h-12 px-4 border border-emerald-300 rounded-lg focus:outline-none focus:border-purple-500 text-base font-semibold"
                 >
                   <option value="all">🎯 All Bids ({stats.total})</option>
                   <option value="pending">⏳ Pending ({stats.pending})</option>
@@ -291,12 +287,12 @@ export default function MyBidsPage() {
 
           {/* Bids List */}
           {filteredBids.length === 0 ? (
-            <Card className="border-2 border-gray-300">
+            <Card className="border border-gray-300">
               <CardContent className="text-center py-16">
-                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-24 h-24 bg-gray-50 border border-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Target className="h-12 w-12 text-gray-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                <h3 className="text-xl font-bold tracking-tight text-gray-900 mb-3">
                   {filterStatus === "all" ? "No Bids Submitted Yet" : `No ${filterStatus} Bids`}
                 </h3>
                 <p className="text-gray-600 mb-4">
@@ -307,7 +303,7 @@ export default function MyBidsPage() {
                 </p>
                 <Button 
                   asChild
-                  className="bg-gradient-to-r from-emerald-600 to-teal-600"
+                  className="bg-teal-600 hover:bg-teal-700"
                 >
                   <a href="/professional/jobs">Browse Available Jobs</a>
                 </Button>
@@ -318,14 +314,13 @@ export default function MyBidsPage() {
               {filteredBids.map((bid) => (
                 <Card 
                   key={bid.id} 
-                  className="group border-2 border-teal-200 hover:shadow-2xl hover:scale-[1.01] transition-all duration-300"
+                  className="group border border-teal-200 hover:shadow-sm  transition-all duration-300"
                 >
-                  <div className="h-2 bg-gradient-to-r from-teal-500 to-cyan-500"></div>
-                  
-                  <CardHeader className="pb-3 bg-gradient-to-br from-teal-50/50 to-cyan-50/50">
+                  <div className="h-2 bg-teal-500/30" />
+            <CardHeader className="pb-3 bg-white border-b border-teal-200">
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       <div className="flex items-start gap-3 flex-1">
-                        <div className="w-12 h-12 bg-gradient-to-br from-teal-600 to-cyan-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <div className="w-12 h-12 bg-teal-700 border border-teal-800 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
                           {getStatusIcon(bid.status)}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -351,7 +346,7 @@ export default function MyBidsPage() {
                   <CardContent className="space-y-4">
                     {/* Info Grid */}
                     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-3 rounded-xl border-2 border-blue-200">
+                      <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
                         <div className="flex items-center gap-2 mb-1">
                           <MapPin className="h-4 w-4 text-blue-600" />
                           <span className="text-xs font-semibold text-gray-600">Location</span>
@@ -359,7 +354,7 @@ export default function MyBidsPage() {
                         <p className="text-sm font-bold text-gray-900">{bid.installation_jobs?.location_city}</p>
                       </div>
 
-                      <div className="bg-gradient-to-br from-emerald-50 to-green-50 p-3 rounded-xl border-2 border-emerald-200">
+                      <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-200">
                         <div className="flex items-center gap-2 mb-1">
                           <DollarSign className="h-4 w-4 text-emerald-600" />
                           <span className="text-xs font-semibold text-gray-600">My Bid</span>
@@ -369,9 +364,9 @@ export default function MyBidsPage() {
                         </p>
                       </div>
 
-                      <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-3 rounded-xl border-2 border-purple-200">
+                      <div className="bg-purple-50 p-3 rounded-xl border border-emerald-200">
                         <div className="flex items-center gap-2 mb-1">
-                          <Calendar className="h-4 w-4 text-purple-600" />
+                          <Calendar className="h-4 w-4 text-teal-600" />
                           <span className="text-xs font-semibold text-gray-600">Submitted</span>
                         </div>
                         <p className="text-sm font-bold text-gray-900">
@@ -380,7 +375,7 @@ export default function MyBidsPage() {
                       </div>
 
                       {bid.estimated_duration_hours && (
-                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-3 rounded-xl border-2 border-orange-200">
+                        <div className="bg-orange-50 p-3 rounded-xl border border-orange-200">
                           <div className="flex items-center gap-2 mb-1">
                             <Clock className="h-4 w-4 text-orange-600" />
                             <span className="text-xs font-semibold text-gray-600">Duration</span>
@@ -400,7 +395,7 @@ export default function MyBidsPage() {
                       <Button 
                         size="sm" 
                         onClick={() => setSelectedBid(bid)}
-                        className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 group-hover:scale-105 transition-transform"
+                        className="bg-teal-600 hover:bg-teal-700  transition-transform"
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         View Details
@@ -417,13 +412,12 @@ export default function MyBidsPage() {
       {/* Bid Details Modal */}
       {selectedBid && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto border-2 border-teal-300 shadow-2xl">
-            <div className="h-2 bg-gradient-to-r from-teal-500 via-cyan-500 to-blue-500 animate-gradient-x"></div>
-            
-            <CardHeader className="border-b-2 bg-gradient-to-br from-teal-50 to-cyan-50">
+          <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-teal-300 shadow-sm">
+            <div className="h-2 bg-teal-500/30" />
+            <CardHeader className="border-b-2 bg-teal-50/60">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-teal-600 to-cyan-600 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 bg-teal-700 border border-teal-800 rounded-xl flex items-center justify-center">
                     <Eye className="h-6 w-6 text-white" />
                   </div>
                   <div>
@@ -461,9 +455,9 @@ export default function MyBidsPage() {
               </div>
 
               {/* Job Information */}
-              <div className="bg-gradient-to-br from-gray-50 to-slate-50 p-6 rounded-2xl border-2 border-gray-200">
+              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gray-700 border border-gray-800 rounded-lg flex items-center justify-center">
                     <Package className="h-5 w-5 text-white" />
                   </div>
                   <h4 className="font-bold text-lg text-gray-900">Job Information</h4>
@@ -478,7 +472,7 @@ export default function MyBidsPage() {
 
                   <div className="bg-white p-4 rounded-xl">
                     <p className="text-sm font-semibold text-gray-600 mb-2">Product Cost</p>
-                    <p className="text-2xl font-extrabold text-emerald-600">
+                    <p className="text-xl font-bold tracking-tight text-emerald-600">
                       KSH {selectedBid.installation_jobs?.total_product_cost?.toLocaleString()}
                     </p>
                   </div>
@@ -486,7 +480,7 @@ export default function MyBidsPage() {
                   {selectedBid.installation_jobs?.preferred_date && (
                     <div className="bg-white p-4 rounded-xl sm:col-span-2">
                       <p className="text-sm font-semibold text-gray-600 mb-2">Preferred Date</p>
-                      <p className="text-lg font-bold text-purple-600">
+                      <p className="text-lg font-bold text-teal-600">
                         {new Date(selectedBid.installation_jobs.preferred_date).toLocaleDateString('en-US', {
                           weekday: 'long',
                           year: 'numeric',
@@ -506,9 +500,9 @@ export default function MyBidsPage() {
 
               {/* Products */}
               {selectedBid.installation_jobs?.installation_job_items && selectedBid.installation_jobs.installation_job_items.length > 0 && (
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-2xl border-2 border-emerald-200">
+                <div className="bg-emerald-50/60 p-6 rounded-2xl border border-emerald-200">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-teal-700 border border-teal-800 rounded-lg flex items-center justify-center">
                       <Package className="h-5 w-5 text-white" />
                     </div>
                     <h4 className="font-bold text-lg text-gray-900">Products to Install</h4>
@@ -529,9 +523,9 @@ export default function MyBidsPage() {
               )}
 
               {/* My Bid Details */}
-              <div className="bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 p-6 rounded-2xl border-2 border-teal-300 shadow-xl">
+              <div className="bg-teal-50 p-6 rounded-2xl border border-teal-300 shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-teal-600 to-cyan-600 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-teal-700 border border-teal-800 rounded-lg flex items-center justify-center">
                     <Award className="h-5 w-5 text-white" />
                   </div>
                   <h4 className="font-bold text-lg text-gray-900">Your Bid Breakdown</h4>
@@ -561,7 +555,7 @@ export default function MyBidsPage() {
                 <div className="bg-white p-4 rounded-xl">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-gray-900">Total Bid Amount:</span>
-                    <span className="text-3xl font-extrabold text-teal-700">
+                    <span className="text-xl font-bold tracking-tight text-teal-700">
                       KSH {selectedBid.total_bid_amount?.toLocaleString()}
                     </span>
                   </div>
@@ -576,12 +570,12 @@ export default function MyBidsPage() {
 
               {/* Proposal Notes */}
               {selectedBid.proposal_notes && (
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-2xl border-2 border-purple-200">
+                <div className="bg-violet-50 p-6 rounded-2xl border border-emerald-200">
                   <div className="flex items-center gap-3 mb-3">
-                    <Sparkles className="h-5 w-5 text-purple-600" />
+                    <Sparkles className="h-5 w-5 text-teal-600" />
                     <h4 className="font-bold text-lg text-gray-900">Your Proposal</h4>
                   </div>
-                  <p className="text-sm bg-white p-4 rounded-xl border border-purple-200">{selectedBid.proposal_notes}</p>
+                  <p className="text-sm bg-white p-4 rounded-xl border border-emerald-200">{selectedBid.proposal_notes}</p>
                 </div>
               )}
 
@@ -598,21 +592,6 @@ export default function MyBidsPage() {
           </Card>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 3s ease infinite;
-        }
-      `}</style>
     </div>
   )
 }

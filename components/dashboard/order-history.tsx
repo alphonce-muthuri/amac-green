@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -39,11 +40,7 @@ export default function OrderHistory({ userId }: OrderHistoryProps) {
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
-  useEffect(() => {
-    fetchOrders()
-  }, [userId])
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const result = await getCustomerOrders(userId)
       if (result.success) {
@@ -54,7 +51,11 @@ export default function OrderHistory({ userId }: OrderHistoryProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
+
+  useEffect(() => {
+    void fetchOrders()
+  }, [fetchOrders])
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -199,9 +200,11 @@ export default function OrderHistory({ userId }: OrderHistoryProps) {
                                 <div key={item.id} className="flex items-center justify-between p-3 border rounded">
                                   <div className="flex items-center">
                                     {item.product_image_url && (
-                                      <img
+                                      <Image
                                         src={item.product_image_url}
                                         alt={item.product_name}
+                                        width={48}
+                                        height={48}
                                         className="w-12 h-12 object-cover rounded mr-3"
                                       />
                                     )}

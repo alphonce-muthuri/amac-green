@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,24 +18,7 @@ export default function ProfessionalAuthGuard({ children }: ProfessionalAuthGuar
   const [applicationStatus, setApplicationStatus] = useState<any>(null)
   const router = useRouter()
 
-  useEffect(() => {
-    checkUser()
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_OUT" || !session) {
-        router.push("/login")
-      } else if (event === "SIGNED_IN" && session) {
-        await checkUser()
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [router])
-
-  const checkUser = async () => {
+  const checkUser = useCallback(async () => {
     try {
       const {
         data: { user },
@@ -94,7 +77,24 @@ export default function ProfessionalAuthGuard({ children }: ProfessionalAuthGuar
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    void checkUser()
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        router.push("/login")
+      } else if (event === "SIGNED_IN" && session) {
+        await checkUser()
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [router, checkUser])
 
   const handleLogout = async () => {
     try {

@@ -70,21 +70,21 @@ export function DeliveryApplications() {
     switch (status) {
       case "pending":
         return (
-          <Badge className="bg-purple-100 text-purple-700 border-2 border-purple-300 font-bold">
+          <Badge className="bg-purple-100 text-purple-700 border border-purple-300 font-semibold hover:bg-purple-100">
             <Clock className="h-4 w-4 mr-1" />
             Pending Review
           </Badge>
         )
       case "approved":
         return (
-          <Badge className="bg-green-100 text-green-700 border-2 border-green-300 font-bold">
+          <Badge className="bg-green-100 text-green-700 border border-green-300 font-semibold hover:bg-green-100">
             <CheckCircle className="h-4 w-4 mr-1" />
             Approved
           </Badge>
         )
       case "rejected":
         return (
-          <Badge className="bg-red-100 text-red-700 border-2 border-red-300 font-bold">
+          <Badge className="bg-red-100 text-red-700 border border-red-300 font-semibold hover:bg-red-100">
             <XCircle className="h-4 w-4 mr-1" />
             Rejected
           </Badge>
@@ -126,14 +126,14 @@ export function DeliveryApplications() {
           </h2>
           <p className="text-gray-600 mt-1">Review and manage delivery partner applications</p>
         </div>
-        <Button onClick={loadApplications} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+        <Button onClick={loadApplications} className="bg-purple-600 hover:bg-purple-700">
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
       </div>
 
       {applications.length === 0 ? (
-        <Card className="border-2 border-gray-200">
+        <Card className="border border-gray-200">
           <CardContent className="text-center py-16">
             <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Truck className="h-10 w-10 text-purple-600" />
@@ -148,25 +148,25 @@ export function DeliveryApplications() {
             const VehicleIcon = getVehicleIcon(app.vehicle_type)
             
             return (
-              <Card key={app.id} className="border-2 border-purple-200 hover:shadow-2xl transition-all duration-300 hover:border-purple-400">
-                <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-                <CardHeader className="bg-gradient-to-br from-purple-50 to-pink-50">
+              <Card key={app.id} className="border border-purple-200/80 shadow-sm transition-shadow hover:shadow-md">
+                <div className="h-1 bg-purple-500"></div>
+                <CardHeader className="bg-purple-50/40">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                        <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-semibold text-lg">
                           {app.first_name.charAt(0)}{app.last_name.charAt(0)}
                         </div>
                         <div>
-                          <CardTitle className="text-2xl font-bold text-gray-900">
+                          <CardTitle className="text-xl font-semibold text-gray-900">
                             {app.first_name} {app.last_name}
                           </CardTitle>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge className="bg-purple-100 text-purple-700 border-2 border-purple-300 font-semibold">
+                            <Badge className="bg-purple-100 text-purple-700 border border-purple-300 font-semibold hover:bg-purple-100">
                               <VehicleIcon className="h-3 w-3 mr-1" />
                               {app.vehicle_type}
                             </Badge>
-                            <Badge className="bg-purple-100 text-purple-700 border-2 border-purple-300 font-semibold text-xs">
+                            <Badge className="bg-purple-100 text-purple-700 border border-purple-300 font-semibold text-xs hover:bg-purple-100">
                               {app.vehicle_registration}
                             </Badge>
                           </div>
@@ -179,7 +179,7 @@ export function DeliveryApplications() {
                 <CardContent className="p-6">
                   <div className="grid md:grid-cols-2 gap-6 mb-6">
                     <div className="space-y-3">
-                      <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-3">Contact Information</h4>
+                      <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide mb-3">Contact Information</h4>
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                         <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                           <Mail className="h-5 w-5 text-purple-600" />
@@ -210,15 +210,15 @@ export function DeliveryApplications() {
                     </div>
 
                     <div className="space-y-3">
-                      <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-3">Vehicle & License Details</h4>
-                      <div className="p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                      <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide mb-3">Vehicle & License Details</h4>
+                      <div className="p-3 bg-purple-50/60 rounded-lg border border-purple-200">
                         <div className="flex items-center gap-2 mb-2">
                           <Shield className="w-4 h-4 text-purple-600" />
                           <p className="text-xs text-purple-700 font-semibold">Driver's License</p>
                         </div>
                         <p className="text-sm font-bold text-gray-900">{app.driver_license}</p>
                       </div>
-                      <div className="p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                      <div className="p-3 bg-purple-50/60 rounded-lg border border-purple-200">
                         <div className="flex items-center gap-2 mb-2">
                           <Car className="w-4 h-4 text-purple-600" />
                           <p className="text-xs text-purple-700 font-semibold">National ID</p>
@@ -246,7 +246,7 @@ export function DeliveryApplications() {
                             key={index}
                             variant="outline"
                             onClick={() => window.open(doc.url, '_blank')}
-                            className="h-auto py-3 border-2 hover:border-purple-400 hover:bg-purple-50"
+                            className="h-auto py-3 border hover:border-purple-300 hover:bg-purple-50"
                           >
                             <FileText className="h-4 w-4 mr-2 text-purple-600" />
                             <span className="text-xs font-medium truncate">{doc.name}</span>
@@ -261,7 +261,7 @@ export function DeliveryApplications() {
                     <Button 
                       variant="outline" 
                       onClick={() => setSelectedApp(app)}
-                      className="border-2"
+                      className="border"
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       View Full Details
@@ -297,9 +297,9 @@ export function DeliveryApplications() {
       {/* Detail Modal */}
       {selectedApp && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto border-2 border-purple-300 shadow-2xl">
-            <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-            <CardHeader className="bg-gradient-to-br from-purple-50 to-pink-50 border-b">
+          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-purple-300 shadow-lg">
+            <div className="h-1 bg-purple-500"></div>
+            <CardHeader className="bg-purple-50/40 border-b">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-2xl font-bold text-gray-900">
@@ -363,7 +363,7 @@ export function DeliveryApplications() {
                   </h4>
                   <div className="grid gap-3">
                     {selectedApp.documents.map((doc, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                      <div key={index} className="flex items-center justify-between p-4 bg-purple-50/60 rounded-lg border border-purple-200">
                         <div className="flex items-center space-x-3">
                           <FileText className="h-5 w-5 text-purple-600" />
                           <div>

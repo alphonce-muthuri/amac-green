@@ -127,7 +127,7 @@ export default function ProjectsPage() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Project Management</h1>
+              <h1 className="text-2xl md:text-xl font-bold tracking-tight tracking-tight text-gray-900">Project Management</h1>
               <p className="text-gray-600 mt-2">
                 Manage your professional projects and installations
               </p>
@@ -270,7 +270,7 @@ export default function ProjectsPage() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{projects.length}</div>
+              <div className="text-xl font-bold tracking-tight">{projects.length}</div>
               <p className="text-xs text-muted-foreground">All projects</p>
             </CardContent>
           </Card>
@@ -281,7 +281,7 @@ export default function ProjectsPage() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl font-bold tracking-tight">
                 {projects.filter(p => p.status === "In Progress").length}
               </div>
               <p className="text-xs text-muted-foreground">Currently working</p>
@@ -294,7 +294,7 @@ export default function ProjectsPage() {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl font-bold tracking-tight">
                 {projects.filter(p => p.status === "Completed").length}
               </div>
               <p className="text-xs text-muted-foreground">Finished projects</p>
@@ -307,7 +307,7 @@ export default function ProjectsPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-xl font-bold tracking-tight">
                 KSH {projects.reduce((total, project) => total + project.budget, 0).toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">Project value</p>

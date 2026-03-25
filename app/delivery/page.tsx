@@ -85,6 +85,7 @@ export default function DeliveryDashboard() {
     })
 
     return () => subscription.unsubscribe()
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- checkUser is intentionally omitted; adding it would re-run auth subscription when delivery polling state updates
   }, [router])
 
   const checkUser = async () => {
@@ -271,21 +272,21 @@ export default function DeliveryDashboard() {
     switch (status) {
       case "pending":
         return (
-          <Badge className="bg-amber-100 text-amber-700 border-2 border-amber-300 font-bold">
+          <Badge className="rounded-full border border-amber-200 bg-amber-50 text-amber-700 text-xs font-medium">
             <Clock className="h-3 w-3 mr-1" />
             Pending Review
           </Badge>
         )
       case "approved":
         return (
-          <Badge className="bg-green-100 text-green-700 border-2 border-green-300 font-bold">
+          <Badge className="rounded-full border border-green-200 bg-green-50 text-green-700 text-xs font-medium">
             <CheckCircle className="h-3 w-3 mr-1" />
             Approved
           </Badge>
         )
       case "rejected":
         return (
-          <Badge className="bg-red-100 text-red-700 border-2 border-red-300 font-bold">
+          <Badge className="rounded-full border border-red-200 bg-red-50 text-red-700 text-xs font-medium">
             <XCircle className="h-3 w-3 mr-1" />
             Rejected
           </Badge>
@@ -299,42 +300,42 @@ export default function DeliveryDashboard() {
     switch (status) {
       case "assigned":
         return (
-          <Badge className="bg-purple-100 text-purple-700 border-2 border-purple-300 font-bold">
+          <Badge className="rounded-full border border-purple-200 bg-purple-50 text-purple-700 text-xs font-medium">
             <Clock className="h-3 w-3 mr-1" />
             Assigned
           </Badge>
         )
       case "picked_up":
         return (
-          <Badge className="bg-blue-100 text-blue-700 border-2 border-blue-300 font-bold">
+          <Badge className="rounded-full border border-blue-200 bg-blue-50 text-blue-700 text-xs font-medium">
             <Package className="h-3 w-3 mr-1" />
             Picked Up
           </Badge>
         )
       case "in_transit":
         return (
-          <Badge className="bg-orange-100 text-orange-700 border-2 border-orange-300 font-bold">
+          <Badge className="rounded-full border border-orange-200 bg-orange-50 text-orange-700 text-xs font-medium">
             <Truck className="h-3 w-3 mr-1" />
             In Transit
           </Badge>
         )
       case "delivered":
         return (
-          <Badge className="bg-green-100 text-green-700 border-2 border-green-300 font-bold">
+          <Badge className="rounded-full border border-green-200 bg-green-50 text-green-700 text-xs font-medium">
             <CheckCircle className="h-3 w-3 mr-1" />
             Delivered
           </Badge>
         )
       case "failed":
         return (
-          <Badge className="bg-red-100 text-red-700 border-2 border-red-300 font-bold">
+          <Badge className="rounded-full border border-red-200 bg-red-50 text-red-700 text-xs font-medium">
             <XCircle className="h-3 w-3 mr-1" />
             Failed
           </Badge>
         )
       case "cancelled":
         return (
-          <Badge className="bg-gray-100 text-gray-700 border-2 border-gray-300 font-bold">
+          <Badge className="rounded-full border border-gray-200 bg-gray-50 text-gray-700 text-xs font-medium">
             <XCircle className="h-3 w-3 mr-1" />
             Cancelled
           </Badge>
@@ -346,14 +347,14 @@ export default function DeliveryDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="w-20 h-20 relative mx-auto mb-6">
             <div className="absolute inset-0 border-4 border-purple-200 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
             <Truck className="absolute inset-0 m-auto h-8 w-8 text-purple-600" />
           </div>
-          <p className="text-lg font-bold text-gray-900">Loading Your Dashboard</p>
+          <p className="text-lg font-semibold text-gray-900">Loading Your Dashboard</p>
           <p className="text-sm text-gray-600 mt-1">Preparing delivery management...</p>
         </div>
       </div>
@@ -369,20 +370,20 @@ export default function DeliveryDashboard() {
     : 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Top Navigation Bar */}
-      <nav className="bg-white border-b-2 border-indigo-200 sticky top-0 z-50 shadow-lg">
+      <nav className="bg-white border-b border-violet-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-violet-700 border border-violet-800 rounded-lg flex items-center justify-center">
                 <Truck className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-gray-900">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-gray-900">
                   Delivery Partner
                 </h1>
-                <p className="text-xs text-gray-600">Professional Dashboard</p>
+                <p className="text-xs text-gray-600 tracking-tight">Professional Dashboard</p>
               </div>
             </div>
             
@@ -400,7 +401,7 @@ export default function DeliveryDashboard() {
                 onClick={handleLogout}
                 disabled={loggingOut}
                 size="sm"
-                className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700"
+                className="bg-red-600 hover:bg-red-700"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">{loggingOut ? "Logging out..." : "Logout"}</span>
@@ -413,22 +414,20 @@ export default function DeliveryDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           {/* Hero Section - Driver Profile Card */}
-          <div className="relative overflow-hidden">
-            <Card className="border-2 border-indigo-300 shadow-2xl">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-pink-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
-              
-              <CardContent className="relative p-6 sm:p-8">
+          <div className="pb-6 border-b border-violet-200">
+            <Card className="border border-violet-200 shadow-sm overflow-hidden">
+              <div className="h-2 bg-violet-500/30" />
+              <CardContent className="p-6 sm:p-8">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                   {/* Avatar */}
                   <div className="relative">
-                    <div className="w-24 h-24 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl">
-                      <span className="text-4xl font-extrabold text-white">
+                    <div className="w-20 h-20 bg-violet-700 border border-violet-800 rounded-2xl flex items-center justify-center shadow-sm">
+                      <span className="text-3xl font-semibold text-white tracking-tight">
                         {applicationStatus?.first_name?.charAt(0) || "D"}
                       </span>
                     </div>
                     {applicationStatus?.status === "approved" && (
-                      <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                      <div className="absolute -bottom-2 -right-2 w-9 h-9 bg-green-500 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                         <CheckCircle className="h-5 w-5 text-white" />
                       </div>
                     )}
@@ -437,12 +436,12 @@ export default function DeliveryDashboard() {
                   {/* Driver Info */}
                   <div className="flex-1 text-center md:text-left">
                     <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
-                      <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-gray-900">
+                      <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tighter bg-gradient-to-r from-violet-600 via-purple-700 to-violet-900 bg-clip-text text-transparent">
                         {applicationStatus?.first_name || "Driver"} {applicationStatus?.last_name || ""}
                       </h2>
                       {getStatusBadge(applicationStatus?.status)}
                     </div>
-                    <p className="text-gray-600 mb-4 tracking-tight">
+                    <p className="text-xs sm:text-sm text-gray-600 tracking-tight mb-4">
                       {applicationStatus?.status === "approved" 
                         ? "Active delivery partner. Ready for assignments"
                         : applicationStatus?.status === "pending"
@@ -451,18 +450,18 @@ export default function DeliveryDashboard() {
                     </p>
 
                     {/* Quick Stats Row */}
-                    <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                      <div className="flex items-center gap-2 bg-indigo-100 px-4 py-2 rounded-full">
-                        <Star className="h-4 w-4 text-indigo-600" />
-                        <span className="text-sm font-bold text-indigo-900">{completionRate}% Success</span>
+                    <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                      <div className="flex items-center gap-2 bg-violet-50 border border-violet-200 px-4 py-2 rounded-full">
+                        <Star className="h-4 w-4 text-violet-700" />
+                        <span className="text-xs sm:text-sm font-semibold text-violet-900 tracking-tight">{completionRate}% Success</span>
                       </div>
-                      <div className="flex items-center gap-2 bg-purple-100 px-4 py-2 rounded-full">
-                        <Award className="h-4 w-4 text-purple-600" />
-                        <span className="text-sm font-bold text-purple-900">{deliveryStats.total} Completed</span>
+                      <div className="flex items-center gap-2 bg-violet-50 border border-violet-200 px-4 py-2 rounded-full">
+                        <Award className="h-4 w-4 text-violet-700" />
+                        <span className="text-xs sm:text-sm font-semibold text-violet-900 tracking-tight">{deliveryStats.total} Completed</span>
                       </div>
-                      <div className="flex items-center gap-2 bg-pink-100 px-4 py-2 rounded-full">
-                        <TrendingUp className="h-4 w-4 text-pink-600" />
-                        <span className="text-sm font-bold text-pink-900">KSh {deliveryStats.totalEarnings.toLocaleString()}</span>
+                      <div className="flex items-center gap-2 bg-violet-50 border border-violet-200 px-4 py-2 rounded-full">
+                        <TrendingUp className="h-4 w-4 text-violet-700" />
+                        <span className="text-xs sm:text-sm font-semibold text-violet-900 tracking-tight">KSh {deliveryStats.totalEarnings.toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
@@ -471,8 +470,8 @@ export default function DeliveryDashboard() {
                   <div className="flex flex-col items-center gap-2">
                     <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
                       applicationStatus?.status === "approved" 
-                        ? 'bg-gradient-to-br from-green-400 to-emerald-500 shadow-lg shadow-green-500/50' 
-                        : 'bg-gradient-to-br from-gray-300 to-gray-400'
+                        ? 'bg-green-500 shadow-sm' 
+                        : 'bg-gray-300'
                     }`}>
                       {applicationStatus?.status === "approved" ? (
                         <Radio className="h-8 w-8 text-white animate-pulse" />
@@ -480,7 +479,7 @@ export default function DeliveryDashboard() {
                         <Clock className="h-8 w-8 text-white" />
                       )}
                     </div>
-                    <span className={`text-xs font-bold ${
+                    <span className={`text-xs font-medium ${
                       applicationStatus?.status === "approved" ? 'text-green-700' : 'text-gray-600'
                     }`}>
                       {applicationStatus?.status === "approved" ? 'ACTIVE' : 'INACTIVE'}
@@ -499,82 +498,82 @@ export default function DeliveryDashboard() {
                 {/* Left Column - Stats & Quick Actions */}
                 <div className="space-y-6">
                   {/* Today's Performance */}
-                  <Card className="border-2 border-green-200">
-                    <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
+                  <Card className="border border-green-200 shadow-sm">
+                    <div className="h-1 bg-green-500"></div>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-lg flex items-center gap-2">
+                      <CardTitle className="text-base font-semibold flex items-center gap-2">
                         <Target className="h-5 w-5 text-green-600" />
                         Today's Performance
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border-2 border-green-200">
+                      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-semibold text-gray-700">Deliveries Completed</span>
+                          <span className="text-sm font-medium text-gray-700">Deliveries Completed</span>
                           <CheckCircle className="h-5 w-5 text-green-600" />
                         </div>
-                        <p className="text-4xl font-extrabold text-green-700">{deliveryStats.todayDeliveries}</p>
+                        <p className="text-3xl font-semibold text-green-700">{deliveryStats.todayDeliveries}</p>
                         <p className="text-xs text-green-600 mt-1">Keep up the great work! 🎉</p>
                       </div>
 
-                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-xl border-2 border-blue-200">
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-semibold text-gray-700">Active Deliveries</span>
+                          <span className="text-sm font-medium text-gray-700">Active Deliveries</span>
                           <Activity className="h-5 w-5 text-blue-600" />
                         </div>
-                        <p className="text-4xl font-extrabold text-blue-700">{deliveryStats.pending}</p>
+                        <p className="text-3xl font-semibold text-blue-700">{deliveryStats.pending}</p>
                         <p className="text-xs text-blue-600 mt-1">In progress</p>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Lifetime Stats */}
-                  <Card className="border-2 border-indigo-200">
-                    <div className="h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                  <Card className="border border-violet-200 shadow-sm overflow-hidden">
+                    <div className="h-1 bg-violet-500/30" />
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Award className="h-5 w-5 text-indigo-600" />
+                      <CardTitle className="text-base font-semibold flex items-center gap-2">
+                        <Award className="h-5 w-5 text-violet-700" />
                         Career Stats
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg">
-                        <span className="text-sm font-semibold text-gray-700">Total Deliveries</span>
-                        <span className="text-2xl font-extrabold text-indigo-700">{deliveryStats.total}</span>
+                      <div className="flex justify-between items-center p-3 bg-violet-50 rounded-lg border border-violet-200">
+                        <span className="text-sm font-medium text-gray-700">Total Deliveries</span>
+                        <span className="text-xl font-semibold text-violet-800">{deliveryStats.total}</span>
                       </div>
-                      <div className="flex justify-between items-center p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
-                        <span className="text-sm font-semibold text-gray-700">Success Rate</span>
-                        <span className="text-2xl font-extrabold text-purple-700">{completionRate}%</span>
+                      <div className="flex justify-between items-center p-3 bg-violet-50 rounded-lg border border-violet-200">
+                        <span className="text-sm font-medium text-gray-700">Success Rate</span>
+                        <span className="text-xl font-semibold text-violet-800">{completionRate}%</span>
                       </div>
-                      <div className="flex justify-between items-center p-3 bg-gradient-to-br from-pink-50 to-rose-50 rounded-lg">
-                        <span className="text-sm font-semibold text-gray-700">Total Earnings</span>
-                        <span className="text-xl font-extrabold text-pink-700">KSh {deliveryStats.totalEarnings.toLocaleString()}</span>
+                      <div className="flex justify-between items-center p-3 bg-violet-50 rounded-lg border border-violet-200">
+                        <span className="text-sm font-medium text-gray-700">Total Earnings</span>
+                        <span className="text-xl font-semibold text-violet-800">KSh {deliveryStats.totalEarnings.toLocaleString()}</span>
                       </div>
                     </CardContent>
                   </Card>
 
                   {/* Quick Actions */}
-                  <Card className="border-2 border-purple-200">
-                    <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                  <Card className="border border-violet-200 shadow-sm overflow-hidden">
+                    <div className="h-1 bg-violet-500/30" />
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-purple-600" />
+                      <CardTitle className="text-base font-semibold flex items-center gap-2 tracking-tight">
+                        <Zap className="h-5 w-5 text-violet-700" />
                         Quick Actions
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       <Button 
-                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 justify-start"
+                        className="w-full bg-violet-600 hover:bg-violet-700 justify-start font-semibold"
                         onClick={handleManualRefresh}
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Refresh Deliveries
                       </Button>
-                      <Button variant="outline" className="w-full border-2 justify-start">
+                      <Button variant="outline" className="w-full justify-start">
                         <MapPin className="h-4 w-4 mr-2" />
                         Update Location
                       </Button>
-                      <Button variant="outline" className="w-full border-2 justify-start">
+                      <Button variant="outline" className="w-full justify-start">
                         <DollarSign className="h-4 w-4 mr-2" />
                         View Earnings History
                       </Button>
@@ -588,14 +587,14 @@ export default function DeliveryDashboard() {
                   <DeliveryLocationTracker userId={user?.id} />
 
                   {/* Active Deliveries */}
-                  <Card className="border-2 border-orange-200">
-                    <div className="h-2 bg-gradient-to-r from-orange-500 to-amber-500"></div>
-                    <CardHeader className="bg-gradient-to-br from-orange-50 to-amber-50 border-b">
+                  <Card className="border border-orange-200 shadow-sm">
+                    <div className="h-1 bg-orange-500"></div>
+                    <CardHeader className="bg-orange-50/70 border-b border-orange-100">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <CardTitle className="flex items-center gap-2">
                           <Truck className="h-6 w-6 text-orange-600" />
                           Active Deliveries
-                          <Badge className="bg-orange-100 text-orange-700 border-2 border-orange-300 font-bold">
+                          <Badge className="rounded-full border border-orange-200 bg-orange-50 text-orange-700 text-xs font-medium">
                             {deliveries.length}
                           </Badge>
                         </CardTitle>
@@ -610,10 +609,10 @@ export default function DeliveryDashboard() {
                     <CardContent className="p-4">
                       {deliveries.length === 0 ? (
                         <div className="text-center py-16">
-                          <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <div className="w-24 h-24 bg-orange-50 border border-orange-200 rounded-full flex items-center justify-center mx-auto mb-4">
                             <Package className="h-12 w-12 text-orange-600" />
                           </div>
-                          <h3 className="text-xl font-bold text-gray-900 mb-2">All Caught Up! 🎉</h3>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">All Caught Up! 🎉</h3>
                           <p className="text-gray-600 mb-4">
                             No active deliveries at the moment
                           </p>
@@ -624,19 +623,19 @@ export default function DeliveryDashboard() {
                       ) : (
                         <div className="space-y-4">
                           {deliveries.map((delivery) => (
-                            <Card key={delivery.id} className="border-2 border-gray-200 hover:shadow-xl transition-all">
-                              <div className="h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                            <Card key={delivery.id} className="border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
+                              <div className="h-1 bg-violet-500/30" />
                               <CardContent className="p-4">
                                 {/* Header */}
                                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                                   <div>
                                     <div className="flex items-center gap-2 mb-1">
                                       <Package className="h-5 w-5 text-indigo-600" />
-                                      <h3 className="text-xl font-extrabold text-gray-900">
+                                      <h3 className="text-lg font-semibold text-gray-900">
                                         #{delivery.orders.order_number}
                                       </h3>
                                     </div>
-                                    <p className="text-2xl font-bold text-indigo-600">
+                                    <p className="text-xl font-semibold text-indigo-600">
                                       KES {delivery.orders.total_amount.toLocaleString()}
                                     </p>
                                   </div>
@@ -645,12 +644,12 @@ export default function DeliveryDashboard() {
 
                                 {/* Details Grid */}
                                 <div className="grid sm:grid-cols-2 gap-3 mb-4">
-                                  <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-xl border-2 border-blue-200">
+                                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                                     <div className="flex items-center gap-2 mb-2">
                                       <MapPin className="h-4 w-4 text-blue-600" />
-                                      <span className="text-xs font-bold text-blue-900 uppercase">Delivery Address</span>
+                                      <span className="text-xs font-medium tracking-normal text-blue-900 uppercase">Delivery Address</span>
                                     </div>
-                                    <p className="text-sm font-semibold text-gray-900 mb-1">
+                                    <p className="text-sm font-medium text-gray-900 mb-1">
                                       {delivery.delivery_address_line1}
                                     </p>
                                     <p className="text-xs text-gray-600">
@@ -658,12 +657,12 @@ export default function DeliveryDashboard() {
                                     </p>
                                   </div>
 
-                                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border-2 border-purple-200">
+                                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
                                     <div className="flex items-center gap-2 mb-2">
                                       <Phone className="h-4 w-4 text-purple-600" />
-                                      <span className="text-xs font-bold text-purple-900 uppercase">Customer</span>
+                                      <span className="text-xs font-medium tracking-normal text-purple-900 uppercase">Customer</span>
                                     </div>
-                                    <p className="text-sm font-semibold text-gray-900 mb-1">
+                                    <p className="text-sm font-medium text-gray-900 mb-1">
                                       {delivery.orders.customer_email}
                                     </p>
                                     {delivery.orders.customer_phone && (
@@ -674,18 +673,18 @@ export default function DeliveryDashboard() {
 
                                 {/* Instructions */}
                                 {delivery.delivery_instructions && (
-                                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-3 rounded-lg border-2 border-amber-200 mb-4">
-                                    <p className="text-xs font-bold text-amber-900 mb-1">📋 Special Instructions:</p>
+                                  <div className="bg-amber-50 p-3 rounded-lg border border-amber-200 mb-4">
+                                    <p className="text-xs font-medium text-amber-900 mb-1">Special Instructions:</p>
                                     <p className="text-sm text-amber-800">{delivery.delivery_instructions}</p>
                                   </div>
                                 )}
 
                                 {/* Footer */}
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t-2">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-gray-200">
                                   <div className="space-y-1">
                                     <p className="text-sm">
-                                      <span className="font-bold text-gray-700">Delivery Fee:</span>
-                                      <span className="text-green-600 font-bold ml-2">
+                                      <span className="font-medium text-gray-700">Delivery Fee:</span>
+                                      <span className="text-green-600 font-semibold ml-2">
                                         KES {delivery.delivery_fee?.toLocaleString() || 0}
                                       </span>
                                     </p>
@@ -703,7 +702,7 @@ export default function DeliveryDashboard() {
                                         size="sm"
                                         onClick={() => handleAcceptDelivery(delivery.id)}
                                         disabled={updatingDelivery === delivery.id}
-                                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                                        className="bg-green-600 hover:bg-green-700"
                                       >
                                         <CheckCircle className="h-4 w-4 mr-1" />
                                         {updatingDelivery === delivery.id ? "Accepting..." : "Accept"}
@@ -714,7 +713,7 @@ export default function DeliveryDashboard() {
                                         size="sm"
                                         onClick={() => handleUpdateDeliveryStatus(delivery.id, "in_transit")}
                                         disabled={updatingDelivery === delivery.id}
-                                        className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                                        className="bg-blue-600 hover:bg-blue-700"
                                       >
                                         <Truck className="h-4 w-4 mr-1" />
                                         {updatingDelivery === delivery.id ? "Starting..." : "Start"}
@@ -725,7 +724,7 @@ export default function DeliveryDashboard() {
                                         size="sm"
                                         onClick={() => handleUpdateDeliveryStatus(delivery.id, "delivered")}
                                         disabled={updatingDelivery === delivery.id}
-                                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                                        className="bg-green-600 hover:bg-green-700"
                                       >
                                         <CheckCircle className="h-4 w-4 mr-1" />
                                         {updatingDelivery === delivery.id ? "Completing..." : "Complete"}
@@ -735,7 +734,6 @@ export default function DeliveryDashboard() {
                                       <Button
                                         size="sm"
                                         variant="outline"
-                                        className="border-2"
                                         onClick={() => {
                                           const address = `${delivery.delivery_address_line1}, ${delivery.delivery_city}`
                                           const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`

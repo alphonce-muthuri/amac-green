@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, useCallback } from "react"
+import { useRouter, usePathname } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,11 +15,9 @@ import {
   Menu,
   X,
   LayoutDashboard,
-  TrendingUp,
-  DollarSign,
-  Briefcase
 } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 
 const navigation = [
@@ -40,24 +38,23 @@ export default function ProfessionalLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [applicationStatus, setApplicationStatus] = useState<any>(null)
   const router = useRouter()
+  const pathname = usePathname() || ""
 
-  useEffect(() => {
-    checkUser()
+  const getApplicationStatus = useCallback(async (user: any) => {
+    try {
+      const { data } = await supabase
+        .from("professional_applications")
+        .select("*")
+        .eq("user_id", user.id)
+        .single()
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_OUT" || !session) {
-        router.push("/login")
-      } else if (event === "SIGNED_IN" && session) {
-        await checkUser()
-      }
-    })
+      setApplicationStatus(data)
+    } catch (error) {
+      console.error("Error fetching application:", error)
+    }
+  }, [])
 
-    return () => subscription.unsubscribe()
-  }, [router])
-
-  const checkUser = async () => {
+  const checkUser = useCallback(async () => {
     try {
       const {
         data: { user },
@@ -100,21 +97,23 @@ export default function ProfessionalLayout({
     } finally {
       setLoading(false)
     }
-  }
+  }, [router, getApplicationStatus])
 
-  const getApplicationStatus = async (user: any) => {
-    try {
-      const { data } = await supabase
-        .from("professional_applications")
-        .select("*")
-        .eq("user_id", user.id)
-        .single()
+  useEffect(() => {
+    void checkUser()
 
-      setApplicationStatus(data)
-    } catch (error) {
-      console.error("Error fetching application:", error)
-    }
-  }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        router.push("/login")
+      } else if (event === "SIGNED_IN" && session) {
+        await checkUser()
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [router, checkUser])
 
   const handleLogout = async () => {
     try {
@@ -127,8 +126,8 @@ export default function ProfessionalLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-600 border-t-transparent"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-teal-600 border-t-transparent" />
       </div>
     )
   }
@@ -139,9 +138,13 @@ export default function ProfessionalLayout({
 
   const isApproved = applicationStatus?.status === "approved"
 
+  const navActive = (href: string) => {
+    if (href === "/professional") return pathname === "/professional"
+    return pathname === href || pathname.startsWith(`${href}/`)
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
-      {/* Mobile sidebar backdrop */}
+    <div className="min-h-screen bg-gray-50">
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
@@ -149,88 +152,74 @@ export default function ProfessionalLayout({
         />
       )}
 
-      {/* Sidebar - Mobile & Desktop */}
       <aside className={cn(
         "fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 ease-in-out lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
-        <div className="h-full bg-white border-r-2 border-emerald-200 shadow-2xl flex flex-col">
-          {/* Header with gradient */}
-          <div className="relative overflow-hidden">
-            <div className="h-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 animate-gradient-x"></div>
-            
-            <div className="p-6 bg-gradient-to-br from-emerald-50 to-teal-50">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <Building2 className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-extrabold text-gray-900">Professional</h2>
-                    <p className="text-xs text-gray-600">Portal</p>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="lg:hidden"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <X className="h-6 w-6" />
-                </Button>
+        <div className="h-full bg-white border-r border-teal-200 shadow-sm flex flex-col">
+          <div className="bg-teal-900 px-6 py-5 flex flex-col relative min-h-[160px]">
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <div className="w-12 h-10 rounded-lg flex items-center justify-center overflow-hidden">
+                <Image
+                  src="/images/logo/AMAC-Green-logo.png"
+                  alt="AMAC Green logo"
+                  width={160}
+                  height={80}
+                  className="h-10 w-auto object-contain brightness-0 invert"
+                />
               </div>
-
-              {/* User info card */}
-              <div className="bg-white p-3 rounded-xl border-2 border-emerald-200 shadow-sm">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold text-sm">
-                      {user?.user_metadata?.contact_person?.charAt(0) || "P"}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-900 truncate">
-                      {user?.user_metadata?.contact_person || "Professional"}
-                    </p>
-                    <p className="text-xs text-gray-600 truncate">
-                      {applicationStatus?.company_name || "Professional Account"}
-                    </p>
-                    <Badge 
-                      className={cn(
-                        "mt-1 text-xs",
-                        isApproved 
-                          ? "bg-green-100 text-green-700 border-green-300" 
-                          : "bg-amber-100 text-amber-700 border-amber-300"
-                      )}
-                    >
-                      {isApproved ? "Active" : "Pending"}
-                    </Badge>
-                  </div>
-                </div>
+            </Link>
+            <div className="h-px bg-teal-400/70 mb-4" />
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-6 right-4 text-white hover:bg-white/20 lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-teal-50 border border-teal-200 rounded-full flex items-center justify-center">
+                <Building2 className="h-6 w-6 text-teal-800" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-white truncate tracking-tight">
+                  {user?.user_metadata?.contact_person || "Professional"}
+                </p>
+                <p className="text-xs text-teal-100">Professional Portal</p>
+                <Badge 
+                  className={cn(
+                    "mt-1 text-xs font-semibold border",
+                    isApproved 
+                      ? "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-50" 
+                      : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-50"
+                  )}
+                >
+                  {isApproved ? "Active" : "Pending"}
+                </Badge>
               </div>
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
             {navigation.map((item) => {
-              const isActive = typeof window !== 'undefined' && window.location.pathname === item.href
+              const active = navActive(item.href)
               return (
                 <Link
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    "group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200",
-                    isActive
-                      ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/30"
-                      : "text-gray-700 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 hover:text-emerald-700"
+                    "group flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 tracking-tight",
+                    active
+                      ? "bg-teal-100 text-teal-950 border border-teal-200"
+                      : "text-gray-700 hover:bg-teal-50"
                   )}
                   onClick={() => setSidebarOpen(false)}
                 >
                   <item.icon
                     className={cn(
-                      "h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110",
-                      isActive ? "text-white" : "text-emerald-600"
+                      "h-5 w-5 flex-shrink-0",
+                      active ? "text-teal-800" : "text-gray-400 group-hover:text-teal-600"
                     )}
                   />
                   <span>{item.name}</span>
@@ -239,12 +228,11 @@ export default function ProfessionalLayout({
             })}
           </nav>
 
-          {/* Footer - Logout */}
-          <div className="p-4 border-t-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50">
+          <div className="p-4 border-t border-teal-200">
             <Button
               onClick={handleLogout}
               variant="outline"
-              className="w-full justify-start gap-3 border-2 border-emerald-300 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 hover:border-red-300 hover:text-red-700 transition-all font-semibold"
+              className="w-full justify-start gap-3 border border-red-200 text-red-700 hover:bg-red-50 font-semibold"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
@@ -253,49 +241,31 @@ export default function ProfessionalLayout({
         </div>
       </aside>
 
-      {/* Main content area */}
       <div className="lg:pl-72">
-        {/* Top mobile header */}
-        <header className="sticky top-0 z-30 lg:hidden bg-white border-b-2 border-emerald-200 shadow-lg">
+        <header className="sticky top-0 z-30 lg:hidden bg-white border-b border-teal-200 shadow-sm">
           <div className="flex items-center justify-between h-16 px-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSidebarOpen(true)}
-              className="hover:bg-emerald-100"
+              className="hover:bg-teal-50"
             >
-              <Menu className="h-6 w-6 text-emerald-700" />
+              <Menu className="h-6 w-6 text-teal-800" />
             </Button>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-teal-700 border border-teal-800 rounded-lg flex items-center justify-center">
                 <Building2 className="h-4 w-4 text-white" />
               </div>
-              <h1 className="text-lg font-extrabold text-gray-900">Professional Portal</h1>
+              <h1 className="text-base font-bold text-teal-950 tracking-tight">Professional</h1>
             </div>
-            <div className="w-10"></div> {/* Spacer for centering */}
+            <div className="w-10" />
           </div>
         </header>
 
-        {/* Page content */}
         <main className="min-h-screen">
           {children}
         </main>
       </div>
-
-      <style jsx>{`
-        @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 3s ease infinite;
-        }
-      `}</style>
     </div>
   )
 }

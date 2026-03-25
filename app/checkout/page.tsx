@@ -28,6 +28,7 @@ import {
   isFinancingCheckoutEnabled,
 } from "@/lib/feature-flags"
 import { persistSimulatedOrderSnapshot } from "@/lib/checkout-simulated-order"
+import Link from "next/link"
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -543,7 +544,7 @@ export default function CheckoutPage() {
               asChild
               className="bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300"
             >
-              <a href="/products">Browse Products</a>
+              <Link href="/products">Browse Products</Link>
             </Button>
           </div>
         </main>

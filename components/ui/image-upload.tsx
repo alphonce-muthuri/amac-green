@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useRef } from "react"
+import Image from "next/image"
 import { Upload, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -200,10 +201,12 @@ export function ImageUpload({ onImagesChange, maxImages = 5, existingImages = []
             <Card key={index} className="relative group">
               <CardContent className="p-2">
                 <div className="relative aspect-square">
-                  <img
+                  <Image
                     src={image.url || "/placeholder.svg"}
                     alt={image.alt || `Product image ${index + 1}`}
-                    className="w-full h-full object-cover rounded"
+                    fill
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    className="object-cover rounded"
                   />
 
                   {/* Upload indicator */}

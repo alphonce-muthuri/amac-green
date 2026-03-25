@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -122,9 +123,11 @@ export default function CustomerOrdersPage() {
                     <div className="space-y-4 mb-6">
                       {order.order_items?.map((item) => (
                         <div key={item.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                          <img
+                          <Image
                             src={item.product_image_url || "/placeholder.svg"}
                             alt={item.product_name}
+                            width={64}
+                            height={64}
                             className="h-16 w-16 rounded object-cover"
                           />
                           <div className="flex-1">

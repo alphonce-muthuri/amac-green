@@ -50,7 +50,7 @@ export default function DashboardLayout({
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-gray-600 font-medium">Loading your dashboard...</p>
@@ -83,7 +83,7 @@ export default function DashboardLayout({
     }
 
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50">
+            <div className="min-h-screen bg-gray-50">
             {/* Mobile sidebar overlay */}
             <div className={cn(
                 "fixed inset-0 z-50 lg:hidden transition-opacity duration-300",
@@ -129,7 +129,7 @@ export default function DashboardLayout({
 
                         {/* User Info in Mobile */}
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-white to-emerald-100 rounded-full flex items-center justify-center">
+                            <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center">
                                 <User className="h-6 w-6 text-emerald-700" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -201,7 +201,7 @@ export default function DashboardLayout({
 
                         {/* User Info */}
                         <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 bg-gradient-to-br from-white to-emerald-100 rounded-full flex items-center justify-center">
+                            <div className="w-14 h-14 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center">
                                 <User className="h-7 w-7 text-emerald-700" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -272,7 +272,7 @@ export default function DashboardLayout({
                                     className="h-10 w-auto object-contain brightness-0 invert"
                                 />
                             </div>
-                            <span className="text-base font-bold bg-gradient-to-r from-green-500 via-emerald-800 to-emerald-900 bg-clip-text text-transparent">
+                            <span className="text-base font-bold text-emerald-900 tracking-tight">
                                 AMAC Green
                             </span>
                         </Link>

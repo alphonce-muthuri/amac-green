@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -77,17 +78,17 @@ export default function VendorInventory() {
   const getStockStatus = (inventory_quantity: number, threshold: number) => {
     if (inventory_quantity === 0) {
       return { 
-        badge: <Badge className="bg-gradient-to-r from-red-600 to-rose-600 text-white border-2 border-red-700">Out of Stock</Badge>, 
+        badge: <Badge className="rounded-full bg-red-600 text-white border border-red-700">Out of Stock</Badge>, 
         color: "text-red-600" 
       }
     } else if (inventory_quantity <= threshold) {
       return { 
-        badge: <Badge className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border-2 border-orange-300">Low Stock</Badge>, 
+        badge: <Badge className="rounded-full bg-orange-50 text-orange-800 border border-orange-200">Low Stock</Badge>, 
         color: "text-orange-600" 
       }
     } else {
       return { 
-        badge: <Badge className="bg-gradient-to-r from-green-600 to-emerald-600 text-white border-2 border-green-700">In Stock</Badge>, 
+        badge: <Badge className="rounded-full bg-emerald-600 text-white border border-emerald-700">In Stock</Badge>, 
         color: "text-green-600" 
       }
     }
@@ -171,9 +172,9 @@ export default function VendorInventory() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
-          <div className="w-20 h-20 relative mx-auto mb-6">
+          <div className="w-16 h-16 relative mx-auto mb-6">
             <div className="absolute inset-0 border-4 border-orange-200 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
             <Package className="absolute inset-0 m-auto h-8 w-8 text-orange-600" />
@@ -186,26 +187,25 @@ export default function VendorInventory() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Hero Header */}
           <div className="relative overflow-hidden">
-            <Card className="border-2 border-orange-300 shadow-2xl">
-              <div className="h-2 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 animate-gradient-x"></div>
-              
+            <Card className="border border-orange-300 shadow-md overflow-hidden">
+              <div className="h-2 bg-orange-500/30" />
               <CardContent className="relative p-6 sm:p-8">
                 <div className="flex items-center md:items-start justify-between gap-6 flex-col md:flex-row">
                   <div className="flex items-center gap-6">
-                    <div className="w-20 h-20 bg-gradient-to-br from-orange-600 via-amber-600 to-yellow-600 rounded-2xl flex items-center justify-center shadow-2xl">
-                      <Package className="h-10 w-10 text-white" />
+                    <div className="w-16 h-16 bg-orange-700 border border-orange-800 rounded-xl flex items-center justify-center shadow-md">
+                      <Package className="h-8 w-8 text-white" />
                     </div>
                     <div>
-                      <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Inventory</h1>
+                      <h1 className="text-xl font-semibold text-gray-900 mb-2">Inventory</h1>
                       <p className="text-lg text-gray-600">Track and manage your stock levels</p>
                     </div>
                   </div>
-                  <Button onClick={loadInventory} variant="outline" className="border-2 h-12">
+                  <Button onClick={loadInventory} variant="outline" className="border h-12">
                     <RefreshCw className="h-4 w-4 mr-2" />
                     Refresh
                   </Button>
@@ -216,72 +216,72 @@ export default function VendorInventory() {
 
           {/* Stats Dashboard */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            <Card className="border-2 border-purple-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+            <Card className="border border-purple-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-purple-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
-                    <Package className="h-6 w-6 text-purple-600" />
+                  <div className="w-10 h-10 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-center">
+                    <Package className="h-5 w-5 text-purple-600" />
                   </div>
-                  <Badge className="bg-purple-600 text-white">Total</Badge>
+                  <Badge className="rounded-full bg-purple-600 text-white">Total</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-purple-700 mb-1">{stats.totalItems}</p>
+                <p className="text-xl font-semibold text-purple-700 mb-1">{stats.totalItems}</p>
                 <p className="text-sm text-gray-600">Total Items</p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-green-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
+            <Card className="border border-green-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-emerald-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-green-600" />
+                  <div className="w-10 h-10 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center">
+                    <TrendingUp className="h-5 w-5 text-green-600" />
                   </div>
-                  <Badge className="bg-green-600 text-white">In Stock</Badge>
+                  <Badge className="rounded-full bg-green-600 text-white">In Stock</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-green-700 mb-1">{stats.inStock}</p>
+                <p className="text-xl font-semibold text-green-700 mb-1">{stats.inStock}</p>
                 <p className="text-sm text-gray-600">Good Levels</p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-orange-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-orange-500 to-amber-500"></div>
+            <Card className="border border-orange-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-orange-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl flex items-center justify-center">
-                    <AlertTriangle className="h-6 w-6 text-orange-600" />
+                  <div className="w-10 h-10 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-orange-600" />
                   </div>
-                  <Badge className="bg-orange-600 text-white">Low</Badge>
+                  <Badge className="rounded-full bg-orange-600 text-white">Low</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-orange-700 mb-1">{stats.lowStock}</p>
+                <p className="text-xl font-semibold text-orange-700 mb-1">{stats.lowStock}</p>
                 <p className="text-sm text-gray-600">Below Threshold</p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-red-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-red-500 to-rose-500"></div>
+            <Card className="border border-red-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-red-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-rose-100 rounded-xl flex items-center justify-center">
-                    <TrendingDown className="h-6 w-6 text-red-600" />
+                  <div className="w-10 h-10 bg-red-50 border border-red-200 rounded-xl flex items-center justify-center">
+                    <TrendingDown className="h-5 w-5 text-red-600" />
                   </div>
-                  <Badge className="bg-red-600 text-white animate-pulse">Out</Badge>
+                  <Badge className="rounded-full bg-red-600 text-white animate-pulse">Out</Badge>
                 </div>
-                <p className="text-3xl font-extrabold text-red-700 mb-1">{stats.outOfStock}</p>
+                <p className="text-xl font-semibold text-red-700 mb-1">{stats.outOfStock}</p>
                 <p className="text-sm text-gray-600">Zero Stock</p>
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-blue-200 hover:shadow-xl transition-shadow">
-              <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+            <Card className="border border-blue-200 hover:shadow-sm transition-shadow">
+              <div className="h-2 bg-blue-500/30" />
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center">
-                    <DollarSign className="h-6 w-6 text-blue-600" />
+                  <div className="w-10 h-10 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center">
+                    <DollarSign className="h-5 w-5 text-blue-600" />
                   </div>
-                  <Badge className="bg-blue-600 text-white">Value</Badge>
+                  <Badge className="rounded-full bg-blue-600 text-white">Value</Badge>
                 </div>
-                <p className="text-2xl font-extrabold text-blue-700 mb-1">
+                <p className="text-xl font-semibold text-blue-700 mb-1">
                   {(stats.totalValue / 1000).toFixed(0)}K
                 </p>
                 <p className="text-sm text-gray-600">Total Value (KSH)</p>
@@ -290,7 +290,7 @@ export default function VendorInventory() {
           </div>
 
           {/* Search and Filters */}
-          <Card className="border-2 border-indigo-200">
+          <Card className="border border-indigo-200">
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
@@ -299,13 +299,14 @@ export default function VendorInventory() {
                     placeholder="Search by product name or SKU..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 h-12 border-2 border-indigo-300 focus:border-indigo-500"
+                    className="pl-12 h-12 border border-indigo-300 focus:border-indigo-500"
                   />
                 </div>
                 <select
+                  title="Filter by status"
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="h-12 px-4 border-2 border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold"
+                  className="h-12 px-4 border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold"
                 >
                   <option value="all">All Items</option>
                   <option value="in">In Stock</option>
@@ -318,19 +319,19 @@ export default function VendorInventory() {
 
           {/* Inventory List */}
           {filteredInventory.length === 0 ? (
-            <Card className="border-2 border-gray-300">
+            <Card className="border border-gray-300">
               <CardContent className="text-center py-16">
-                <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-24 h-24 bg-gray-50 border border-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Package className="h-12 w-12 text-gray-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">No Inventory Items</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">No Inventory Items</h3>
                 <p className="text-gray-600 mb-6">
                   {inventory.length === 0 
                     ? "Start by adding products to your catalog" 
                     : "No items match your search"}
                 </p>
                 {inventory.length === 0 && (
-                  <Button asChild className="bg-gradient-to-r from-orange-600 to-amber-600">
+                  <Button asChild className="bg-orange-600 hover:bg-orange-700">
                     <Link href="/vendor/products/add">
                       <Plus className="h-4 w-4 mr-2" />
                       Add Product
@@ -344,18 +345,20 @@ export default function VendorInventory() {
               {filteredInventory.map((item) => {
                 const stockStatus = getStockStatus(item.inventory_quantity || 0, item.low_stock_threshold)
                 return (
-                  <Card key={item.id} className="border-2 border-indigo-200 hover:shadow-2xl hover:scale-[1.01] transition-all duration-300">
-                    <div className="h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-                    <CardContent className="p-6">
+                  <Card key={item.id} className="border border-indigo-200 hover:shadow-md hover:scale-[1.01] transition-all duration-300">
+                    <div className="h-1 bg-indigo-500/30" />
+              <CardContent className="p-6">
                       <div className="flex items-center gap-4">
-                        <img
+                        <Image
                           src={
                             item.product_images?.find(img => img.is_primary)?.image_url ||
                             item.product_images?.[0]?.image_url ||
                             "/placeholder.svg"
                           }
                           alt={item.name}
-                          className="h-20 w-20 rounded-xl object-cover bg-gray-100 border-2 border-indigo-200"
+                          width={80}
+                          height={80}
+                          className="h-20 w-20 rounded-xl object-cover bg-gray-100 border border-indigo-200"
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-2">
@@ -366,21 +369,21 @@ export default function VendorInventory() {
                             {stockStatus.badge}
                           </div>
                           <div className="grid sm:grid-cols-4 gap-3 mt-3">
-                            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-3 rounded-lg border border-purple-200">
+                            <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
                               <p className="text-xs text-gray-600 mb-1">Stock</p>
                               <p className={`text-lg font-bold ${stockStatus.color}`}>
                                 {item.inventory_quantity || 0} units
                               </p>
                             </div>
-                            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-3 rounded-lg border border-blue-200">
+                            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                               <p className="text-xs text-gray-600 mb-1">Price</p>
                               <p className="text-lg font-bold text-blue-700">KSH {item.price?.toLocaleString()}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-3 rounded-lg border border-orange-200">
+                            <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
                               <p className="text-xs text-gray-600 mb-1">Threshold</p>
                               <p className="text-lg font-bold text-orange-700">{item.low_stock_threshold}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
+                            <div className="bg-emerald-50 p-3 rounded-lg border border-green-200">
                               <p className="text-xs text-gray-600 mb-1">Value</p>
                               <p className="text-lg font-bold text-green-700">
                                 KSH {((item.price || 0) * (item.inventory_quantity || 0)).toLocaleString()}
@@ -397,7 +400,7 @@ export default function VendorInventory() {
                               setAdjustmentType("add")
                               setAdjustmentDialog(true)
                             }}
-                            className="border-2 border-green-300 hover:bg-green-50"
+                            className="border border-green-300 hover:bg-green-50"
                           >
                             <Plus className="h-4 w-4 mr-1" />
                             Add
@@ -410,12 +413,12 @@ export default function VendorInventory() {
                               setAdjustmentType("subtract")
                               setAdjustmentDialog(true)
                             }}
-                            className="border-2 border-orange-300 hover:bg-orange-50"
+                            className="border border-orange-300 hover:bg-orange-50"
                           >
                             <Minus className="h-4 w-4 mr-1" />
                             Remove
                           </Button>
-                          <Button variant="outline" size="sm" asChild className="border-2">
+                          <Button variant="outline" size="sm" asChild className="border">
                             <Link href={`/vendor/products/edit/${item.id}`}>
                               <Edit className="h-4 w-4 mr-1" />
                               Edit
@@ -434,16 +437,16 @@ export default function VendorInventory() {
 
       {/* Adjustment Dialog */}
       <Dialog open={adjustmentDialog} onOpenChange={setAdjustmentDialog}>
-        <DialogContent className="border-2 border-indigo-300">
-          <div className="h-2 bg-gradient-to-r from-indigo-500 to-purple-500 absolute top-0 left-0 right-0"></div>
+        <DialogContent className="border border-indigo-300">
+          <div className="h-2 bg-indigo-500/30 absolute top-0 left-0 right-0"></div>
           <DialogHeader className="mt-2">
-            <DialogTitle className="text-2xl font-bold">
+            <DialogTitle className="text-xl font-semibold">
               {adjustmentType === "add" ? "Add Stock" : "Remove Stock"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {selectedItem && (
-              <div className="p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border-2 border-indigo-200">
+              <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
                 <h4 className="font-bold text-lg">{selectedItem.name}</h4>
                 <p className="text-sm text-gray-600">Current Stock: <span className="font-bold">{selectedItem.inventory_quantity || 0}</span> units</p>
               </div>
@@ -458,7 +461,7 @@ export default function VendorInventory() {
                 value={adjustmentAmount}
                 onChange={(e) => setAdjustmentAmount(e.target.value)}
                 placeholder="Enter quantity"
-                className="border-2 h-11"
+                className="border h-11"
               />
             </div>
 
@@ -470,7 +473,7 @@ export default function VendorInventory() {
                 onChange={(e) => setAdjustmentReason(e.target.value)}
                 placeholder="Enter reason (e.g., 'Received shipment', 'Damaged items')"
                 rows={3}
-                className="border-2"
+                className="border"
               />
             </div>
 
@@ -478,7 +481,7 @@ export default function VendorInventory() {
               <Button 
                 variant="outline" 
                 onClick={() => setAdjustmentDialog(false)}
-                className="flex-1 border-2 h-11"
+                className="flex-1 border h-11"
               >
                 Cancel
               </Button>
@@ -487,8 +490,8 @@ export default function VendorInventory() {
                 disabled={adjusting || !adjustmentAmount || !adjustmentReason}
                 className={`flex-1 h-11 ${
                   adjustmentType === "add" 
-                    ? "bg-gradient-to-r from-green-600 to-emerald-600" 
-                    : "bg-gradient-to-r from-orange-600 to-amber-600"
+                    ? "bg-emerald-600 hover:bg-emerald-700" 
+                    : "bg-orange-600 hover:bg-orange-700"
                 }`}
               >
                 {adjusting ? "Updating..." : adjustmentType === "add" ? "Add Stock" : "Remove Stock"}
@@ -497,21 +500,8 @@ export default function VendorInventory() {
           </div>
         </DialogContent>
       </Dialog>
-
-      <style jsx>{`
-        @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 3s ease infinite;
-        }
-      `}</style>
-    </div>
+</div>
   )
 }
+
+

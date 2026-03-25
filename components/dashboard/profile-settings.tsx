@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -53,11 +53,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
     confirm: false,
   })
 
-  useEffect(() => {
-    fetchProfile()
-  }, [user])
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       // Get profile from customer_profiles table
       const { data: profileData, error: profileError } = await supabase
@@ -88,7 +84,11 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    void fetchProfile()
+  }, [fetchProfile])
 
   const handleInputChange = (field: keyof ProfileData, value: string) => {
     setProfile(prev => ({

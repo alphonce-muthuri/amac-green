@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { ArrowLeft, Loader2, Sparkles, Save, Package, Edit } from "lucide-react"
 import Link from "next/link"
@@ -28,11 +28,7 @@ export default function EditProductPage() {
   const params = useParams()
   const productId = params.id as string
 
-  useEffect(() => {
-    loadData()
-  }, [productId])
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
 
     const product = await getProductById(productId)
@@ -60,7 +56,11 @@ export default function EditProductPage() {
     }
 
     setLoading(false)
-  }
+  }, [productId])
+
+  useEffect(() => {
+    void loadData()
+  }, [loadData])
 
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true)
@@ -94,9 +94,9 @@ export default function EditProductPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
-          <div className="w-20 h-20 relative mx-auto mb-6">
+          <div className="w-16 h-16 relative mx-auto mb-6">
             <div className="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
             <Edit className="absolute inset-0 m-auto h-8 w-8 text-indigo-600" />
@@ -110,17 +110,17 @@ export default function EditProductPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen bg-slate-50">
         <div className="container mx-auto px-4 py-6">
           <div className="max-w-4xl mx-auto">
-            <Card className="border-2 border-red-300">
+            <Card className="border border-red-300">
               <CardContent className="text-center py-16">
-                <div className="w-24 h-24 bg-gradient-to-br from-red-100 to-rose-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-24 h-24 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Package className="h-12 w-12 text-red-400" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Product Not Found</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">Product Not Found</h3>
                 <p className="text-gray-600 mb-6">The product you're looking for doesn't exist</p>
-                <Button asChild className="bg-gradient-to-r from-purple-600 to-pink-600">
+                <Button asChild className="bg-purple-600 hover:bg-purple-700">
                   <Link href="/vendor/products">Back to Products</Link>
                 </Button>
               </CardContent>
@@ -132,25 +132,24 @@ export default function EditProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Hero Header */}
           <div className="relative overflow-hidden">
-            <Card className="border-2 border-indigo-300 shadow-2xl">
-              <div className="h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient-x"></div>
-              
+            <Card className="border border-indigo-300 shadow-md">
+              <div className="h-2 bg-indigo-500/30" />
               <CardContent className="relative p-6 sm:p-8">
                 <Link href="/vendor/products" className="inline-flex items-center text-indigo-600 hover:text-indigo-700 mb-4 font-semibold">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to Products
                 </Link>
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl">
-                    <Edit className="h-10 w-10 text-white" />
+                  <div className="w-16 h-16 bg-indigo-700 border border-indigo-800 rounded-xl flex items-center justify-center shadow-md">
+                    <Edit className="h-8 w-8 text-white" />
                   </div>
                   <div>
-                    <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Edit Product</h1>
+                    <h1 className="text-xl font-semibold text-gray-900 mb-2">Edit Product</h1>
                     <p className="text-lg text-gray-600">Update your product information</p>
                   </div>
                 </div>
@@ -160,11 +159,11 @@ export default function EditProductPage() {
 
           {/* Success/Error Message */}
           {message && (
-            <Card className={`border-2 ${
+            <Card className={`border ${
               message.type === "success"
-                ? "border-green-300 bg-gradient-to-br from-green-50 to-emerald-50"
-                : "border-red-300 bg-gradient-to-br from-red-50 to-rose-50"
-            } shadow-lg animate-in fade-in duration-200`}>
+                ? "border-emerald-200 bg-emerald-50"
+                : "border-red-200 bg-red-50"
+            } shadow-sm animate-in fade-in duration-200`}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -188,11 +187,11 @@ export default function EditProductPage() {
 
           <form action={handleSubmit} className="space-y-6">
             {/* Basic Information */}
-            <Card className="border-2 border-blue-200 shadow-xl">
-              <div className="h-2 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-              <CardHeader className="bg-gradient-to-br from-blue-50 to-cyan-50 border-b-2">
+            <Card className="border border-blue-200 shadow-sm">
+              <div className="h-2 bg-blue-500/30" />
+            <CardHeader className="bg-white border-b border-blue-200">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-blue-700 border border-blue-800 rounded-lg flex items-center justify-center">
                     <Package className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -205,11 +204,11 @@ export default function EditProductPage() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-sm font-bold text-gray-900">Product Name *</Label>
-                    <Input id="name" name="name" required defaultValue={product.name} className="border-2 h-11" />
+                    <Input id="name" name="name" required defaultValue={product.name} className="border h-11" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="sku" className="text-sm font-bold text-gray-900">SKU</Label>
-                    <Input id="sku" name="sku" defaultValue={product.sku || ""} className="border-2 h-11" />
+                    <Input id="sku" name="sku" defaultValue={product.sku || ""} className="border h-11" />
                   </div>
                 </div>
 
@@ -220,7 +219,7 @@ export default function EditProductPage() {
                     name="shortDescription"
                     defaultValue={product.short_description || ""}
                     maxLength={500}
-                    className="border-2"
+                    className="border"
                   />
                 </div>
 
@@ -231,7 +230,7 @@ export default function EditProductPage() {
                     name="description" 
                     defaultValue={product.description || ""} 
                     rows={6}
-                    className="border-2" 
+                    className="border" 
                   />
                 </div>
 
@@ -239,7 +238,7 @@ export default function EditProductPage() {
                   <div className="space-y-2">
                     <Label htmlFor="categoryId" className="text-sm font-bold text-gray-900">Category</Label>
                     <Select name="categoryId" defaultValue={product.category_id || ""}>
-                      <SelectTrigger className="border-2 h-11">
+                      <SelectTrigger className="border h-11">
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -254,7 +253,7 @@ export default function EditProductPage() {
                   <div className="space-y-2">
                     <Label htmlFor="status" className="text-sm font-bold text-gray-900">Status</Label>
                     <Select name="status" defaultValue={product.status}>
-                      <SelectTrigger className="border-2 h-11">
+                      <SelectTrigger className="border h-11">
                         <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -269,9 +268,9 @@ export default function EditProductPage() {
             </Card>
 
             {/* Product Images */}
-            <Card className="border-2 border-purple-200 shadow-xl">
-              <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-              <CardHeader className="bg-gradient-to-br from-purple-50 to-pink-50 border-b-2">
+            <Card className="border border-purple-200 shadow-sm">
+              <div className="h-2 bg-purple-500/30" />
+            <CardHeader className="bg-white border-b border-purple-200">
                 <CardTitle className="text-xl">Product Images</CardTitle>
                 <CardDescription>Update your product images</CardDescription>
               </CardHeader>
@@ -284,9 +283,9 @@ export default function EditProductPage() {
             </Card>
 
             {/* Pricing */}
-            <Card className="border-2 border-green-200 shadow-xl">
-              <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
-              <CardHeader className="bg-gradient-to-br from-green-50 to-emerald-50 border-b-2">
+            <Card className="border border-green-200 shadow-sm">
+              <div className="h-2 bg-emerald-500/30" />
+            <CardHeader className="bg-white border-b border-emerald-200">
                 <CardTitle className="text-xl">Pricing</CardTitle>
                 <CardDescription>Update your product pricing</CardDescription>
               </CardHeader>
@@ -301,7 +300,7 @@ export default function EditProductPage() {
                       step="0.01" 
                       required 
                       defaultValue={product.price}
-                      className="border-2 h-11" 
+                      className="border h-11" 
                     />
                   </div>
                   <div className="space-y-2">
@@ -312,7 +311,7 @@ export default function EditProductPage() {
                       type="number"
                       step="0.01"
                       defaultValue={product.compare_price || ""}
-                      className="border-2 h-11"
+                      className="border h-11"
                     />
                     <p className="text-xs text-gray-500">Original price for discounts</p>
                   </div>
@@ -323,7 +322,7 @@ export default function EditProductPage() {
                       name="inventoryQuantity"
                       type="number"
                       defaultValue={product.inventory_quantity}
-                      className="border-2 h-11"
+                      className="border h-11"
                     />
                   </div>
                 </div>
@@ -335,11 +334,11 @@ export default function EditProductPage() {
               <Button 
                 type="submit" 
                 disabled={isSubmitting} 
-                className="flex-1 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-base font-bold shadow-lg"
+                className="flex-1 h-14 bg-indigo-600 hover:bg-indigo-700 hover:bg-indigo-700 text-base font-bold shadow-sm"
               >
                 {isSubmitting ? (
                   <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border border-white border-t-transparent mr-2"></div>
                     Updating Product...
                   </>
                 ) : (
@@ -350,28 +349,15 @@ export default function EditProductPage() {
                   </>
                 )}
               </Button>
-              <Button type="button" variant="outline" asChild className="h-14 border-2 font-bold">
+              <Button type="button" variant="outline" asChild className="h-14 border font-bold">
                 <Link href="/vendor/products">Cancel</Link>
               </Button>
             </div>
           </form>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 3s ease infinite;
-        }
-      `}</style>
-    </div>
+</div>
   )
 }
+
+

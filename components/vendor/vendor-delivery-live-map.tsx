@@ -344,6 +344,7 @@ export function VendorDeliveryLiveMap() {
         mapRef.current.remove()
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- loadData closes over map state; stable interval setup on mount
   }, [])
 
   useEffect(() => {

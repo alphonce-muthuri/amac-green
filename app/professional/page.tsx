@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -54,69 +54,7 @@ export default function ProfessionalDashboard() {
   })
   const router = useRouter()
 
-  useEffect(() => {
-    checkUser()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_OUT" || !session) {
-        router.push("/login")
-      } else if (event === "SIGNED_IN" && session) {
-        await checkUser()
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [router])
-
-  const checkUser = async () => {
-    try {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser()
-
-      if (error) {
-        console.error("Auth error:", error)
-        router.push("/login")
-        return
-      }
-
-      if (!user) {
-        router.push("/login")
-        return
-      }
-
-      const userRole = user?.user_metadata?.role
-      if (userRole !== "professional") {
-        switch (userRole) {
-          case "admin":
-            router.push("/admin")
-            break
-          case "vendor":
-            router.push("/vendor")
-            break
-          case "customer":
-          default:
-            router.push("/dashboard")
-            break
-        }
-        return
-      }
-
-      setUser(user)
-      await getProfessionalApplication(user)
-      await loadInstallationData(user)
-    } catch (error) {
-      console.error("Error checking user:", error)
-      router.push("/login")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const getProfessionalApplication = async (user: any) => {
+  const getProfessionalApplication = useCallback(async (user: any) => {
     try {
       const { data, error } = await supabase
         .from("professional_applications")
@@ -133,9 +71,9 @@ export default function ProfessionalDashboard() {
     } catch (error) {
       console.error("Error in getProfessionalApplication:", error)
     }
-  }
+  }, [])
 
-  const loadInstallationData = async (user: any) => {
+  const loadInstallationData = useCallback(async (user: any) => {
     try {
       const { data: jobs, error: jobsError } = await supabase
         .from("installation_jobs")
@@ -228,7 +166,69 @@ export default function ProfessionalDashboard() {
     } catch (error) {
       console.error("Error loading installation data:", error)
     }
-  }
+  }, [])
+
+  const checkUser = useCallback(async () => {
+    try {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser()
+
+      if (error) {
+        console.error("Auth error:", error)
+        router.push("/login")
+        return
+      }
+
+      if (!user) {
+        router.push("/login")
+        return
+      }
+
+      const userRole = user?.user_metadata?.role
+      if (userRole !== "professional") {
+        switch (userRole) {
+          case "admin":
+            router.push("/admin")
+            break
+          case "vendor":
+            router.push("/vendor")
+            break
+          case "customer":
+          default:
+            router.push("/dashboard")
+            break
+        }
+        return
+      }
+
+      setUser(user)
+      await getProfessionalApplication(user)
+      await loadInstallationData(user)
+    } catch (error) {
+      console.error("Error checking user:", error)
+      router.push("/login")
+    } finally {
+      setLoading(false)
+    }
+  }, [router, getProfessionalApplication, loadInstallationData])
+
+  useEffect(() => {
+    void checkUser()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        router.push("/login")
+      } else if (event === "SIGNED_IN" && session) {
+        await checkUser()
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [router, checkUser])
 
   const submitBid = async (jobId: string) => {
     try {
@@ -325,9 +325,12 @@ export default function ProfessionalDashboard() {
     }
   }
 
+  const isApproved = applicationStatus?.status === "approved"
+  const winRate = stats.totalBids > 0 ? Math.round((stats.wonBids / stats.totalBids) * 100) : 0
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="w-20 h-20 relative mx-auto mb-6">
             <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
@@ -345,29 +348,22 @@ export default function ProfessionalDashboard() {
     return null
   }
 
-  const isApproved = applicationStatus?.status === "approved"
-  const winRate = stats.totalBids > 0 ? Math.round((stats.wonBids / stats.totalBids) * 100) : 0
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           {/* Hero Profile Section */}
           <div className="relative overflow-hidden">
-            <Card className="border-2 border-emerald-300 shadow-2xl">
-              <div className="h-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 animate-gradient-x"></div>
-              
-              <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-emerald-400/10 to-teal-400/10 rounded-full blur-3xl"></div>
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-cyan-400/10 to-teal-400/10 rounded-full blur-3xl"></div>
-              
+            <Card className="border border-emerald-300 shadow-sm">
+              <div className="h-2 bg-teal-500/30" />
               <CardContent className="relative p-6 sm:p-8">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                   <div className="relative">
-                    <div className="w-28 h-28 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl flex items-center justify-center shadow-2xl">
+                    <div className="w-28 h-28 bg-teal-700 border border-teal-800 rounded-2xl flex items-center justify-center shadow-sm">
                       <Building2 className="h-14 w-14 text-white" />
                     </div>
                     {isApproved && (
-                      <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center border-4 border-white shadow-xl">
+                      <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-emerald-600 border border-emerald-700 rounded-full flex items-center justify-center border-4 border-white shadow-sm">
                         <CheckCircle className="h-6 w-6 text-white" />
                       </div>
                     )}
@@ -375,10 +371,10 @@ export default function ProfessionalDashboard() {
 
                   <div className="flex-1 text-center md:text-left">
                     <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
-                      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-gray-900">
+                      <h1 className="text-3xl sm:text-xl font-bold tracking-tighter text-gray-900">
                         {applicationStatus?.company_name || "Professional"}
                       </h1>
-                      <Badge className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0 text-sm px-4 py-1 font-semibold tracking-tight">
+                      <Badge className="bg-teal-600 hover:bg-teal-700 text-white border-0 text-sm px-4 py-1 font-semibold tracking-tight">
                         {applicationStatus?.professional_type || "Installer"}
                       </Badge>
                     </div>
@@ -392,15 +388,15 @@ export default function ProfessionalDashboard() {
                     </p>
 
                     <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                      <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-100 to-teal-100 px-4 py-2 rounded-full border-2 border-emerald-300">
+                      <div className="flex items-center gap-2 bg-teal-50 px-4 py-2 rounded-full border border-emerald-300">
                         <Target className="h-4 w-4 text-emerald-700" />
                         <span className="text-sm font-bold text-emerald-900">{winRate}% Win Rate</span>
                       </div>
-                      <div className="flex items-center gap-2 bg-gradient-to-r from-teal-100 to-cyan-100 px-4 py-2 rounded-full border-2 border-teal-300">
+                      <div className="flex items-center gap-2 bg-teal-50 px-4 py-2 rounded-full border border-teal-300">
                         <Award className="h-4 w-4 text-teal-700" />
                         <span className="text-sm font-bold text-teal-900">{stats.wonBids} Jobs Won</span>
                       </div>
-                      <div className="flex items-center gap-2 bg-gradient-to-r from-cyan-100 to-blue-100 px-4 py-2 rounded-full border-2 border-cyan-300">
+                      <div className="flex items-center gap-2 bg-cyan-50 px-4 py-2 rounded-full border border-cyan-300">
                         <DollarSign className="h-4 w-4 text-cyan-700" />
                         <span className="text-sm font-bold text-cyan-900">KSH {stats.totalEarnings.toLocaleString()}</span>
                       </div>
@@ -410,8 +406,8 @@ export default function ProfessionalDashboard() {
                   <div className="flex flex-col items-center gap-2">
                     <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-all ${
                       isApproved
-                        ? 'bg-gradient-to-br from-green-400 to-emerald-500 shadow-lg shadow-green-500/50 animate-pulse'
-                        : 'bg-gradient-to-br from-amber-300 to-orange-400'
+                        ? 'bg-emerald-500 shadow-sm '
+                        : 'bg-amber-400'
                     }`}>
                       {isApproved ? (
                         <Zap className="h-10 w-10 text-white" />
@@ -429,7 +425,7 @@ export default function ProfessionalDashboard() {
           </div>
 
           {!isApproved && (
-            <Card className="border-2 border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50">
+            <Card className="border border-amber-200 bg-amber-50">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -468,88 +464,88 @@ export default function ProfessionalDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column */}
               <div className="space-y-6">
-                <Card className="border-2 border-emerald-200">
-                  <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-                  <CardHeader className="pb-3">
+                <Card className="border border-emerald-200">
+                  <div className="h-2 bg-teal-500/30" />
+            <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <TrendingUp className="h-5 w-5 text-emerald-600" />
                       Performance
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border-2 border-emerald-200">
+                    <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-200">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-semibold text-gray-700">Win Rate</span>
                         <Star className="h-5 w-5 text-emerald-600" />
                       </div>
-                      <p className="text-5xl font-extrabold text-emerald-700">{winRate}%</p>
+                      <p className="text-xl font-bold tracking-tight text-emerald-700">{winRate}%</p>
                       <p className="text-xs text-emerald-600 mt-1">
                         {stats.wonBids} of {stats.totalBids} bids won
                       </p>
                     </div>
 
-                    <div className="bg-gradient-to-br from-teal-50 to-cyan-50 p-4 rounded-xl border-2 border-teal-200">
+                    <div className="bg-teal-50/60 p-4 rounded-xl border border-teal-200">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-semibold text-gray-700">Active Projects</span>
                         <Briefcase className="h-5 w-5 text-teal-600" />
                       </div>
-                      <p className="text-5xl font-extrabold text-teal-700">{stats.activeJobs}</p>
+                      <p className="text-xl font-bold tracking-tight text-teal-700">{stats.activeJobs}</p>
                       <p className="text-xs text-teal-600 mt-1">Currently assigned</p>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-cyan-200">
-                  <div className="h-2 bg-gradient-to-r from-cyan-500 to-blue-500"></div>
-                  <CardHeader className="pb-3">
+                <Card className="border border-cyan-200">
+                  <div className="h-2 bg-cyan-500/30" />
+            <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <DollarSign className="h-5 w-5 text-cyan-600" />
                       Earnings
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="bg-gradient-to-br from-cyan-50 to-blue-50 p-4 rounded-xl border-2 border-cyan-200">
+                    <div className="bg-cyan-50 p-4 rounded-xl border border-cyan-200">
                       <span className="text-sm text-gray-600">Total Earned</span>
-                      <p className="text-3xl font-extrabold text-cyan-700 mt-1">
+                      <p className="text-xl font-bold tracking-tight text-cyan-700 mt-1">
                         KSH {stats.totalEarnings.toLocaleString()}
                       </p>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
+                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                       <span className="text-sm font-semibold text-gray-700">Completed Jobs</span>
-                      <span className="text-2xl font-extrabold text-blue-700">{stats.wonBids}</span>
+                      <span className="text-xl font-bold tracking-tight text-blue-700">{stats.wonBids}</span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg">
+                    <div className="flex justify-between items-center p-3 bg-indigo-50 rounded-lg">
                       <span className="text-sm font-semibold text-gray-700">Pending Bids</span>
-                      <span className="text-2xl font-extrabold text-indigo-700">
+                      <span className="text-xl font-bold tracking-tight text-indigo-700">
                         {myBids.filter(b => b.status === 'pending').length}
                       </span>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-purple-200">
-                  <div className="h-2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-                  <CardHeader className="pb-3">
+                <Card className="border border-emerald-200">
+                  <div className="h-2 bg-purple-500/30" />
+            <CardHeader className="pb-3">
                     <CardTitle className="flex items-center gap-2 text-lg">
-                      <Zap className="h-5 w-5 text-purple-600" />
+                      <Zap className="h-5 w-5 text-teal-600" />
                       Quick Actions
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <Link href="/professional/jobs">
-                      <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 justify-start">
+                      <Button className="w-full bg-teal-600 hover:bg-teal-700 justify-start">
                         <Hammer className="h-4 w-4 mr-2" />
                         Browse Jobs
                       </Button>
                     </Link>
                     <Link href="/professional/bids">
-                      <Button variant="outline" className="w-full border-2 justify-start">
+                      <Button variant="outline" className="w-full border justify-start">
                         <Target className="h-4 w-4 mr-2" />
                         My Bids
                       </Button>
                     </Link>
                     <Link href="/professional/assigned">
-                      <Button variant="outline" className="w-full border-2 justify-start">
+                      <Button variant="outline" className="w-full border justify-start">
                         <Award className="h-4 w-4 mr-2" />
                         Assigned Jobs
                       </Button>
@@ -560,14 +556,14 @@ export default function ProfessionalDashboard() {
 
               {/* Right Column */}
               <div className="lg:col-span-2 space-y-6">
-                <Card className="border-2 border-orange-200">
-                  <div className="h-2 bg-gradient-to-r from-orange-500 to-amber-500"></div>
-                  <CardHeader className="bg-gradient-to-br from-orange-50 to-amber-50 border-b">
+                <Card className="border border-orange-200">
+                  <div className="h-2 bg-orange-500/30" />
+            <CardHeader className="bg-white border-b border-orange-200">
                     <div className="flex items-center justify-between">
                       <CardTitle className="flex items-center gap-2">
                         <Hammer className="h-6 w-6 text-orange-600" />
                         Available Installation Jobs
-                        <Badge className="bg-orange-100 text-orange-700 border-2 border-orange-300 font-bold">
+                        <Badge className="bg-orange-100 text-orange-700 border border-orange-300 font-bold">
                           {availableJobs.length}
                         </Badge>
                       </CardTitle>
@@ -577,7 +573,7 @@ export default function ProfessionalDashboard() {
                   <CardContent className="p-4">
                     {availableJobs.length === 0 ? (
                       <div className="text-center py-16">
-                        <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <div className="w-24 h-24 bg-orange-50 border border-orange-200 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Package className="h-12 w-12 text-orange-600" />
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">No Jobs Available</h3>
@@ -586,9 +582,9 @@ export default function ProfessionalDashboard() {
                     ) : (
                       <div className="space-y-4">
                         {availableJobs.slice(0, 3).map((job) => (
-                          <Card key={job.id} className="border-2 border-gray-200 hover:shadow-xl transition-all">
-                            <div className="h-1 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-                            <CardContent className="p-4">
+                          <Card key={job.id} className="border border-gray-200 hover:shadow-sm transition-all">
+                            <div className="h-1 bg-teal-500/30" />
+              <CardContent className="p-4">
                               <div className="flex items-start justify-between mb-3">
                                 <div>
                                   <div className="flex items-center gap-2 mb-1">
@@ -619,7 +615,7 @@ export default function ProfessionalDashboard() {
 
                               <Button 
                                 size="sm" 
-                                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+                                className="w-full bg-teal-600 hover:bg-teal-700"
                                 onClick={() => setSelectedJob(job)}
                               >
                                 <Eye className="h-4 w-4 mr-1" />
@@ -631,7 +627,7 @@ export default function ProfessionalDashboard() {
                         
                         {availableJobs.length > 3 && (
                           <Link href="/professional/jobs">
-                            <Button variant="outline" className="w-full border-2">
+                            <Button variant="outline" className="w-full border">
                               View All {availableJobs.length} Jobs
                             </Button>
                           </Link>
@@ -642,9 +638,9 @@ export default function ProfessionalDashboard() {
                 </Card>
 
                 <div className="grid sm:grid-cols-2 gap-6">
-                  <Card className="border-2 border-blue-200">
-                    <div className="h-2 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-                    <CardHeader className="pb-3">
+                  <Card className="border border-blue-200">
+                    <div className="h-2 bg-blue-500/30" />
+            <CardHeader className="pb-3">
                       <CardTitle className="text-lg flex items-center gap-2">
                         <Target className="h-5 w-5 text-blue-600" />
                         Recent Bids
@@ -659,7 +655,7 @@ export default function ProfessionalDashboard() {
                       ) : (
                         <div className="space-y-3">
                           {myBids.slice(0, 3).map((bid) => (
-                            <div key={bid.id} className="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 rounded-lg border-2 border-blue-200">
+                            <div key={bid.id} className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                               <div className="flex justify-between items-start mb-2">
                                 <h4 className="font-semibold text-sm line-clamp-1">{bid.installation_jobs?.title}</h4>
                                 <Badge variant={
@@ -675,7 +671,7 @@ export default function ProfessionalDashboard() {
                             </div>
                           ))}
                           <Link href="/professional/bids">
-                            <Button variant="outline" size="sm" className="w-full border-2">
+                            <Button variant="outline" size="sm" className="w-full border">
                               View All Bids
                             </Button>
                           </Link>
@@ -684,9 +680,9 @@ export default function ProfessionalDashboard() {
                     </CardContent>
                   </Card>
 
-                  <Card className="border-2 border-green-200">
-                    <div className="h-2 bg-gradient-to-r from-green-500 to-emerald-500"></div>
-                    <CardHeader className="pb-3">
+                  <Card className="border border-green-200">
+                    <div className="h-2 bg-emerald-500/30" />
+            <CardHeader className="pb-3">
                       <CardTitle className="text-lg flex items-center gap-2">
                         <Award className="h-5 w-5 text-green-600" />
                         Active Projects
@@ -701,7 +697,7 @@ export default function ProfessionalDashboard() {
                       ) : (
                         <div className="space-y-3">
                           {assignedJobs.slice(0, 3).map((job) => (
-                            <div key={job.id} className="bg-gradient-to-br from-green-50 to-emerald-50 p-3 rounded-lg border-2 border-green-200">
+                            <div key={job.id} className="bg-emerald-50 p-3 rounded-lg border border-green-200">
                               <div className="flex justify-between items-start mb-2">
                                 <h4 className="font-semibold text-sm line-clamp-1">{job.title}</h4>
                                 <Badge className="bg-green-600 text-xs">Assigned</Badge>
@@ -712,7 +708,7 @@ export default function ProfessionalDashboard() {
                             </div>
                           ))}
                           <Link href="/professional/assigned">
-                            <Button variant="outline" size="sm" className="w-full border-2">
+                            <Button variant="outline" size="sm" className="w-full border">
                               View All Projects
                             </Button>
                           </Link>
@@ -730,9 +726,9 @@ export default function ProfessionalDashboard() {
       {/* Bidding Modal */}
       {selectedJob && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-emerald-300 shadow-2xl">
-            <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-            <CardHeader className="border-b bg-gradient-to-br from-emerald-50 to-teal-50">
+          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-emerald-300 shadow-sm">
+            <div className="h-2 bg-teal-500/30" />
+            <CardHeader className="border-b bg-emerald-50/60">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Send className="h-5 w-5 text-emerald-600" />
@@ -749,7 +745,7 @@ export default function ProfessionalDashboard() {
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-xl border-2 border-gray-200">
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <h3 className="font-bold text-lg mb-3 text-gray-900">{selectedJob.title}</h3>
                 <div className="grid sm:grid-cols-2 gap-3 text-sm">
                   <div className="flex items-start gap-2">
@@ -801,7 +797,7 @@ export default function ProfessionalDashboard() {
                       value={bidForm.laborCost}
                       onChange={(e) => setBidForm({...bidForm, laborCost: e.target.value})}
                       placeholder="0"
-                      className="border-2"
+                      className="border"
                       required
                     />
                   </div>
@@ -813,7 +809,7 @@ export default function ProfessionalDashboard() {
                       value={bidForm.materialCost}
                       onChange={(e) => setBidForm({...bidForm, materialCost: e.target.value})}
                       placeholder="0"
-                      className="border-2"
+                      className="border"
                     />
                   </div>
                 </div>
@@ -827,7 +823,7 @@ export default function ProfessionalDashboard() {
                       value={bidForm.additionalCosts}
                       onChange={(e) => setBidForm({...bidForm, additionalCosts: e.target.value})}
                       placeholder="0"
-                      className="border-2"
+                      className="border"
                     />
                   </div>
                   <div>
@@ -838,7 +834,7 @@ export default function ProfessionalDashboard() {
                       value={bidForm.estimatedHours}
                       onChange={(e) => setBidForm({...bidForm, estimatedHours: e.target.value})}
                       placeholder="8"
-                      className="border-2"
+                      className="border"
                     />
                   </div>
                 </div>
@@ -851,14 +847,14 @@ export default function ProfessionalDashboard() {
                     onChange={(e) => setBidForm({...bidForm, proposalNotes: e.target.value})}
                     placeholder="Describe your approach, experience, and any additional services..."
                     rows={4}
-                    className="border-2"
+                    className="border"
                   />
                 </div>
 
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl border-2 border-emerald-300">
+                <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-300">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-gray-900">Total Bid Amount:</span>
-                    <span className="text-3xl font-extrabold text-emerald-700">
+                    <span className="text-xl font-bold tracking-tight text-emerald-700">
                       KSH {(
                         (parseFloat(bidForm.laborCost) || 0) +
                         (parseFloat(bidForm.materialCost) || 0) +
@@ -872,12 +868,12 @@ export default function ProfessionalDashboard() {
                   <Button 
                     onClick={() => submitBid(selectedJob.id)}
                     disabled={!bidForm.laborCost}
-                    className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+                    className="flex-1 bg-teal-600 hover:bg-teal-700"
                   >
                     <Send className="h-4 w-4 mr-2" />
                     Submit Bid
                   </Button>
-                  <Button variant="outline" className="border-2" onClick={() => setSelectedJob(null)}>
+                  <Button variant="outline" className="border" onClick={() => setSelectedJob(null)}>
                     Cancel
                   </Button>
                 </div>
@@ -886,21 +882,6 @@ export default function ProfessionalDashboard() {
           </Card>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 3s ease infinite;
-        }
-      `}</style>
     </div>
   )
 }

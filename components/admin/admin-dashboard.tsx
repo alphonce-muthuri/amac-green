@@ -61,19 +61,21 @@ export function AdminDashboard({ initialStats, onLogout }: AdminDashboardProps) 
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border-b border-gray-800">
+      <div className="bg-gray-900 border-b border-gray-800">
         <div className="container mx-auto px-6 py-8">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center">
+                <div className="w-11 h-11 rounded-xl bg-emerald-600 border border-emerald-500/80 flex items-center justify-center">
                   <Zap className="w-7 h-7 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-extrabold tracking-tighter text-white">Admin Control Center</h1>
-                  <p className="text-emerald-400 text-sm font-medium">Manage applications, users & platform</p>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-white">
+                    Admin Control Center
+                  </h1>
+                  <p className="text-emerald-200 text-xs sm:text-sm tracking-tight">Manage applications, users & platform</p>
                 </div>
               </div>
             </div>
@@ -103,37 +105,35 @@ export function AdminDashboard({ initialStats, onLogout }: AdminDashboardProps) 
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             {/* Customers Card */}
-            <Card className="relative overflow-hidden border-2 border-blue-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full -mr-16 -mt-16"></div>
+            <Card className="border border-blue-200/70 shadow-sm transition-shadow hover:shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-bold text-gray-700">Total Customers</CardTitle>
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
-                  <Users className="h-6 w-6 text-white" />
+                <CardTitle className="text-sm font-semibold text-gray-700">Total Customers</CardTitle>
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Users className="h-5 w-5 text-blue-700" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-extrabold text-gray-900 mb-1">{stats.customers}</div>
-                <p className="text-sm text-blue-600 font-semibold">Active customers</p>
+                <div className="text-3xl font-bold text-gray-900 mb-1">{stats.customers}</div>
+                <p className="text-sm text-blue-700">Active customers</p>
               </CardContent>
             </Card>
 
             {/* Vendors Card */}
-            <Card className="relative overflow-hidden border-2 border-orange-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-full -mr-16 -mt-16"></div>
+            <Card className="border border-orange-200/70 shadow-sm transition-shadow hover:shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-bold text-gray-700">Vendor Applications</CardTitle>
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
-                  <Building2 className="h-6 w-6 text-white" />
+                <CardTitle className="text-sm font-semibold text-gray-700">Vendor Applications</CardTitle>
+                <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <Building2 className="h-5 w-5 text-orange-700" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-extrabold text-gray-900 mb-2">{stats.vendors.total}</div>
+                <div className="text-3xl font-bold text-gray-900 mb-2">{stats.vendors.total}</div>
                 <div className="flex gap-2">
-                  <Badge className="bg-orange-100 text-orange-700 border-orange-300 text-xs font-bold">
+                  <Badge className="bg-orange-100 text-orange-700 border border-orange-300 text-xs font-semibold hover:bg-orange-100">
                     <Clock className="h-3 w-3 mr-1" />
                     {stats.vendors.pending}
                   </Badge>
-                  <Badge className="bg-green-100 text-green-700 border-green-300 text-xs font-bold">
+                  <Badge className="bg-green-100 text-green-700 border border-green-300 text-xs font-semibold hover:bg-green-100">
                     <CheckCircle className="h-3 w-3 mr-1" />
                     {stats.vendors.approved}
                   </Badge>
@@ -142,22 +142,21 @@ export function AdminDashboard({ initialStats, onLogout }: AdminDashboardProps) 
             </Card>
 
             {/* Professionals Card */}
-            <Card className="relative overflow-hidden border-2 border-emerald-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 rounded-full -mr-16 -mt-16"></div>
+            <Card className="border border-emerald-200/70 shadow-sm transition-shadow hover:shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-bold text-gray-700">Professional Apps</CardTitle>
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center">
-                  <UserCheck className="h-6 w-6 text-white" />
+                <CardTitle className="text-sm font-semibold text-gray-700">Professional Apps</CardTitle>
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <UserCheck className="h-5 w-5 text-emerald-700" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-extrabold text-gray-900 mb-2">{stats.professionals.total}</div>
+                <div className="text-3xl font-bold text-gray-900 mb-2">{stats.professionals.total}</div>
                 <div className="flex gap-2">
-                  <Badge className="bg-emerald-100 text-emerald-700 border-emerald-300 text-xs font-bold">
+                  <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-300 text-xs font-semibold hover:bg-emerald-100">
                     <Clock className="h-3 w-3 mr-1" />
                     {stats.professionals.pending}
                   </Badge>
-                  <Badge className="bg-green-100 text-green-700 border-green-300 text-xs font-bold">
+                  <Badge className="bg-green-100 text-green-700 border border-green-300 text-xs font-semibold hover:bg-green-100">
                     <CheckCircle className="h-3 w-3 mr-1" />
                     {stats.professionals.approved}
                   </Badge>
@@ -166,22 +165,21 @@ export function AdminDashboard({ initialStats, onLogout }: AdminDashboardProps) 
             </Card>
 
             {/* Delivery Card */}
-            <Card className="relative overflow-hidden border-2 border-purple-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full -mr-16 -mt-16"></div>
+            <Card className="border border-purple-200/70 shadow-sm transition-shadow hover:shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-bold text-gray-700">Delivery Partners</CardTitle>
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                  <Truck className="h-6 w-6 text-white" />
+                <CardTitle className="text-sm font-semibold text-gray-700">Delivery Partners</CardTitle>
+                <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                  <Truck className="h-5 w-5 text-purple-700" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-extrabold text-gray-900 mb-2">{stats.delivery.total}</div>
+                <div className="text-3xl font-bold text-gray-900 mb-2">{stats.delivery.total}</div>
                 <div className="flex gap-2">
-                  <Badge className="bg-purple-100 text-purple-700 border-purple-300 text-xs font-bold">
+                  <Badge className="bg-purple-100 text-purple-700 border border-purple-300 text-xs font-semibold hover:bg-purple-100">
                     <Clock className="h-3 w-3 mr-1" />
                     {stats.delivery.pending}
                   </Badge>
-                  <Badge className="bg-green-100 text-green-700 border-green-300 text-xs font-bold">
+                  <Badge className="bg-green-100 text-green-700 border border-green-300 text-xs font-semibold hover:bg-green-100">
                     <CheckCircle className="h-3 w-3 mr-1" />
                     {stats.delivery.approved}
                   </Badge>
@@ -190,17 +188,16 @@ export function AdminDashboard({ initialStats, onLogout }: AdminDashboardProps) 
             </Card>
 
             {/* Platform Health Card */}
-            <Card className="relative overflow-hidden border-2 border-green-200 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full -mr-16 -mt-16"></div>
+            <Card className="border border-green-200/70 shadow-sm transition-shadow hover:shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-bold text-gray-700">Platform Status</CardTitle>
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                  <Activity className="h-6 w-6 text-white" />
+                <CardTitle className="text-sm font-semibold text-gray-700">Platform Status</CardTitle>
+                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                  <Activity className="h-5 w-5 text-green-700" />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-4xl font-extrabold text-green-600 mb-1">Good</div>
-                <p className="text-sm text-green-600 font-semibold flex items-center">
+                <div className="text-3xl font-bold text-green-700 mb-1">Good</div>
+                <p className="text-sm text-green-700 font-medium flex items-center">
                   <Award className="w-3 h-3 mr-1" />
                   All systems operational
                 </p>
@@ -210,7 +207,7 @@ export function AdminDashboard({ initialStats, onLogout }: AdminDashboardProps) 
         )}
 
         {/* Quick Stats Banner */}
-        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl p-6 mb-8 shadow-xl">
+        <div className="bg-emerald-600 rounded-xl p-6 mb-8 shadow-sm">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-white">
             <div className="text-center">
               <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-80" />
@@ -240,47 +237,47 @@ export function AdminDashboard({ initialStats, onLogout }: AdminDashboardProps) 
         </div>
 
         {/* Main Content Tabs */}
-        <Card className="border-2 border-gray-200 shadow-xl">
+        <Card className="border border-gray-200 shadow-sm">
           <Tabs defaultValue="vendors" className="w-full">
-            <CardHeader className="border-b bg-gradient-to-r from-gray-50 to-white">
+            <CardHeader className="border-b bg-gray-50">
               <TabsList className="grid w-full grid-cols-6 h-auto p-1 bg-gray-100">
                 <TabsTrigger 
                   value="vendors" 
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white font-semibold py-3"
+                  className="data-[state=active]:bg-orange-600 data-[state=active]:text-white font-semibold py-3 tracking-tight"
                 >
                   <Building2 className="w-4 h-4 mr-2" />
                   Vendors
                 </TabsTrigger>
                 <TabsTrigger 
                   value="professionals"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white font-semibold py-3"
+                  className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-semibold py-3 tracking-tight"
                 >
                   <UserCheck className="w-4 h-4 mr-2" />
                   Professionals
                 </TabsTrigger>
                 <TabsTrigger 
                   value="delivery"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white font-semibold py-3"
+                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white font-semibold py-3 tracking-tight"
                 >
                   <Truck className="w-4 h-4 mr-2" />
                   Delivery
                 </TabsTrigger>
                 <TabsTrigger 
                   value="customers"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white font-semibold py-3"
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold py-3 tracking-tight"
                 >
                   <Users className="w-4 h-4 mr-2" />
                   Customers
                 </TabsTrigger>
                 <TabsTrigger 
                   value="locations"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white font-semibold py-3"
+                  className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-semibold py-3 tracking-tight"
                 >
                   Live Locations
                 </TabsTrigger>
                 <TabsTrigger 
                   value="map"
-                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white font-semibold py-3"
+                  className="data-[state=active]:bg-teal-600 data-[state=active]:text-white font-semibold py-3 tracking-tight"
                 >
                   Live Map
                 </TabsTrigger>
