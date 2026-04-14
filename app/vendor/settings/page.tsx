@@ -1,37 +1,21 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { 
-  User, 
-  Building2, 
-  Bell, 
-  Shield, 
-  CreditCard, 
-  Mail, 
-  Phone,
-  MapPin,
-  Save,
-  AlertCircle,
-  Settings,
-  Store,
-  Eye,
-  EyeOff,
-  Clock,
-  CheckCircle,
-  Sparkles
-} from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { VendorHeader } from "@/components/vendor/vendor-header"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
+import {
+  User, Building2, Bell, Shield, CreditCard, MapPin,
+  Save, Eye, EyeOff, Clock, CheckCircle,
+} from "lucide-react"
 
 interface VendorProfile {
   id: string
@@ -55,14 +39,74 @@ interface VendorProfile {
     marketing_emails: boolean
   }
   business_hours: {
-    monday: { open: string; close: string; closed: boolean }
-    tuesday: { open: string; close: string; closed: boolean }
+    monday:    { open: string; close: string; closed: boolean }
+    tuesday:   { open: string; close: string; closed: boolean }
     wednesday: { open: string; close: string; closed: boolean }
-    thursday: { open: string; close: string; closed: boolean }
-    friday: { open: string; close: string; closed: boolean }
-    saturday: { open: string; close: string; closed: boolean }
-    sunday: { open: string; close: string; closed: boolean }
+    thursday:  { open: string; close: string; closed: boolean }
+    friday:    { open: string; close: string; closed: boolean }
+    saturday:  { open: string; close: string; closed: boolean }
+    sunday:    { open: string; close: string; closed: boolean }
   }
+}
+
+const DEFAULT_PROFILE = (userId: string, email?: string | null): VendorProfile => ({
+  id: "", user_id: userId,
+  business_name: "", business_description: "",
+  contact_email: email || "", contact_phone: "",
+  business_address: "", business_city: "", business_state: "", business_country: "Kenya",
+  business_website: "", tax_id: "", business_license: "",
+  notification_preferences: {
+    email_notifications: true, sms_notifications: true, order_notifications: true,
+    inventory_alerts: true, marketing_emails: false,
+  },
+  business_hours: {
+    monday:    { open: "09:00", close: "17:00", closed: false },
+    tuesday:   { open: "09:00", close: "17:00", closed: false },
+    wednesday: { open: "09:00", close: "17:00", closed: false },
+    thursday:  { open: "09:00", close: "17:00", closed: false },
+    friday:    { open: "09:00", close: "17:00", closed: false },
+    saturday:  { open: "09:00", close: "15:00", closed: false },
+    sunday:    { open: "09:00", close: "15:00", closed: true  },
+  },
+})
+
+const TABS = [
+  { key: "profile",       label: "Profile",       icon: User      },
+  { key: "business",      label: "Business",      icon: Building2 },
+  { key: "notifications", label: "Notifications", icon: Bell      },
+  { key: "security",      label: "Security",      icon: Shield    },
+] as const
+
+type TabKey = typeof TABS[number]["key"]
+
+function Section({
+  icon: Icon, title, children,
+}: { icon: React.ElementType; title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl bg-white border border-gray-100 overflow-hidden">
+      <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-gray-100">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100">
+          <Icon className="h-3.5 w-3.5 text-emerald-700" />
+        </div>
+        <p className="text-xs font-semibold text-gray-800">{title}</p>
+      </div>
+      <div className="p-5">{children}</div>
+    </div>
+  )
+}
+
+function Field({
+  label, hint, children,
+}: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <Label className="text-xs font-medium text-gray-700">{label}</Label>
+        {hint && <span className="text-[10px] text-gray-400">{hint}</span>}
+      </div>
+      {children}
+    </div>
+  )
 }
 
 export default function VendorSettings() {
@@ -71,388 +115,235 @@ export default function VendorSettings() {
   const [saving, setSaving] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<VendorProfile | null>(null)
+  const [tab, setTab] = useState<TabKey>("profile")
   const [showPassword, setShowPassword] = useState(false)
-  const [passwordData, setPasswordData] = useState({
-    newPassword: '',
-    confirmPassword: ''
-  })
+  const [passwordData, setPasswordData] = useState({ newPassword: "", confirmPassword: "" })
 
-  const loadProfile = useCallback(async (userId: string, contactEmail?: string | null) => {
-    try {
-      const { data, error } = await supabase
-        .from('vendor_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
-
-      if (data) {
-        setProfile(data)
-      } else {
-        const defaultProfile: VendorProfile = {
-          id: '',
-          user_id: userId,
-          business_name: '',
-          business_description: '',
-          contact_email: contactEmail || '',
-          contact_phone: '',
-          business_address: '',
-          business_city: '',
-          business_state: '',
-          business_country: 'Kenya',
-          business_website: '',
-          tax_id: '',
-          business_license: '',
-          notification_preferences: {
-            email_notifications: true,
-            sms_notifications: true,
-            order_notifications: true,
-            inventory_alerts: true,
-            marketing_emails: false
-          },
-          business_hours: {
-            monday: { open: '09:00', close: '17:00', closed: false },
-            tuesday: { open: '09:00', close: '17:00', closed: false },
-            wednesday: { open: '09:00', close: '17:00', closed: false },
-            thursday: { open: '09:00', close: '17:00', closed: false },
-            friday: { open: '09:00', close: '17:00', closed: false },
-            saturday: { open: '09:00', close: '15:00', closed: false },
-            sunday: { open: '09:00', close: '15:00', closed: true }
-          }
-        }
-        setProfile(defaultProfile)
-      }
-    } catch (error) {
-      console.error('Error loading profile:', error)
-    }
+  const loadProfile = useCallback(async (userId: string, email?: string | null) => {
+    const { data } = await supabase.from("vendor_profiles").select("*").eq("user_id", userId).single()
+    setProfile(data ?? DEFAULT_PROFILE(userId, email))
   }, [])
 
-  const loadUserAndProfile = useCallback(async () => {
+  const init = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setUser(user)
-        await loadProfile(user.id, user.email)
-      }
-    } catch (error) {
-      console.error('Error loading user:', error)
-    }
+      if (user) { setUser(user); await loadProfile(user.id, user.email) }
+    } catch (e) { console.error(e) }
     setLoading(false)
   }, [loadProfile])
 
-  useEffect(() => {
-    void loadUserAndProfile()
-  }, [loadUserAndProfile])
+  useEffect(() => { void init() }, [init])
 
   const saveProfile = async () => {
     if (!profile || !user) return
-
     setSaving(true)
     try {
-      await supabase
-        .from('vendor_profiles')
-        .upsert({
-          ...profile,
-          updated_at: new Date().toISOString()
-        })
-
-      toast({
-        title: "Profile Updated",
-        description: "Your business profile has been saved successfully.",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save profile. Please try again.",
-        variant: "destructive"
-      })
+      await supabase.from("vendor_profiles").upsert({ ...profile, updated_at: new Date().toISOString() })
+      toast({ title: "Saved", description: "Business profile updated successfully." })
+    } catch {
+      toast({ title: "Error", description: "Failed to save. Please try again.", variant: "destructive" })
     }
     setSaving(false)
   }
 
   const updatePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords don't match.",
-        variant: "destructive"
-      })
+      toast({ title: "Error", description: "Passwords don't match.", variant: "destructive" })
       return
     }
-
     setSaving(true)
     try {
-      await supabase.auth.updateUser({
-        password: passwordData.newPassword
-      })
-
-      toast({
-        title: "Password Updated",
-        description: "Your password has been changed successfully.",
-      })
-
-      setPasswordData({ newPassword: '', confirmPassword: '' })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update password.",
-        variant: "destructive"
-      })
+      await supabase.auth.updateUser({ password: passwordData.newPassword })
+      toast({ title: "Password Updated", description: "Your password has been changed." })
+      setPasswordData({ newPassword: "", confirmPassword: "" })
+    } catch {
+      toast({ title: "Error", description: "Failed to update password.", variant: "destructive" })
     }
     setSaving(false)
   }
 
-  const updateNotificationPreference = (key: string, value: boolean) => {
-    if (!profile) return
-    setProfile({
-      ...profile,
-      notification_preferences: {
-        ...profile.notification_preferences,
-        [key]: value
-      }
-    })
-  }
+  const patchProfile = (patch: Partial<VendorProfile>) =>
+    setProfile((p) => (p ? { ...p, ...patch } : p))
 
-  const updateBusinessHours = (day: string, field: string, value: string | boolean) => {
-    if (!profile) return
-    setProfile({
-      ...profile,
-      business_hours: {
-        ...profile.business_hours,
-        [day]: {
-          ...profile.business_hours[day as keyof typeof profile.business_hours],
-          [field]: value
-        }
-      }
-    })
-  }
+  const patchNotif = (key: string, val: boolean) =>
+    setProfile((p) =>
+      p ? { ...p, notification_preferences: { ...p.notification_preferences, [key]: val } } : p
+    )
+
+  const patchHours = (day: string, field: string, val: string | boolean) =>
+    setProfile((p) =>
+      p ? {
+        ...p,
+        business_hours: {
+          ...p.business_hours,
+          [day]: { ...p.business_hours[day as keyof typeof p.business_hours], [field]: val },
+        },
+      } : p
+    )
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center">
-          <div className="w-16 h-16 relative mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
-            <Settings className="absolute inset-0 m-auto h-8 w-8 text-gray-600" />
-          </div>
-          <p className="text-lg font-bold text-gray-900">Loading Settings</p>
+      <div className="flex flex-col min-h-screen bg-[#f5f5f7]">
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-white px-6">
+          <Skeleton className="h-7 w-7 rounded-md" />
+          <Skeleton className="h-4 w-px mx-1" />
+          <Skeleton className="h-4 w-20" />
+        </header>
+        <div className="flex-1 p-5 space-y-4 max-w-3xl mx-auto w-full">
+          <Skeleton className="h-9 w-full rounded-2xl" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+          ))}
         </div>
       </div>
     )
   }
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="container mx-auto px-4 py-6">
-          <Card className="max-w-md mx-auto border border-red-300">
-            <CardContent className="text-center py-16">
-              <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-              <h2 className="text-xl font-bold mb-2">Authentication Required</h2>
-              <p className="text-gray-600">Please log in to access settings.</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
-  }
+  const inputCls = "h-8 rounded-xl border-gray-200 bg-gray-50 text-xs focus-visible:ring-emerald-500"
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Hero Header */}
-          <div className="pb-6 border-b border-blue-200">
-            <div className="flex items-center gap-6">
-              <div className="w-16 h-16 bg-slate-700 border border-slate-800 rounded-xl flex items-center justify-center shadow-sm">
-                <Settings className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tighter mb-2 bg-gradient-to-r from-blue-600 via-indigo-700 to-indigo-900 bg-clip-text text-transparent">
-                  Settings
-                </h1>
-                <p className="text-xs sm:text-sm text-gray-600 tracking-tight">Manage your business profile and preferences</p>
-              </div>
-            </div>
+    <div className="flex flex-col min-h-screen bg-[#f5f5f7]">
+      <VendorHeader title="Settings">
+        <Button
+          size="sm"
+          className="h-8 gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs"
+          disabled={saving}
+          onClick={() => void saveProfile()}
+        >
+          <Save className="h-3.5 w-3.5" />
+          {saving ? "Saving…" : "Save Changes"}
+        </Button>
+      </VendorHeader>
+
+      <div className="flex-1 overflow-y-auto scrollbar-thin p-5">
+        <div className="max-w-3xl mx-auto space-y-4">
+
+          {/* Tab bar */}
+          <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-thin">
+            {TABS.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={cn(
+                  "flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-medium transition-colors",
+                  tab === key
+                    ? "bg-gray-900 text-white"
+                    : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"
+                )}
+              >
+                <Icon className="h-3 w-3" />
+                {label}
+              </button>
+            ))}
           </div>
 
-          <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 h-14">
-              <TabsTrigger value="profile" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Profile
-              </TabsTrigger>
-              <TabsTrigger value="business" className="flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
-                Business
-              </TabsTrigger>
-              <TabsTrigger value="notifications" className="flex items-center gap-2">
-                <Bell className="h-4 w-4" />
-                Notifications
-              </TabsTrigger>
-              <TabsTrigger value="security" className="flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                Security
-              </TabsTrigger>
-            </TabsList>
+          {/* ── Profile ── */}
+          {tab === "profile" && (
+            <Section icon={User} title="Personal Information">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Field label="Email Address" hint="Cannot be changed">
+                  <Input value={user?.email || ""} disabled className={cn(inputCls, "opacity-60")} />
+                </Field>
+                <Field label="Phone Number">
+                  <Input
+                    type="tel"
+                    value={profile?.contact_phone || ""}
+                    onChange={(e) => patchProfile({ contact_phone: e.target.value })}
+                    placeholder="+254 700 000 000"
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+            </Section>
+          )}
 
-            {/* Profile Tab */}
-            <TabsContent value="profile" className="space-y-6">
-              <Card className="border border-blue-200">
-                <div className="h-2 bg-blue-500/30" />
-                <CardHeader className="bg-white border-b border-blue-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-700 border border-blue-800 rounded-lg flex items-center justify-center">
-                      <User className="h-5 w-5 text-white" />
-                    </div>
-                    <CardTitle className="text-xl">Personal Information</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="email" className="font-bold">Email Address</Label>
+          {/* ── Business ── */}
+          {tab === "business" && (
+            <div className="space-y-4">
+              <Section icon={Building2} title="Business Information">
+                <div className="space-y-3">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <Field label="Business Name">
                       <Input
-                        id="email"
-                        type="email"
-                        value={user.email || ''}
-                        disabled
-                        className="bg-gray-50 border h-11 mt-2"
-                      />
-                      <p className="text-sm text-gray-500 mt-1">Email cannot be changed</p>
-                    </div>
-                    <div>
-                      <Label htmlFor="phone" className="font-bold">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={profile?.contact_phone || ''}
-                        onChange={(e) => setProfile(profile ? { ...profile, contact_phone: e.target.value } : null)}
-                        placeholder="+254 700 000 000"
-                        className="border h-11 mt-2"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Business Tab */}
-            <TabsContent value="business" className="space-y-6">
-              <Card className="border border-purple-200">
-                <div className="h-2 bg-purple-500/30" />
-                <CardHeader className="bg-white border-b border-purple-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-700 border border-purple-800 rounded-lg flex items-center justify-center">
-                      <Store className="h-5 w-5 text-white" />
-                    </div>
-                    <CardTitle className="text-xl">Business Information</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="font-bold">Business Name</Label>
-                      <Input
-                        value={profile?.business_name || ''}
-                        onChange={(e) => setProfile(profile ? { ...profile, business_name: e.target.value } : null)}
+                        value={profile?.business_name || ""}
+                        onChange={(e) => patchProfile({ business_name: e.target.value })}
                         placeholder="Your Business Name"
-                        className="border h-11 mt-2"
+                        className={inputCls}
                       />
-                    </div>
-                    <div>
-                      <Label className="font-bold">Tax ID</Label>
+                    </Field>
+                    <Field label="Tax ID">
                       <Input
-                        value={profile?.tax_id || ''}
-                        onChange={(e) => setProfile(profile ? { ...profile, tax_id: e.target.value } : null)}
+                        value={profile?.tax_id || ""}
+                        onChange={(e) => patchProfile({ tax_id: e.target.value })}
                         placeholder="Tax ID Number"
-                        className="border h-11 mt-2"
+                        className={inputCls}
                       />
-                    </div>
+                    </Field>
                   </div>
-
-                  <div>
-                    <Label className="font-bold">Description</Label>
+                  <Field label="Description">
                     <Textarea
-                      value={profile?.business_description || ''}
-                      onChange={(e) => setProfile(profile ? { ...profile, business_description: e.target.value } : null)}
-                      placeholder="Describe your business..."
+                      value={profile?.business_description || ""}
+                      onChange={(e) => patchProfile({ business_description: e.target.value })}
+                      placeholder="Describe your business…"
                       rows={3}
-                      className="border mt-2"
+                      className="rounded-xl border-gray-200 bg-gray-50 text-xs resize-none"
                     />
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="font-bold">Website</Label>
+                  </Field>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <Field label="Website">
                       <Input
                         type="url"
-                        value={profile?.business_website || ''}
-                        onChange={(e) => setProfile(profile ? { ...profile, business_website: e.target.value } : null)}
+                        value={profile?.business_website || ""}
+                        onChange={(e) => patchProfile({ business_website: e.target.value })}
                         placeholder="https://yourwebsite.com"
-                        className="border h-11 mt-2"
+                        className={inputCls}
                       />
-                    </div>
-                    <div>
-                      <Label className="font-bold">Business License</Label>
+                    </Field>
+                    <Field label="Business License">
                       <Input
-                        value={profile?.business_license || ''}
-                        onChange={(e) => setProfile(profile ? { ...profile, business_license: e.target.value } : null)}
+                        value={profile?.business_license || ""}
+                        onChange={(e) => patchProfile({ business_license: e.target.value })}
                         placeholder="License Number"
-                        className="border h-11 mt-2"
+                        className={inputCls}
                       />
-                    </div>
+                    </Field>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </Section>
 
-              <Card className="border border-green-200">
-                <div className="h-2 bg-emerald-500/30" />
-                <CardHeader className="bg-white border-b border-emerald-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-700 border border-emerald-800 rounded-lg flex items-center justify-center">
-                      <MapPin className="h-5 w-5 text-white" />
-                    </div>
-                    <CardTitle className="text-xl">Business Address</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div>
-                    <Label className="font-bold">Street Address</Label>
+              <Section icon={MapPin} title="Business Address">
+                <div className="space-y-3">
+                  <Field label="Street Address">
                     <Input
-                      value={profile?.business_address || ''}
-                      onChange={(e) => setProfile(profile ? { ...profile, business_address: e.target.value } : null)}
+                      value={profile?.business_address || ""}
+                      onChange={(e) => patchProfile({ business_address: e.target.value })}
                       placeholder="123 Business Street"
-                      className="border h-11 mt-2"
+                      className={inputCls}
                     />
-                  </div>
-
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div>
-                      <Label className="font-bold">City</Label>
+                  </Field>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Field label="City">
                       <Input
-                        value={profile?.business_city || ''}
-                        onChange={(e) => setProfile(profile ? { ...profile, business_city: e.target.value } : null)}
+                        value={profile?.business_city || ""}
+                        onChange={(e) => patchProfile({ business_city: e.target.value })}
                         placeholder="Nairobi"
-                        className="border h-11 mt-2"
+                        className={inputCls}
                       />
-                    </div>
-                    <div>
-                      <Label className="font-bold">State/County</Label>
+                    </Field>
+                    <Field label="County">
                       <Input
-                        value={profile?.business_state || ''}
-                        onChange={(e) => setProfile(profile ? { ...profile, business_state: e.target.value } : null)}
+                        value={profile?.business_state || ""}
+                        onChange={(e) => patchProfile({ business_state: e.target.value })}
                         placeholder="Nairobi County"
-                        className="border h-11 mt-2"
+                        className={inputCls}
                       />
-                    </div>
-                    <div>
-                      <Label className="font-bold">Country</Label>
+                    </Field>
+                    <Field label="Country">
                       <Select
-                        value={profile?.business_country || 'Kenya'}
-                        onValueChange={(value) => setProfile(profile ? { ...profile, business_country: value } : null)}
+                        value={profile?.business_country || "Kenya"}
+                        onValueChange={(v) => patchProfile({ business_country: v })}
                       >
-                        <SelectTrigger className="border h-11 mt-2">
+                        <SelectTrigger className={inputCls}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -462,198 +353,146 @@ export default function VendorSettings() {
                           <SelectItem value="Rwanda">🇷🇼 Rwanda</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
+                    </Field>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </Section>
 
-              <Card className="border border-orange-200">
-                <div className="h-2 bg-orange-500/30" />
-                <CardHeader className="bg-white border-b border-orange-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-orange-700 border border-orange-800 rounded-lg flex items-center justify-center">
-                      <Clock className="h-5 w-5 text-white" />
-                    </div>
-                    <CardTitle className="text-xl">Business Hours</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6 space-y-3">
+              <Section icon={Clock} title="Business Hours">
+                <div className="space-y-1.5">
                   {Object.entries(profile?.business_hours || {}).map(([day, hours]) => (
-                    <div key={day} className="flex items-center justify-between p-4 bg-orange-50 rounded-xl border border-orange-200">
-                      <div className="flex items-center gap-4">
-                        <span className="font-bold capitalize w-24">{day}</span>
+                    <div
+                      key={day}
+                      className="grid grid-cols-[7rem_auto_1fr] items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2">
                         <Switch
                           checked={!hours.closed}
-                          onCheckedChange={(checked) => updateBusinessHours(day, 'closed', !checked)}
+                          onCheckedChange={(checked) => patchHours(day, "closed", !checked)}
                         />
+                        <span className="text-xs font-medium capitalize text-gray-700">{day}</span>
                       </div>
-                      {!hours.closed && (
-                        <div className="flex items-center gap-2">
+                      {hours.closed ? (
+                        <span className="col-span-2 text-[10px] font-medium text-gray-400">Closed</span>
+                      ) : (
+                        <div className="col-span-2 flex items-center gap-2">
                           <Input
                             type="time"
                             value={hours.open}
-                            onChange={(e) => updateBusinessHours(day, 'open', e.target.value)}
-                            className="w-28 border h-10"
+                            onChange={(e) => patchHours(day, "open", e.target.value)}
+                            className="h-7 w-28 rounded-xl border-gray-200 bg-white text-xs"
                           />
-                          <span className="font-semibold">to</span>
+                          <span className="text-[10px] text-gray-400">to</span>
                           <Input
                             type="time"
                             value={hours.close}
-                            onChange={(e) => updateBusinessHours(day, 'close', e.target.value)}
-                            className="w-28 border h-10"
+                            onChange={(e) => patchHours(day, "close", e.target.value)}
+                            className="h-7 w-28 rounded-xl border-gray-200 bg-white text-xs"
                           />
                         </div>
                       )}
-                      {hours.closed && (
-                        <Badge className="rounded-full bg-red-600 text-white">Closed</Badge>
-                      )}
                     </div>
                   ))}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
+              </Section>
+            </div>
+          )}
 
-            {/* Notifications Tab */}
-            <TabsContent value="notifications" className="space-y-6">
-              <Card className="border border-amber-200">
-                <div className="h-2 bg-amber-500/30" />
-                <CardHeader className="bg-white border-b border-amber-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-amber-700 border border-amber-800 rounded-lg flex items-center justify-center">
-                      <Bell className="h-5 w-5 text-white" />
+          {/* ── Notifications ── */}
+          {tab === "notifications" && (
+            <Section icon={Bell} title="Notification Preferences">
+              <div className="space-y-1.5">
+                {[
+                  { key: "email_notifications", title: "Email Notifications",  desc: "Receive notifications via email"               },
+                  { key: "sms_notifications",   title: "SMS Notifications",    desc: "Receive notifications via SMS"                 },
+                  { key: "order_notifications", title: "Order Alerts",         desc: "Get notified when new orders are placed"       },
+                  { key: "inventory_alerts",    title: "Inventory Alerts",     desc: "Get notified when items are low in stock"      },
+                  { key: "marketing_emails",    title: "Marketing Emails",     desc: "Receive promotional and marketing emails"      },
+                ].map((pref) => (
+                  <div
+                    key={pref.key}
+                    className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-2.5"
+                  >
+                    <div>
+                      <p className="text-xs font-medium text-gray-900">{pref.title}</p>
+                      <p className="text-[10px] text-gray-400">{pref.desc}</p>
                     </div>
-                    <CardTitle className="text-xl">Notification Preferences</CardTitle>
+                    <Switch
+                      checked={
+                        profile?.notification_preferences[pref.key as keyof typeof profile.notification_preferences] ?? false
+                      }
+                      onCheckedChange={(v) => patchNotif(pref.key, v)}
+                    />
                   </div>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  {[
-                    { key: 'email_notifications', title: 'Email Notifications', desc: 'Receive notifications via email' },
-                    { key: 'sms_notifications', title: 'SMS Notifications', desc: 'Receive notifications via SMS' },
-                    { key: 'order_notifications', title: 'Order Notifications', desc: 'Get notified when new orders are placed' },
-                    { key: 'inventory_alerts', title: 'Inventory Alerts', desc: 'Get notified when items are low in stock' },
-                    { key: 'marketing_emails', title: 'Marketing Emails', desc: 'Receive promotional and marketing emails' }
-                  ].map((pref, index, arr) => (
-                    <div key={pref.key}>
-                      <div className="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-200">
-                        <div>
-                          <Label className="text-base font-bold">{pref.title}</Label>
-                          <p className="text-sm text-gray-600">{pref.desc}</p>
-                        </div>
-                        <Switch
-                          checked={profile?.notification_preferences[pref.key as keyof typeof profile.notification_preferences] || false}
-                          onCheckedChange={(checked) => updateNotificationPreference(pref.key, checked)}
-                        />
-                      </div>
-                      {index < arr.length - 1 && <Separator className="my-4" />}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                ))}
+              </div>
+            </Section>
+          )}
 
-            {/* Security Tab */}
-            <TabsContent value="security" className="space-y-6">
-              <Card className="border border-red-200">
-                <div className="h-2 bg-red-500/30" />
-                <CardHeader className="bg-white border-b border-red-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-red-700 border border-red-800 rounded-lg flex items-center justify-center">
-                      <Shield className="h-5 w-5 text-white" />
-                    </div>
-                    <CardTitle className="text-xl">Change Password</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div>
-                    <Label className="font-bold">New Password</Label>
-                    <div className="relative mt-2">
+          {/* ── Security ── */}
+          {tab === "security" && (
+            <div className="space-y-4">
+              <Section icon={Shield} title="Change Password">
+                <div className="space-y-3">
+                  <Field label="New Password">
+                    <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
                         value={passwordData.newPassword}
-                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                        onChange={(e) => setPasswordData((d) => ({ ...d, newPassword: e.target.value }))}
                         placeholder="Enter new password"
-                        className="border h-11"
+                        className={cn(inputCls, "pr-8")}
                       />
-                      <Button
+                      <button
                         type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full"
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
+                        {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      </button>
                     </div>
-                  </div>
-
-                  <div>
-                    <Label className="font-bold">Confirm Password</Label>
+                  </Field>
+                  <Field label="Confirm Password">
                     <Input
                       type="password"
                       value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                      onChange={(e) => setPasswordData((d) => ({ ...d, confirmPassword: e.target.value }))}
                       placeholder="Confirm new password"
-                      className="border h-11 mt-2"
+                      className={inputCls}
                     />
-                  </div>
-
-                  <Button 
-                    onClick={updatePassword}
+                  </Field>
+                  <Button
+                    className="h-8 w-full rounded-xl bg-gray-900 hover:bg-gray-800 text-xs"
                     disabled={saving || !passwordData.newPassword || !passwordData.confirmPassword}
-                    className="w-full h-12 bg-red-600 hover:bg-red-700 font-semibold"
+                    onClick={() => void updatePassword()}
                   >
-                    {saving ? "Updating..." : "Update Password"}
+                    {saving ? "Updating…" : "Update Password"}
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </Section>
 
-              <Card className="border border-green-200">
-                <div className="h-2 bg-emerald-500/30" />
-                <CardHeader className="bg-white border-b border-emerald-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-700 border border-emerald-800 rounded-lg flex items-center justify-center">
-                      <CreditCard className="h-5 w-5 text-white" />
+              <Section icon={CreditCard} title="Payment Methods">
+                <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50/60 px-3 py-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100">
+                      <span className="text-sm font-bold text-emerald-700">M</span>
                     </div>
-                    <CardTitle className="text-xl">Payment Methods</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <span className="text-green-600 font-bold text-xl">M</span>
-                      </div>
-                      <div>
-                        <p className="font-bold">M-Pesa</p>
-                        <p className="text-sm text-gray-600">Mobile money payments</p>
-                      </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-900">M-Pesa</p>
+                      <p className="text-[10px] text-gray-400">Mobile money payments</p>
                     </div>
-                    <Badge className="rounded-full bg-emerald-600 text-white border-0 hover:bg-emerald-600">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Active
-                    </Badge>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-medium text-white">
+                    <CheckCircle className="h-3 w-3" />
+                    Active
+                  </span>
+                </div>
+              </Section>
+            </div>
+          )}
 
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <Button 
-              onClick={saveProfile}
-              disabled={saving}
-              className="h-14 px-8 bg-indigo-600 hover:bg-indigo-700 text-base font-bold shadow-sm"
-            >
-              <Save className="h-5 w-5 mr-2" />
-              {saving ? "Saving..." : "Save Changes"}
-              <Sparkles className="h-5 w-5 ml-2" />
-            </Button>
-          </div>
         </div>
       </div>
-</div>
+    </div>
   )
 }
-
-

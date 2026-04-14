@@ -20,7 +20,7 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[]
-  addToCart: (item: CartItem) => Promise<void>
+  addToCart: (item: CartItem, options?: { silent?: boolean }) => Promise<void>
   removeFromCart: (productId: string) => Promise<void>
   updateQuantity: (productId: string, qty: number) => Promise<void>
   clearCart: () => Promise<void>
@@ -158,7 +158,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   /* ---------------------------------------------------------------------- */
   /*                         Mutating Helpers                               */
   /* ---------------------------------------------------------------------- */
-  const addToCart = async (item: CartItem) => {
+  const addToCart = async (item: CartItem, options?: { silent?: boolean }) => {
     const maxQty = item.stock ?? 99
     setItems((prev) => {
       const existing = prev.find((i) => i.productId === item.productId)
@@ -179,7 +179,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         { onConflict: "user_id,product_id" },
       )
     }
-    toast({ title: "Added to Cart", description: `${item.name} added.` })
+    if (!options?.silent) {
+      toast({ title: "Added to cart", description: `${item.name} added.` })
+    }
   }
 
   const removeFromCart = async (productId: string) => {

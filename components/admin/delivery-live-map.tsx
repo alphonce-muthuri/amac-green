@@ -302,36 +302,34 @@ export function DeliveryLiveMap() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 mb-2">
-          <Navigation className="w-6 h-6 text-purple-600" />
+        <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-2">
+          <Navigation className="w-6 h-6 text-gray-700" />
           Live Delivery Tracking
         </h2>
-        <p className="text-gray-600">Real-time location tracking of active delivery partners</p>
+        <p className="text-sm text-gray-500">Real-time location tracking of active delivery partners</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border border-blue-200/80 shadow-sm transition-shadow hover:shadow-md">
-          <div className="h-1 bg-blue-500"></div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 uppercase tracking-wide mb-1">Total Online</p>
-                <p className="text-3xl font-bold text-gray-900">{locations.length}</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total Online</p>
+                <p className="text-2xl font-bold text-gray-900">{locations.length}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Users className="h-6 w-6 text-blue-700" />
+              <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                <Users className="h-5 w-5 text-emerald-600" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-green-200/80 shadow-sm transition-shadow hover:shadow-md">
-          <div className="h-1 bg-green-500"></div>
+        <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 uppercase tracking-wide mb-1">Available</p>
-                <p className="text-3xl font-bold text-gray-900">{availableCount}</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Available</p>
+                <p className="text-2xl font-bold text-gray-900">{availableCount}</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                 <Truck className="h-6 w-6 text-green-700" />
@@ -340,45 +338,45 @@ export function DeliveryLiveMap() {
           </CardContent>
         </Card>
 
-        <Card className="border border-amber-200/80 shadow-sm transition-shadow hover:shadow-md">
-          <div className="h-1 bg-amber-500"></div>
+        <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 uppercase tracking-wide mb-1">Busy</p>
-                <p className="text-3xl font-bold text-gray-900">{busyCount}</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Busy</p>
+                <p className="text-2xl font-bold text-gray-900">{busyCount}</p>
               </div>
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <Clock className="h-6 w-6 text-amber-700" />
+              <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                <Clock className="h-6 w-6 text-gray-700" />
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border border-purple-200/80 shadow-sm">
-        <div className="h-1 bg-purple-500"></div>
-        <CardHeader className="bg-purple-50/40 border-b">
+      <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <CardHeader className="border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <MapPin className="h-5 w-5 text-purple-700" />
+              <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center">
+                <MapPin className="h-5 w-5 text-gray-700" />
               </div>
               <div>
-                <CardTitle className="text-xl font-bold flex items-center gap-2">
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
                   Live Delivery Locations
-                  <Badge className="bg-purple-100 text-purple-700 border border-purple-300 text-xs font-semibold hover:bg-purple-100">
+                  <Badge className="bg-gray-100 text-gray-700 border border-gray-200 text-xs font-semibold hover:bg-gray-100">
                     <Zap className="w-3 h-3 mr-1" />
                     {locations.length} online
                   </Badge>
                 </CardTitle>
-                <p className="text-sm text-gray-600 mt-1">Auto-refreshing every 30 seconds</p>
+                <p className="text-xs text-gray-500 mt-1">Auto-refreshing every 30 seconds</p>
               </div>
             </div>
             <Button 
               onClick={handleRefresh} 
               disabled={refreshing}
-              className="bg-purple-600 hover:bg-purple-700"
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-xl border-gray-200 text-xs"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
               Refresh
@@ -389,14 +387,14 @@ export function DeliveryLiveMap() {
           <div className="relative">
             <div 
               ref={mapContainerRef}
-              className="w-full rounded-xl border border-purple-200 shadow-inner"
+              className="w-full rounded-xl border border-gray-200 shadow-inner"
               style={{ minHeight: '500px', height: '500px' }}
             />
             
             {(loading || mapInitializing) && (
-              <div className="absolute inset-0 flex items-center justify-center bg-purple-50/95 rounded-xl">
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-xl">
                 <div className="text-center">
-                  <div className="w-20 h-20 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <div className="w-20 h-20 border-4 border-gray-200 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                   <p className="text-gray-900 font-semibold text-lg mb-2">
                     {mapInitializing ? "Initializing map..." : "Loading delivery locations..."}
                   </p>
@@ -406,10 +404,10 @@ export function DeliveryLiveMap() {
             )}
             
             {!loading && !mapInitializing && locations.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center bg-purple-50/95 rounded-xl">
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-xl">
                 <div className="text-center max-w-md">
-                  <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Truck className="h-12 w-12 text-purple-600" />
+                  <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Truck className="h-12 w-12 text-gray-700" />
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">No Drivers Online</h3>
                   <p className="text-gray-600 mb-2">No delivery partners are currently online</p>
@@ -430,7 +428,7 @@ export function DeliveryLiveMap() {
                     <span className="text-gray-700 font-medium">Available ({availableCount})</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-gray-100 rounded-full"></div>
                     <span className="text-gray-700 font-medium">Busy ({busyCount})</span>
                   </div>
                 </div>

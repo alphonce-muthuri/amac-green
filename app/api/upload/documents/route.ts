@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
-import { supabaseAdmin } from "@/lib/supabase-server"
+import { supabaseAdmin, createServerClient } from "@/lib/supabase-server"
+import { cookies } from "next/headers"
 
 export async function POST(request: NextRequest) {
+  // Require an authenticated session before accepting any upload.
+  const cookieStore = cookies()
+  const supabase = createServerClient(cookieStore)
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) {
+    return NextResponse.json({ success: false, error: "Authentication required" }, { status: 401 })
+  }
+
   try {
     const formData = await request.formData()
     const file = formData.get("file") as File

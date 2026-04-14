@@ -29,6 +29,8 @@ import {
   Calculator
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { AppShellSkeleton } from "@/components/loaders/page-skeletons"
+import { ProfessionalPageShell } from "@/components/professional/professional-page-shell"
 
 export default function AvailableJobsPage() {
   const [jobs, setJobs] = useState<any[]>([])
@@ -176,11 +178,11 @@ export default function AvailableJobsPage() {
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case 'urgent':
-        return 'bg-red-500/35'
+        return 'bg-gray-900'
       case 'high':
-        return 'bg-orange-500/35'
+        return 'bg-gray-100'
       case 'normal':
-        return 'bg-blue-500/35'
+        return 'bg-emerald-600'
       default:
         return 'bg-gray-400/40'
     }
@@ -189,81 +191,37 @@ export default function AvailableJobsPage() {
   const getUrgencyBadge = (urgency: string) => {
     switch (urgency) {
       case 'urgent':
-        return 'bg-orange-600 text-white '
+        return 'bg-gray-100 text-white '
       case 'high':
-        return 'bg-orange-600 hover:bg-orange-700 text-white'
+        return 'bg-gray-100 hover:bg-gray-100 text-white'
       case 'normal':
-        return 'bg-blue-600 text-white'
+        return 'bg-emerald-600 text-white'
       default:
         return 'bg-gray-600 text-white'
     }
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-20 h-20 relative mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-            <Hammer className="absolute inset-0 m-auto h-8 w-8 text-emerald-600" />
-          </div>
-          <p className="text-lg font-bold text-gray-900">Loading Available Jobs</p>
-          <p className="text-sm text-gray-600 mt-1">Finding opportunities for you...</p>
-        </div>
-      </div>
-    )
+    return <AppShellSkeleton />
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+    <>
+      <ProfessionalPageShell title="Available Jobs">
+      <div className="space-y-4">
           {/* Hero Header */}
           <div className="relative overflow-hidden">
-            <Card className="border border-teal-200 shadow-sm overflow-hidden">
-              <div className="h-2 bg-teal-500/30" />
-              <CardContent className="relative p-6 sm:p-8">
-                <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
-                  <div className="flex items-center gap-6">
-                    <div className="relative">
-                      <div className="w-24 h-24 bg-teal-700 border border-teal-800 rounded-2xl flex items-center justify-center shadow-sm">
-                        <Hammer className="h-12 w-12 text-white" />
-                      </div>
-                      <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-orange-600 border border-orange-700 rounded-full flex items-center justify-center border-4 border-white shadow-sm ">
-                        <Sparkles className="h-5 w-5 text-white" />
-                      </div>
-                    </div>
-
-                    <div>
-                      <h1 className="text-xl font-bold tracking-tight text-gray-900 mb-2">
-                        Available Jobs
-                      </h1>
-                      <p className="text-lg text-gray-600">
-                        Browse and bid on <span className="font-bold text-emerald-700">{filteredJobs.length}</span> installation projects
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        <Badge className="bg-teal-50 text-emerald-800 border border-emerald-300">
-                          <Zap className="h-3 w-3 mr-1" />
-                          {jobs.filter(j => j.urgency === 'urgent').length} Urgent
-                        </Badge>
-                        <Badge className="bg-orange-50 text-orange-800 border border-orange-200">
-                          <TrendingUp className="h-3 w-3 mr-1" />
-                          {jobs.filter(j => j.urgency === 'high').length} High Priority
-                        </Badge>
-                        <Badge className="bg-blue-50 text-blue-800 border border-blue-300">
-                          <Target className="h-3 w-3 mr-1" />
-                          {jobs.filter(j => j.urgency === 'normal').length} Standard
-                        </Badge>
-                      </div>
-                    </div>
+            <Card className="border border-gray-100 shadow-sm">
+              <CardContent className="p-5 sm:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-emerald-600 mb-2">Opportunities</p>
+                    <h2 className="text-2xl font-semibold tracking-tight text-gray-900">Browse available jobs</h2>
+                    <p className="text-sm text-gray-500 mt-1">Submit faster bids on high-fit projects.</p>
                   </div>
-
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-20 h-20 bg-teal-600 border border-teal-700 rounded-full flex items-center justify-center shadow-sm shadow-emerald-500/50">
-                      <span className="text-xl font-bold tracking-tight text-white">{filteredJobs.length}</span>
-                    </div>
-                    <Badge className="bg-emerald-600 text-white">Active Listings</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200">{filteredJobs.length} listings</Badge>
+                    <Badge className="bg-gray-100 text-gray-700 border border-gray-200">{jobs.filter(j => j.urgency === "urgent").length} urgent</Badge>
                   </div>
                 </div>
               </CardContent>
@@ -272,29 +230,29 @@ export default function AvailableJobsPage() {
 
           {/* Search and Filters */}
           <div className="grid lg:grid-cols-3 gap-4">
-            <Card className="lg:col-span-2 border border-teal-200">
-              <CardContent className="p-6">
+            <Card className="lg:col-span-2 border border-gray-100">
+              <CardContent className="p-4">
                 <div className="relative">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
                     placeholder="Search jobs by title, description, or location..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 h-12 border border-teal-300 focus:border-emerald-500 text-base"
+                    className="pl-9 h-10 border border-gray-200 text-sm"
                   />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border border-cyan-200">
-              <CardContent className="p-6">
+            <Card className="border border-gray-100">
+              <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <Filter className="h-5 w-5 text-cyan-600" />
+                  <Filter className="h-4 w-4 text-gray-500" />
                   <select
                     title="Filter by urgency"
                     value={filterUrgency}
                     onChange={(e) => setFilterUrgency(e.target.value)}
-                    className="flex-1 h-12 px-4 border border-cyan-300 rounded-lg focus:outline-none focus:border-cyan-500 text-base font-semibold"
+                    className="flex-1 h-10 px-3 border border-gray-200 rounded-md text-sm"
                   >
                     <option value="all">All Urgency Levels</option>
                     <option value="urgent">🔴 Urgent</option>
@@ -325,7 +283,7 @@ export default function AvailableJobsPage() {
                       setSearchTerm("")
                       setFilterUrgency("all")
                     }}
-                    className="bg-teal-600 hover:bg-teal-700"
+                    className="bg-emerald-600 hover:bg-emerald-700"
                   >
                     Clear Filters
                   </Button>
@@ -335,17 +293,17 @@ export default function AvailableJobsPage() {
           ) : (
             <div className="grid lg:grid-cols-2 gap-6">
               {filteredJobs.map((job) => (
-                <Card key={job.id} className="group border border-emerald-200 hover:shadow-sm  transition-all duration-300">
+                <Card key={job.id} className="group border border-gray-100 hover:bg-gray-50/70 transition-colors">
                   <div className={`h-2 ${getUrgencyColor(job.urgency)}`} />
                   
-                  <CardHeader className="pb-3 bg-white border-b border-teal-200">
+                  <CardHeader className="pb-3 bg-white border-b border-gray-200">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3 flex-1">
-                        <div className="w-12 h-12 bg-teal-700 border border-teal-800 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                          <Wrench className="h-6 w-6 text-white" />
+                        <div className="w-10 h-10 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Wrench className="h-5 w-5 text-emerald-700" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-xl font-bold text-gray-900 mb-1 line-clamp-1">
+                          <CardTitle className="text-base font-semibold text-gray-900 mb-1 line-clamp-1">
                             {job.title}
                           </CardTitle>
                           <CardDescription className="text-sm line-clamp-2">
@@ -362,15 +320,15 @@ export default function AvailableJobsPage() {
                   <CardContent className="space-y-4">
                     {/* Job Info Grid */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                      <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
                         <div className="flex items-center gap-2 mb-1">
-                          <MapPin className="h-4 w-4 text-blue-600" />
+                          <MapPin className="h-4 w-4 text-gray-500" />
                           <span className="text-xs font-semibold text-gray-600">Location</span>
                         </div>
                         <p className="text-sm font-bold text-gray-900 truncate">{job.location_city}</p>
                       </div>
 
-                      <div className="bg-emerald-50 p-3 rounded-xl border border-green-200">
+                      <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
                         <div className="flex items-center gap-2 mb-1">
                           <DollarSign className="h-4 w-4 text-green-600" />
                           <span className="text-xs font-semibold text-gray-600">Product Value</span>
@@ -381,9 +339,9 @@ export default function AvailableJobsPage() {
                       </div>
 
                       {job.preferred_date && (
-                        <div className="bg-purple-50 p-3 rounded-xl border border-emerald-200 col-span-2">
+                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 col-span-2">
                           <div className="flex items-center gap-2 mb-1">
-                            <Calendar className="h-4 w-4 text-teal-600" />
+                            <Calendar className="h-4 w-4 text-emerald-700" />
                             <span className="text-xs font-semibold text-gray-600">Preferred Date</span>
                           </div>
                           <p className="text-sm font-bold text-gray-900">
@@ -428,7 +386,7 @@ export default function AvailableJobsPage() {
                     {/* Action Button */}
                     <Button 
                       onClick={() => setSelectedJob(job)}
-                      className="w-full h-12 bg-teal-600 hover:bg-teal-700 shadow-sm shadow-emerald-500/30 font-bold text-base  transition-transform"
+                      className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-sm font-semibold"
                     >
                       <Eye className="h-5 w-5 mr-2" />
                       View Details & Submit Bid
@@ -439,29 +397,28 @@ export default function AvailableJobsPage() {
               ))}
             </div>
           )}
-        </div>
       </div>
+    </ProfessionalPageShell>
 
       {/* Bidding Modal */}
       {selectedJob && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-emerald-300 shadow-sm">
-            <div className="h-2 bg-teal-500/30" />
-            <CardHeader className="border-b-2 bg-emerald-50/60">
+        <div className="fixed inset-0 bg-black/45 backdrop-blur-[2px] flex items-center justify-center p-3 sm:p-4 z-50 animate-in fade-in duration-200">
+          <Card className="max-w-3xl w-full max-h-[88vh] overflow-y-auto border border-gray-100 shadow-xl [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full" style={{ scrollbarWidth: "thin" }}>
+            <CardHeader className="border-b border-gray-100 bg-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-teal-700 border border-teal-800 rounded-xl flex items-center justify-center">
-                    <Send className="h-6 w-6 text-white" />
+                  <div className="w-10 h-10 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center">
+                    <Send className="h-5 w-5 text-emerald-700" />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl">Submit Your Bid</CardTitle>
+                    <CardTitle className="text-xl">Submit Your Bid</CardTitle>
                     <CardDescription>Complete the form to bid on this project</CardDescription>
                   </div>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="text-2xl h-10 w-10 p-0 hover:bg-red-100 hover:text-red-600"
+                  className="text-2xl h-10 w-10 p-0 hover:bg-gray-900 hover:text-gray-700"
                   onClick={() => setSelectedJob(null)}
                 >
                   ×
@@ -469,30 +426,30 @@ export default function AvailableJobsPage() {
               </div>
             </CardHeader>
 
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-5 space-y-5">
               {/* Job Details */}
-              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+              <div className="bg-gray-50 p-5 rounded-xl border border-gray-100">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gray-700 border border-gray-800 rounded-lg flex items-center justify-center">
-                    <AlertCircle className="h-5 w-5 text-white" />
+                  <div className="w-9 h-9 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center">
+                    <AlertCircle className="h-4 w-4 text-emerald-700" />
                   </div>
-                  <h3 className="font-bold text-xl text-gray-900">{selectedJob.title}</h3>
-                  <Badge className={`${getUrgencyBadge(selectedJob.urgency)} ml-auto`}>
+                  <h3 className="font-semibold text-lg text-gray-900">{selectedJob.title}</h3>
+                  <Badge className={`${getUrgencyBadge(selectedJob.urgency)} ml-auto text-xs`}>
                     {selectedJob.urgency}
                   </Badge>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4 mb-4">
-                  <div className="bg-white p-4 rounded-xl border border-gray-200">
+                  <div className="bg-white p-4 rounded-lg border border-gray-100">
                     <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="h-4 w-4 text-blue-600" />
+                      <MapPin className="h-4 w-4 text-gray-500" />
                       <p className="font-semibold text-sm text-gray-700">Location</p>
                     </div>
                     <p className="text-sm text-gray-900">{selectedJob.location_address}</p>
-                    <p className="text-sm font-bold text-blue-600">{selectedJob.location_city}</p>
+                    <p className="text-sm font-bold text-emerald-700">{selectedJob.location_city}</p>
                   </div>
 
-                  <div className="bg-white p-4 rounded-xl border border-gray-200">
+                  <div className="bg-white p-4 rounded-lg border border-gray-100">
                     <div className="flex items-center gap-2 mb-2">
                       <DollarSign className="h-4 w-4 text-emerald-600" />
                       <p className="font-semibold text-sm text-gray-700">Product Cost</p>
@@ -503,12 +460,12 @@ export default function AvailableJobsPage() {
                   </div>
 
                   {selectedJob.preferred_date && (
-                    <div className="bg-white p-4 rounded-xl border border-gray-200 sm:col-span-2">
+                    <div className="bg-white p-4 rounded-lg border border-gray-100 sm:col-span-2">
                       <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="h-4 w-4 text-teal-600" />
+                        <Calendar className="h-4 w-4 text-emerald-700" />
                         <p className="font-semibold text-sm text-gray-700">Preferred Installation Date</p>
                       </div>
-                      <p className="text-lg font-bold text-teal-600">
+                      <p className="text-base font-semibold text-emerald-700">
                         {new Date(selectedJob.preferred_date).toLocaleDateString('en-US', {
                           weekday: 'long',
                           year: 'numeric',
@@ -520,20 +477,20 @@ export default function AvailableJobsPage() {
                   )}
                 </div>
 
-                <div className="bg-white p-4 rounded-xl border border-gray-200">
+                <div className="bg-white p-4 rounded-lg border border-gray-100">
                   <p className="text-sm font-semibold text-gray-700 mb-2">Description:</p>
                   <p className="text-sm text-gray-900">{selectedJob.description}</p>
                 </div>
                 
                 {selectedJob.installation_job_items && selectedJob.installation_job_items.length > 0 && (
-                  <div className="bg-white p-4 rounded-xl border border-gray-200 mt-4">
+                  <div className="bg-white p-4 rounded-lg border border-gray-100 mt-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Package className="h-5 w-5 text-emerald-600" />
                       <p className="font-bold text-gray-900">Products to Install:</p>
                     </div>
                     <div className="space-y-2">
                       {selectedJob.installation_job_items.map((item: any) => (
-                        <div key={item.id} className="flex justify-between items-center p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                           <span className="text-sm font-semibold text-gray-900">
                             <span className="text-emerald-600">{item.quantity}x</span> {item.product_name}
                           </span>
@@ -550,10 +507,10 @@ export default function AvailableJobsPage() {
               {/* Bid Form */}
               <div className="space-y-4">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-teal-700 border border-teal-800 rounded-lg flex items-center justify-center">
-                    <Calculator className="h-5 w-5 text-white" />
+                  <div className="w-9 h-9 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center">
+                    <Calculator className="h-4 w-4 text-emerald-700" />
                   </div>
-                  <h4 className="text-xl font-bold text-gray-900">Your Bid Details</h4>
+                  <h4 className="text-lg font-semibold text-gray-900">Your Bid Details</h4>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -567,7 +524,7 @@ export default function AvailableJobsPage() {
                       value={bidForm.laborCost}
                       onChange={(e) => setBidForm({...bidForm, laborCost: e.target.value})}
                       placeholder="0"
-                      className="border border-emerald-300 h-12 text-base"
+                      className="border border-gray-200 h-10 text-sm"
                       required
                     />
                   </div>
@@ -581,7 +538,7 @@ export default function AvailableJobsPage() {
                       value={bidForm.materialCost}
                       onChange={(e) => setBidForm({...bidForm, materialCost: e.target.value})}
                       placeholder="0"
-                      className="border border-teal-300 h-12 text-base"
+                      className="border border-gray-200 h-10 text-sm"
                     />
                   </div>
                 </div>
@@ -597,7 +554,7 @@ export default function AvailableJobsPage() {
                       value={bidForm.additionalCosts}
                       onChange={(e) => setBidForm({...bidForm, additionalCosts: e.target.value})}
                       placeholder="0"
-                      className="border border-cyan-300 h-12 text-base"
+                      className="border border-gray-200 h-10 text-sm"
                     />
                   </div>
                   <div>
@@ -605,14 +562,14 @@ export default function AvailableJobsPage() {
                       Estimated Hours
                     </Label>
                     <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
                         id="estimatedHours"
                         type="number"
                         value={bidForm.estimatedHours}
                         onChange={(e) => setBidForm({...bidForm, estimatedHours: e.target.value})}
                         placeholder="8"
-                        className="border border-emerald-300 h-12 text-base pl-10"
+                        className="border border-gray-200 h-10 text-sm pl-9"
                       />
                     </div>
                   </div>
@@ -628,21 +585,21 @@ export default function AvailableJobsPage() {
                     onChange={(e) => setBidForm({...bidForm, proposalNotes: e.target.value})}
                     placeholder="Describe your approach, experience, and any additional services you'll provide..."
                     rows={5}
-                    className="border border-blue-300 text-base"
+                    className="border border-gray-200 text-sm"
                   />
                 </div>
 
                 {/* Total Calculation */}
-                <div className="bg-teal-50 p-6 rounded-2xl border border-emerald-300 shadow-sm">
+                <div className="bg-emerald-50/40 p-5 rounded-xl border border-emerald-100">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-teal-700 border border-teal-800 rounded-xl flex items-center justify-center">
-                        <Award className="h-6 w-6 text-white" />
+                      <div className="w-9 h-9 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center">
+                        <Award className="h-4 w-4 text-emerald-700" />
                       </div>
-                      <span className="text-xl font-bold text-gray-900">Total Bid Amount:</span>
+                      <span className="text-lg font-semibold text-gray-900">Total Bid Amount:</span>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold tracking-tight text-emerald-700">
+                      <p className="text-lg font-semibold tracking-tight text-emerald-700">
                         KSH {(
                           (parseFloat(bidForm.laborCost) || 0) +
                           (parseFloat(bidForm.materialCost) || 0) +
@@ -653,22 +610,22 @@ export default function AvailableJobsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3 text-sm">
-                    <div className="bg-white p-3 rounded-lg text-center">
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="bg-white p-2.5 rounded-lg text-center border border-gray-100">
                       <p className="text-gray-600 mb-1">Labor</p>
                       <p className="font-bold text-emerald-600">
                         KSH {(parseFloat(bidForm.laborCost) || 0).toLocaleString()}
                       </p>
                     </div>
-                    <div className="bg-white p-3 rounded-lg text-center">
+                    <div className="bg-white p-2.5 rounded-lg text-center border border-gray-100">
                       <p className="text-gray-600 mb-1">Materials</p>
-                      <p className="font-bold text-teal-600">
+                      <p className="font-bold text-emerald-700">
                         KSH {(parseFloat(bidForm.materialCost) || 0).toLocaleString()}
                       </p>
                     </div>
-                    <div className="bg-white p-3 rounded-lg text-center">
+                    <div className="bg-white p-2.5 rounded-lg text-center border border-gray-100">
                       <p className="text-gray-600 mb-1">Additional</p>
-                      <p className="font-bold text-cyan-600">
+                      <p className="font-bold text-gray-700">
                         KSH {(parseFloat(bidForm.additionalCosts) || 0).toLocaleString()}
                       </p>
                     </div>
@@ -677,18 +634,18 @@ export default function AvailableJobsPage() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-4">
-                  <Button 
+                  <Button
                     onClick={() => submitBid(selectedJob.id)}
                     disabled={!bidForm.laborCost}
-                    className="flex-1 h-14 bg-teal-600 hover:bg-teal-700 text-base font-bold shadow-sm shadow-emerald-500/30"
+                    className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-sm font-semibold"
                   >
-                    <Send className="h-5 w-5 mr-2" />
+                    <Send className="h-4 w-4 mr-2" />
                     Submit Bid
-                    <CheckCircle2 className="h-5 w-5 ml-2" />
+                    <CheckCircle2 className="h-4 w-4 ml-2" />
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-14 border border-gray-300 hover:bg-gray-100 font-bold" 
+                  <Button
+                    variant="outline"
+                    className="h-11 border border-gray-300 hover:bg-gray-100 font-medium"
                     onClick={() => setSelectedJob(null)}
                   >
                     Cancel
@@ -699,6 +656,6 @@ export default function AvailableJobsPage() {
           </Card>
         </div>
       )}
-    </div>
+    </>
   )
 }

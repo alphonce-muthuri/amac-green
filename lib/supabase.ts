@@ -146,8 +146,8 @@ export interface InstallationBid {
   installation_jobs?: InstallationJob
 }
 
-// Installation Jobs and Bids
-export interface InstallationJob {
+// Installation Jobs and Bids (form / create payloads — optional fields)
+export interface InstallationJobInput {
   id?: string
   customer_id?: string
   title: string
@@ -160,13 +160,13 @@ export interface InstallationJob {
   status: 'open' | 'bidding' | 'assigned' | 'in_progress' | 'completed' | 'cancelled'
   selected_bid_id?: string
   total_product_cost: number
-  items?: InstallationJobItem[]
-  bids?: InstallationBid[]
+  items?: InstallationJobItemInput[]
+  bids?: InstallationBidInput[]
   created_at?: string
   updated_at?: string
 }
 
-export interface InstallationJobItem {
+export interface InstallationJobItemInput {
   id?: string
   job_id?: string
   product_id: string
@@ -176,7 +176,7 @@ export interface InstallationJobItem {
   created_at?: string
 }
 
-export interface InstallationBid {
+export interface InstallationBidInput {
   id?: string
   job_id?: string
   professional_id?: string

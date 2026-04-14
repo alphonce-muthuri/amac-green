@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,15 +8,15 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { 
-  Hammer, 
-  MapPin, 
-  DollarSign, 
-  TrendingUp, 
-  Clock, 
-  AlertCircle, 
+import {
+  Hammer,
+  MapPin,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  RefreshCw,
+  AlertCircle,
   CheckCircle,
-  Building2,
   Wrench,
   Eye,
   Send,
@@ -28,8 +28,12 @@ import {
   Briefcase,
   Package
 } from "lucide-react"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function ProfessionalDashboard() {
   const [user, setUser] = useState<any>(null)
@@ -52,7 +56,10 @@ export default function ProfessionalDashboard() {
     activeJobs: 0,
     totalEarnings: 0,
   })
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const router = useRouter()
+  const isCheckingRef = useRef(false)
+  const hasLoadedOnceRef = useRef(false)
 
   const getProfessionalApplication = useCallback(async (user: any) => {
     try {
@@ -64,18 +71,18 @@ export default function ProfessionalDashboard() {
 
       if (error && error.code !== "PGRST116") {
         console.error("Error fetching professional application:", error)
-        return
+        return null
       }
-
-      setApplicationStatus(data)
+      return data ?? null
     } catch (error) {
       console.error("Error in getProfessionalApplication:", error)
+      return null
     }
   }, [])
 
   const loadInstallationData = useCallback(async (user: any) => {
     try {
-      const { data: jobs, error: jobsError } = await supabase
+      const jobsQuery = supabase
         .from("installation_jobs")
         .select(`
           *,
@@ -89,13 +96,7 @@ export default function ProfessionalDashboard() {
         .in("status", ["open", "bidding"])
         .order("created_at", { ascending: false })
 
-      if (jobsError) {
-        console.error("Error fetching jobs:", jobsError)
-      } else {
-        setAvailableJobs(jobs || [])
-      }
-
-      const { data: bids, error: bidsError } = await supabase
+      const bidsQuery = supabase
         .from("installation_bids")
         .select(`
           *,
@@ -110,15 +111,26 @@ export default function ProfessionalDashboard() {
         .eq("professional_id", user.id)
         .order("created_at", { ascending: false })
 
+      const [{ data: jobs, error: jobsError }, { data: bids, error: bidsError }] = await Promise.all([
+        jobsQuery,
+        bidsQuery,
+      ])
+
       if (bidsError) {
         console.error("Error fetching bids:", bidsError)
-      } else {
-        setMyBids(bids || [])
       }
 
-      if (bids && bids.length > 0) {
-        const acceptedBidIds = bids.filter(bid => bid.status === 'accepted').map(bid => bid.id)
-        
+      if (jobsError) {
+        console.error("Error fetching jobs:", jobsError)
+      }
+
+      const safeJobs = jobs || []
+      const safeBids = bids || []
+
+      let safeAssignedJobs: any[] = []
+      if (safeBids.length > 0) {
+        const acceptedBidIds = safeBids.filter((bid) => bid.status === "accepted").map((bid) => bid.id)
+
         if (acceptedBidIds.length > 0) {
           const { data: assigned, error: assignedError } = await supabase
             .from("installation_jobs")
@@ -136,26 +148,23 @@ export default function ProfessionalDashboard() {
           if (assignedError) {
             console.error("Error fetching assigned jobs:", assignedError)
           } else {
-            const jobsWithBids = assigned?.map(job => ({
+            safeAssignedJobs = assigned?.map((job) => ({
               ...job,
-              winning_bid: bids.find(bid => bid.id === job.selected_bid_id)
+              winning_bid: safeBids.find((bid) => bid.id === job.selected_bid_id)
             })) || []
-            setAssignedJobs(jobsWithBids)
           }
-        } else {
-          setAssignedJobs([])
         }
-      } else {
-        setAssignedJobs([])
       }
 
-      const totalBids = bids?.length || 0
-      const wonBids = bids?.filter(bid => bid.status === 'accepted').length || 0
-      const activeJobs = (bids && bids.length > 0) ? 
-        bids.filter(bid => bid.status === 'accepted').length : 0
-      const totalEarnings = bids?.filter(bid => bid.status === 'accepted')
-        .reduce((sum, bid) => sum + (bid.labor_cost || 0), 0) || 0
+      const acceptedBids = safeBids.filter((bid) => bid.status === "accepted")
+      const totalBids = safeBids.length
+      const wonBids = acceptedBids.length
+      const activeJobs = acceptedBids.length
+      const totalEarnings = acceptedBids.reduce((sum, bid) => sum + (bid.labor_cost || 0), 0)
 
+      setAvailableJobs(safeJobs)
+      setMyBids(safeBids)
+      setAssignedJobs(safeAssignedJobs)
       setStats({
         totalBids,
         wonBids,
@@ -169,6 +178,8 @@ export default function ProfessionalDashboard() {
   }, [])
 
   const checkUser = useCallback(async () => {
+    if (isCheckingRef.current) return
+    isCheckingRef.current = true
     try {
       const {
         data: { user },
@@ -204,13 +215,18 @@ export default function ProfessionalDashboard() {
       }
 
       setUser(user)
-      await getProfessionalApplication(user)
-      await loadInstallationData(user)
+      const [application] = await Promise.all([
+        getProfessionalApplication(user),
+        loadInstallationData(user),
+      ])
+      setApplicationStatus(application)
+      hasLoadedOnceRef.current = true
     } catch (error) {
       console.error("Error checking user:", error)
       router.push("/login")
     } finally {
       setLoading(false)
+      isCheckingRef.current = false
     }
   }, [router, getProfessionalApplication, loadInstallationData])
 
@@ -222,7 +238,7 @@ export default function ProfessionalDashboard() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === "SIGNED_OUT" || !session) {
         router.push("/login")
-      } else if (event === "SIGNED_IN" && session) {
+      } else if (event === "SIGNED_IN" && session && !hasLoadedOnceRef.current) {
         await checkUser()
       }
     })
@@ -288,7 +304,7 @@ export default function ProfessionalDashboard() {
                   jobId: jobId
                 })
               })
-              
+
               const emailResult = await response.json()
               if (emailResult.success) {
                 console.log('[BID_SUBMISSION] Customer notification sent successfully')
@@ -316,29 +332,92 @@ export default function ProfessionalDashboard() {
     }
   }
 
-  const handleLogout = async () => {
+  const refreshDashboard = async () => {
+    if (!user || isRefreshing) return
+    setIsRefreshing(true)
     try {
-      await supabase.auth.signOut()
-      router.push("/")
-    } catch (error) {
-      console.error("Logout error:", error)
+      await loadInstallationData(user)
+      const application = await getProfessionalApplication(user)
+      setApplicationStatus(application)
+    } finally {
+      setIsRefreshing(false)
     }
   }
 
   const isApproved = applicationStatus?.status === "approved"
   const winRate = stats.totalBids > 0 ? Math.round((stats.wonBids / stats.totalBids) * 100) : 0
+  const pendingBids = myBids.filter((bid) => bid.status === "pending").length
+  const displayName =
+    applicationStatus?.company_name || user?.user_metadata?.contact_person || "Professional"
+  const performanceChartData = [
+    { label: "Open Jobs", value: availableJobs.length },
+    { label: "Pending Bids", value: pendingBids },
+    { label: "Won Bids", value: stats.wonBids },
+    { label: "Active Projects", value: assignedJobs.length },
+  ]
+  const performanceChartConfig = {
+    value: {
+      label: "Count",
+      color: "#059669",
+    },
+  } satisfies ChartConfig
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-20 h-20 relative mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-            <Wrench className="absolute inset-0 m-auto h-8 w-8 text-emerald-600" />
+      <div className="flex min-h-screen flex-col bg-gray-50">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-gray-200/70 bg-white/90 px-6 backdrop-blur-xl">
+          <Skeleton className="h-7 w-7 rounded-md" />
+          <div className="flex flex-1 items-center justify-between">
+            <Skeleton className="h-6 w-48" />
+            <div className="flex items-center gap-3">
+              <Skeleton className="hidden h-4 w-40 sm:block" />
+              <Skeleton className="h-9 w-24 rounded-md" />
+            </div>
           </div>
-          <p className="text-lg font-bold text-gray-900">Loading Professional Dashboard</p>
-          <p className="text-sm text-gray-600 mt-1">Preparing your workspace...</p>
+        </header>
+
+        <div className="flex-1 space-y-6 p-6">
+          <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+              <div className="space-y-4">
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-9 w-80 max-w-full" />
+                <Skeleton className="h-4 w-full max-w-2xl" />
+                <Skeleton className="h-4 w-4/5 max-w-xl" />
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Skeleton className="h-7 w-40 rounded-full" />
+                  <Skeleton className="h-7 w-36 rounded-full" />
+                  <Skeleton className="h-7 w-44 rounded-full" />
+                </div>
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <Skeleton className="h-10 w-36 rounded-full" />
+                  <Skeleton className="h-10 w-40 rounded-full" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Skeleton className="h-24 rounded-2xl" />
+                <Skeleton className="h-24 rounded-2xl" />
+                <Skeleton className="h-24 rounded-2xl" />
+                <Skeleton className="h-24 rounded-2xl" />
+              </div>
+            </div>
+          </section>
+
+          <section className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-28 rounded-xl" />
+            <Skeleton className="h-56 rounded-xl" />
+          </section>
+
+          <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_1fr]">
+            <Skeleton className="h-[420px] rounded-2xl" />
+            <div className="space-y-6">
+              <Skeleton className="h-44 rounded-2xl" />
+              <Skeleton className="h-64 rounded-2xl" />
+              <Skeleton className="h-64 rounded-2xl" />
+            </div>
+          </section>
         </div>
       </div>
     )
@@ -349,393 +428,318 @@ export default function ProfessionalDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="space-y-6">
-          {/* Hero Profile Section */}
-          <div className="relative overflow-hidden">
-            <Card className="border border-emerald-300 shadow-sm">
-              <div className="h-2 bg-teal-500/30" />
-              <CardContent className="relative p-6 sm:p-8">
-                <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                  <div className="relative">
-                    <div className="w-28 h-28 bg-teal-700 border border-teal-800 rounded-2xl flex items-center justify-center shadow-sm">
-                      <Building2 className="h-14 w-14 text-white" />
-                    </div>
-                    {isApproved && (
-                      <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-emerald-600 border border-emerald-700 rounded-full flex items-center justify-center border-4 border-white shadow-sm">
-                        <CheckCircle className="h-6 w-6 text-white" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex-1 text-center md:text-left">
-                    <div className="flex flex-col md:flex-row md:items-center gap-3 mb-3">
-                      <h1 className="text-3xl sm:text-xl font-bold tracking-tighter text-gray-900">
-                        {applicationStatus?.company_name || "Professional"}
-                      </h1>
-                      <Badge className="bg-teal-600 hover:bg-teal-700 text-white border-0 text-sm px-4 py-1 font-semibold tracking-tight">
-                        {applicationStatus?.professional_type || "Installer"}
-                      </Badge>
-                    </div>
-                    
-                    <p className="text-base sm:text-lg text-gray-600 mb-4 tracking-tight">
-                      Welcome back,{" "}
-                      <span className="font-semibold tracking-tight">
-                        {user?.user_metadata?.contact_person || user?.user_metadata?.first_name || "Professional"}
-                      </span>{" "}
-                      {isApproved ? "Ready for new opportunities." : "Application under review."}
-                    </p>
-
-                    <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                      <div className="flex items-center gap-2 bg-teal-50 px-4 py-2 rounded-full border border-emerald-300">
-                        <Target className="h-4 w-4 text-emerald-700" />
-                        <span className="text-sm font-bold text-emerald-900">{winRate}% Win Rate</span>
-                      </div>
-                      <div className="flex items-center gap-2 bg-teal-50 px-4 py-2 rounded-full border border-teal-300">
-                        <Award className="h-4 w-4 text-teal-700" />
-                        <span className="text-sm font-bold text-teal-900">{stats.wonBids} Jobs Won</span>
-                      </div>
-                      <div className="flex items-center gap-2 bg-cyan-50 px-4 py-2 rounded-full border border-cyan-300">
-                        <DollarSign className="h-4 w-4 text-cyan-700" />
-                        <span className="text-sm font-bold text-cyan-900">KSH {stats.totalEarnings.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-center gap-2">
-                    <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-all ${
-                      isApproved
-                        ? 'bg-emerald-500 shadow-sm '
-                        : 'bg-amber-400'
-                    }`}>
-                      {isApproved ? (
-                        <Zap className="h-10 w-10 text-white" />
-                      ) : (
-                        <Clock className="h-10 w-10 text-white" />
-                      )}
-                    </div>
-                    <Badge className={isApproved ? 'bg-green-600' : 'bg-amber-600'}>
-                      {isApproved ? 'ACTIVE' : 'PENDING'}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+    <div className="flex min-h-screen flex-col bg-gray-50">
+      <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-gray-200/70 bg-white/90 px-6 backdrop-blur-xl">
+        <SidebarTrigger className="-ml-1" />
+        <div className="flex flex-1 items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-semibold tracking-tight text-gray-900">Professional Dashboard</h1>
+            {applicationStatus && (
+              <Badge className={isApproved
+                ? "border border-emerald-300 bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                : "border border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-100"
+              }>
+                {isApproved ? "Active" : "Pending Review"}
+              </Badge>
+            )}
           </div>
+          <div className="flex items-center gap-3">
+            <span className="hidden text-sm text-gray-500 sm:inline">{displayName}</span>
+            <Button onClick={refreshDashboard} disabled={isRefreshing} size="sm" className="bg-emerald-600 text-white hover:bg-emerald-700">
+              <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
+        </div>
+      </header>
 
-          {!isApproved && (
-            <Card className="border border-amber-200 bg-amber-50">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <AlertCircle className="h-7 w-7 text-amber-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-amber-900 mb-2">Application Under Review</h3>
-                    <p className="text-amber-800 mb-3">
-                      Your professional credentials are being verified. This typically takes 1-3 business days.
-                    </p>
-                    <div className="grid sm:grid-cols-3 gap-3 text-sm">
-                      <div className="bg-white p-3 rounded-lg">
-                        <p className="text-gray-600 mb-1">Company</p>
-                        <p className="font-bold text-gray-900">{applicationStatus?.company_name || "N/A"}</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <p className="text-gray-600 mb-1">Type</p>
-                        <p className="font-bold text-gray-900">{applicationStatus?.professional_type || "N/A"}</p>
-                      </div>
-                      <div className="bg-white p-3 rounded-lg">
-                        <p className="text-gray-600 mb-1">Applied</p>
-                        <p className="font-bold text-gray-900">
-                          {applicationStatus?.created_at
-                            ? new Date(applicationStatus.created_at).toLocaleDateString()
-                            : "N/A"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {isApproved && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column */}
-              <div className="space-y-6">
-                <Card className="border border-emerald-200">
-                  <div className="h-2 bg-teal-500/30" />
-            <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <TrendingUp className="h-5 w-5 text-emerald-600" />
-                      Performance
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-gray-700">Win Rate</span>
-                        <Star className="h-5 w-5 text-emerald-600" />
-                      </div>
-                      <p className="text-xl font-bold tracking-tight text-emerald-700">{winRate}%</p>
-                      <p className="text-xs text-emerald-600 mt-1">
-                        {stats.wonBids} of {stats.totalBids} bids won
-                      </p>
-                    </div>
-
-                    <div className="bg-teal-50/60 p-4 rounded-xl border border-teal-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-semibold text-gray-700">Active Projects</span>
-                        <Briefcase className="h-5 w-5 text-teal-600" />
-                      </div>
-                      <p className="text-xl font-bold tracking-tight text-teal-700">{stats.activeJobs}</p>
-                      <p className="text-xs text-teal-600 mt-1">Currently assigned</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border border-cyan-200">
-                  <div className="h-2 bg-cyan-500/30" />
-            <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <DollarSign className="h-5 w-5 text-cyan-600" />
-                      Earnings
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="bg-cyan-50 p-4 rounded-xl border border-cyan-200">
-                      <span className="text-sm text-gray-600">Total Earned</span>
-                      <p className="text-xl font-bold tracking-tight text-cyan-700 mt-1">
-                        KSH {stats.totalEarnings.toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                      <span className="text-sm font-semibold text-gray-700">Completed Jobs</span>
-                      <span className="text-xl font-bold tracking-tight text-blue-700">{stats.wonBids}</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-indigo-50 rounded-lg">
-                      <span className="text-sm font-semibold text-gray-700">Pending Bids</span>
-                      <span className="text-xl font-bold tracking-tight text-indigo-700">
-                        {myBids.filter(b => b.status === 'pending').length}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border border-emerald-200">
-                  <div className="h-2 bg-purple-500/30" />
-            <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Zap className="h-5 w-5 text-teal-600" />
-                      Quick Actions
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Link href="/professional/jobs">
-                      <Button className="w-full bg-teal-600 hover:bg-teal-700 justify-start">
-                        <Hammer className="h-4 w-4 mr-2" />
-                        Browse Jobs
-                      </Button>
-                    </Link>
-                    <Link href="/professional/bids">
-                      <Button variant="outline" className="w-full border justify-start">
-                        <Target className="h-4 w-4 mr-2" />
-                        My Bids
-                      </Button>
-                    </Link>
-                    <Link href="/professional/assigned">
-                      <Button variant="outline" className="w-full border justify-start">
-                        <Award className="h-4 w-4 mr-2" />
-                        Assigned Jobs
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
+      <div className="flex-1 space-y-6 p-6">
+        <section className="relative overflow-hidden rounded-3xl border border-gray-200 bg-white p-6 text-gray-900 shadow-sm sm:p-8">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.08),transparent_60%)]" />
+          <div className="relative grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+            <div>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.35em] text-emerald-600">Professional hub</p>
+              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Welcome back, {displayName}</h2>
+              <p className="mt-2 max-w-2xl text-sm text-gray-600">
+                Track your pipeline, secure new projects, and manage active work from one premium workspace.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Badge className="border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50">
+                  <Hammer className="mr-1 h-3 w-3" />
+                  {availableJobs.length} opportunities
+                </Badge>
+                <Badge className="border border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-100">
+                  <Clock className="mr-1 h-3 w-3" />
+                  {pendingBids} pending bids
+                </Badge>
+                <Badge className="border border-gray-200 bg-gray-100 text-gray-700 hover:bg-gray-100">
+                  <Award className="mr-1 h-3 w-3" />
+                  {assignedJobs.length} active projects
+                </Badge>
               </div>
-
-              {/* Right Column */}
-              <div className="lg:col-span-2 space-y-6">
-                <Card className="border border-orange-200">
-                  <div className="h-2 bg-orange-500/30" />
-            <CardHeader className="bg-white border-b border-orange-200">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <Hammer className="h-6 w-6 text-orange-600" />
-                        Available Installation Jobs
-                        <Badge className="bg-orange-100 text-orange-700 border border-orange-300 font-bold">
-                          {availableJobs.length}
-                        </Badge>
-                      </CardTitle>
-                    </div>
-                    <CardDescription>Browse and bid on new opportunities</CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    {availableJobs.length === 0 ? (
-                      <div className="text-center py-16">
-                        <div className="w-24 h-24 bg-orange-50 border border-orange-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Package className="h-12 w-12 text-orange-600" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">No Jobs Available</h3>
-                        <p className="text-gray-600">Check back soon for new opportunities</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {availableJobs.slice(0, 3).map((job) => (
-                          <Card key={job.id} className="border border-gray-200 hover:shadow-sm transition-all">
-                            <div className="h-1 bg-teal-500/30" />
-              <CardContent className="p-4">
-                              <div className="flex items-start justify-between mb-3">
-                                <div>
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <Wrench className="h-5 w-5 text-emerald-600" />
-                                    <h3 className="font-bold text-lg text-gray-900">{job.title}</h3>
-                                  </div>
-                                  <p className="text-sm text-gray-600 line-clamp-2">{job.description}</p>
-                                </div>
-                                <Badge variant={job.urgency === 'urgent' ? 'destructive' : job.urgency === 'high' ? 'default' : 'secondary'}>
-                                  {job.urgency}
-                                </Badge>
-                              </div>
-
-                              <div className="flex flex-wrap gap-3 mb-3 text-sm text-gray-600">
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="h-4 w-4" />
-                                  {job.location_city}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="h-4 w-4" />
-                                  {job.preferred_date ? new Date(job.preferred_date).toLocaleDateString() : 'Flexible'}
-                                </div>
-                                <div className="flex items-center gap-1 font-semibold text-emerald-700">
-                                  <DollarSign className="h-4 w-4" />
-                                  KSH {job.total_product_cost?.toLocaleString() || 0}
-                                </div>
-                              </div>
-
-                              <Button 
-                                size="sm" 
-                                className="w-full bg-teal-600 hover:bg-teal-700"
-                                onClick={() => setSelectedJob(job)}
-                              >
-                                <Eye className="h-4 w-4 mr-1" />
-                                View & Submit Bid
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        ))}
-                        
-                        {availableJobs.length > 3 && (
-                          <Link href="/professional/jobs">
-                            <Button variant="outline" className="w-full border">
-                              View All {availableJobs.length} Jobs
-                            </Button>
-                          </Link>
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <div className="grid sm:grid-cols-2 gap-6">
-                  <Card className="border border-blue-200">
-                    <div className="h-2 bg-blue-500/30" />
-            <CardHeader className="pb-3">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Target className="h-5 w-5 text-blue-600" />
-                        Recent Bids
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {myBids.length === 0 ? (
-                        <div className="text-center py-8">
-                          <Target className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                          <p className="text-sm text-gray-500">No bids yet</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {myBids.slice(0, 3).map((bid) => (
-                            <div key={bid.id} className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                              <div className="flex justify-between items-start mb-2">
-                                <h4 className="font-semibold text-sm line-clamp-1">{bid.installation_jobs?.title}</h4>
-                                <Badge variant={
-                                  bid.status === 'accepted' ? 'default' : 
-                                  bid.status === 'rejected' ? 'destructive' : 'secondary'
-                                } className="text-xs">
-                                  {bid.status}
-                                </Badge>
-                              </div>
-                              <p className="text-xs text-gray-600">
-                                KSH {bid.total_bid_amount?.toLocaleString()} • {bid.installation_jobs?.location_city}
-                              </p>
-                            </div>
-                          ))}
-                          <Link href="/professional/bids">
-                            <Button variant="outline" size="sm" className="w-full border">
-                              View All Bids
-                            </Button>
-                          </Link>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border border-green-200">
-                    <div className="h-2 bg-emerald-500/30" />
-            <CardHeader className="pb-3">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <Award className="h-5 w-5 text-green-600" />
-                        Active Projects
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {assignedJobs.length === 0 ? (
-                        <div className="text-center py-8">
-                          <Award className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                          <p className="text-sm text-gray-500">No active projects</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {assignedJobs.slice(0, 3).map((job) => (
-                            <div key={job.id} className="bg-emerald-50 p-3 rounded-lg border border-green-200">
-                              <div className="flex justify-between items-start mb-2">
-                                <h4 className="font-semibold text-sm line-clamp-1">{job.title}</h4>
-                                <Badge className="bg-green-600 text-xs">Assigned</Badge>
-                              </div>
-                              <p className="text-xs text-gray-600">
-                                Earning: KSH {job.winning_bid?.total_bid_amount?.toLocaleString()}
-                              </p>
-                            </div>
-                          ))}
-                          <Link href="/professional/assigned">
-                            <Button variant="outline" size="sm" className="w-full border">
-                              View All Projects
-                            </Button>
-                          </Link>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link href="/professional/jobs">
+                  <Button className="rounded-full bg-emerald-500 px-6 text-white hover:bg-emerald-400">
+                    <Hammer className="mr-2 h-4 w-4" />
+                    Browse Jobs
+                  </Button>
+                </Link>
+                <Link href="/professional/assigned">
+                  <Button variant="outline" className="rounded-full border-gray-300 bg-white px-6 text-gray-700 hover:bg-gray-50">
+                    <Briefcase className="mr-2 h-4 w-4" />
+                    Active Projects
+                  </Button>
+                </Link>
               </div>
             </div>
-          )}
-        </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <p className="text-xs text-gray-500">Win Rate</p>
+                <p className="mt-2 text-3xl font-bold">{winRate}%</p>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <p className="text-xs text-gray-500">Earnings</p>
+                <p className="mt-2 text-2xl font-bold">KSH {stats.totalEarnings.toLocaleString()}</p>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <p className="text-xs text-gray-500">Won Bids</p>
+                <p className="mt-2 text-3xl font-bold">{stats.wonBids}</p>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <p className="text-xs text-gray-500">Open Jobs</p>
+                <p className="mt-2 text-3xl font-bold">{availableJobs.length}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+          <Card className="rounded-xl border border-gray-200/70 bg-white/90 shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold text-gray-700">Total Bids</CardTitle>
+              <Hammer className="h-5 w-5 text-gray-700" />
+            </CardHeader>
+            <CardContent className="pt-1">
+              <div className="text-2xl font-bold text-gray-900">{stats.totalBids}</div>
+              <p className="text-sm text-gray-500">All submissions</p>
+            </CardContent>
+          </Card>
+          <Card className="rounded-xl border border-emerald-200/70 bg-white/90 shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold text-gray-700">Jobs Won</CardTitle>
+              <Award className="h-5 w-5 text-emerald-600" />
+            </CardHeader>
+            <CardContent className="pt-1">
+              <div className="text-2xl font-bold text-gray-900">{stats.wonBids}</div>
+              <p className="text-sm text-emerald-700">Accepted bids</p>
+            </CardContent>
+          </Card>
+          <Card className="rounded-xl border border-gray-200/70 bg-white/90 shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-semibold text-gray-700">Active Jobs</CardTitle>
+              <Briefcase className="h-5 w-5 text-emerald-600" />
+            </CardHeader>
+            <CardContent className="pt-1">
+              <div className="text-2xl font-bold text-gray-900">{stats.activeJobs}</div>
+              <p className="text-sm text-gray-500">Current assignments</p>
+            </CardContent>
+          </Card>
+          <Card className="rounded-xl border border-emerald-200 bg-white/95 shadow-sm lg:col-span-1">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold text-gray-700">Performance Chart</CardTitle>
+              <CardDescription>Current pipeline snapshot</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <ChartContainer config={performanceChartConfig} className="h-[160px] w-full">
+                <BarChart data={performanceChartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} tick={{ fontSize: 10 }} />
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                  <Bar dataKey="value" fill="var(--color-value)" radius={6} />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </section>
+
+        {!isApproved && (
+          <Card className="rounded-2xl border border-gray-200 bg-white/95 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gray-100">
+                  <AlertCircle className="h-7 w-7 text-gray-700" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="mb-2 text-xl font-bold text-gray-900">Application Under Review</h3>
+                  <p className="mb-3 text-gray-600">
+                    Your credentials are being verified. This typically takes 1-3 business days.
+                  </p>
+                  <div className="grid gap-3 text-sm sm:grid-cols-3">
+                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                      <p className="mb-1 text-gray-500">Company</p>
+                      <p className="font-bold text-gray-900">{applicationStatus?.company_name || "N/A"}</p>
+                    </div>
+                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                      <p className="mb-1 text-gray-500">Type</p>
+                      <p className="font-bold text-gray-900">{applicationStatus?.professional_type || "N/A"}</p>
+                    </div>
+                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                      <p className="mb-1 text-gray-500">Applied</p>
+                      <p className="font-bold text-gray-900">
+                        {applicationStatus?.created_at ? new Date(applicationStatus.created_at).toLocaleDateString() : "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {isApproved && (
+          <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_1fr]">
+            <Card className="rounded-2xl border border-gray-200/70 bg-white/95 shadow-sm">
+              <CardHeader className="border-b border-gray-200 bg-white">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2 text-gray-900">
+                    <Hammer className="h-5 w-5 text-emerald-600" />
+                    Available Installation Jobs
+                    <Badge className="border border-gray-200 bg-gray-100 font-bold text-gray-700 hover:bg-gray-100">
+                      {availableJobs.length}
+                    </Badge>
+                  </CardTitle>
+                  <Link href="/professional/jobs">
+                    <Button size="sm" className="rounded-full bg-emerald-600 text-white hover:bg-emerald-700">
+                      View All
+                    </Button>
+                  </Link>
+                </div>
+                <CardDescription>Priority opportunities matched to your profile</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 p-4">
+                {availableJobs.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <Package className="mx-auto mb-2 h-8 w-8 text-gray-300" />
+                    <p className="text-sm text-gray-500">No jobs available right now</p>
+                  </div>
+                ) : (
+                  availableJobs.slice(0, 4).map((job) => (
+                    <Card key={job.id} className="rounded-xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+                      <CardContent className="p-4">
+                        <div className="mb-2 flex items-start justify-between gap-3">
+                          <div>
+                            <h3 className="text-base font-bold text-gray-900">{job.title}</h3>
+                            <p className="line-clamp-1 text-sm text-gray-500">{job.description}</p>
+                          </div>
+                          <Badge variant={job.urgency === "urgent" ? "destructive" : job.urgency === "high" ? "default" : "secondary"}>
+                            {job.urgency}
+                          </Badge>
+                        </div>
+                        <div className="mb-3 flex flex-wrap gap-3 text-sm text-gray-500">
+                          <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{job.location_city}</span>
+                          <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{job.preferred_date ? new Date(job.preferred_date).toLocaleDateString() : "Flexible"}</span>
+                          <span className="flex items-center gap-1 font-semibold text-emerald-700"><DollarSign className="h-3.5 w-3.5" />KSH {job.total_product_cost?.toLocaleString() || 0}</span>
+                        </div>
+                        <Button size="sm" className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700" onClick={() => setSelectedJob(job)}>
+                          <Eye className="mr-1 h-4 w-4" />
+                          View & Submit Bid
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+              <Card className="rounded-2xl border border-gray-200/70 bg-white/95 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-semibold text-gray-700">Action Center</CardTitle>
+                  <Zap className="h-5 w-5 text-emerald-600" />
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Link href="/professional/jobs"><Button className="w-full justify-start rounded-xl bg-emerald-600 hover:bg-emerald-700"><Hammer className="mr-2 h-4 w-4" />Browse Jobs</Button></Link>
+                  <Link href="/professional/bids"><Button variant="outline" className="w-full justify-start rounded-xl border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/40"><Target className="mr-2 h-4 w-4" />My Bids</Button></Link>
+                  <Link href="/professional/assigned"><Button variant="outline" className="w-full justify-start rounded-xl border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/40"><Award className="mr-2 h-4 w-4" />Assigned Jobs</Button></Link>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl border border-gray-200/70 bg-white/95 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                  <CardTitle className="text-sm font-semibold text-gray-700">Recent Bids</CardTitle>
+                  <Target className="h-5 w-5 text-gray-700" />
+                </CardHeader>
+                <CardContent>
+                  {myBids.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <Target className="mx-auto mb-2 h-8 w-8 text-gray-300" />
+                      <p className="text-sm text-gray-500">No bids yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {myBids.slice(0, 3).map((bid) => (
+                        <div key={bid.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                          <div className="mb-1 flex items-start justify-between">
+                            <h4 className="line-clamp-1 text-sm font-semibold text-gray-900">{bid.installation_jobs?.title}</h4>
+                            <Badge variant={bid.status === "accepted" ? "default" : bid.status === "rejected" ? "destructive" : "secondary"} className="ml-1 shrink-0 text-xs">{bid.status}</Badge>
+                          </div>
+                          <p className="text-xs text-gray-500">KSH {bid.total_bid_amount?.toLocaleString()} · {bid.installation_jobs?.location_city}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl border border-gray-200/70 bg-white/95 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 border-b border-gray-200">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <Award className="h-5 w-5 text-emerald-600" />
+                    Active Projects
+                  </CardTitle>
+                  <Link href="/professional/assigned">
+                    <Button size="sm" variant="outline" className="rounded-full border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/40">View All</Button>
+                  </Link>
+                </CardHeader>
+                <CardContent className="p-4">
+                  {assignedJobs.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <Award className="mx-auto mb-2 h-8 w-8 text-gray-300" />
+                      <p className="text-sm text-gray-500">No active projects</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {assignedJobs.slice(0, 3).map((job) => (
+                        <div key={job.id} className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                          <div className="mb-1 flex items-start justify-between">
+                            <h4 className="line-clamp-1 text-sm font-semibold text-gray-900">{job.title}</h4>
+                            <Badge className="ml-1 shrink-0 bg-emerald-600 text-xs text-white">Assigned</Badge>
+                          </div>
+                          <p className="text-xs text-gray-500">Earning: KSH {job.winning_bid?.total_bid_amount?.toLocaleString()}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        )}
       </div>
 
       {/* Bidding Modal */}
       {selectedJob && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-emerald-300 shadow-sm">
-            <div className="h-2 bg-teal-500/30" />
+          <Card className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-emerald-300 bg-white shadow-xl">
+            <div className="h-2 bg-emerald-600" />
             <CardHeader className="border-b bg-emerald-50/60">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <Send className="h-5 w-5 text-emerald-600" />
                   Submit Bid
                 </CardTitle>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   className="text-2xl h-8 w-8 p-0"
                   onClick={() => setSelectedJob(null)}
@@ -773,9 +777,9 @@ export default function ProfessionalDashboard() {
                   )}
                 </div>
                 <p className="text-sm text-gray-600 mt-3"><strong>Description:</strong> {selectedJob.description}</p>
-                
+
                 {selectedJob.installation_job_items && selectedJob.installation_job_items.length > 0 && (
-                  <div className="mt-4 bg-white p-3 rounded-lg">
+                  <div className="mt-4 bg-white p-3 rounded-lg border border-gray-200">
                     <p className="font-semibold mb-2 text-sm">Products to Install:</p>
                     {selectedJob.installation_job_items.map((item: any) => (
                       <div key={item.id} className="flex justify-between text-sm py-1">
@@ -851,10 +855,10 @@ export default function ProfessionalDashboard() {
                   />
                 </div>
 
-                <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-300">
+                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-gray-900">Total Bid Amount:</span>
-                    <span className="text-xl font-bold tracking-tight text-emerald-700">
+                    <span className="text-xl font-bold text-emerald-700">
                       KSH {(
                         (parseFloat(bidForm.laborCost) || 0) +
                         (parseFloat(bidForm.materialCost) || 0) +
@@ -865,15 +869,15 @@ export default function ProfessionalDashboard() {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <Button 
+                  <Button
                     onClick={() => submitBid(selectedJob.id)}
                     disabled={!bidForm.laborCost}
-                    className="flex-1 bg-teal-600 hover:bg-teal-700"
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700"
                   >
                     <Send className="h-4 w-4 mr-2" />
                     Submit Bid
                   </Button>
-                  <Button variant="outline" className="border" onClick={() => setSelectedJob(null)}>
+                  <Button variant="outline" className="border-gray-200" onClick={() => setSelectedJob(null)}>
                     Cancel
                   </Button>
                 </div>

@@ -2,6 +2,7 @@
 
 import { createServerClient } from "@/lib/supabase-server"
 import { cookies } from "next/headers"
+import { requireAdmin } from "@/lib/require-admin"
 
 export interface CategoryPerformance {
   categoryId: string
@@ -37,6 +38,9 @@ export interface CategoryListItem {
 }
 
 export async function getAllCategories() {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const cookieStore = cookies()
     const supabase = createServerClient(cookieStore)
@@ -72,6 +76,9 @@ export async function getAllCategories() {
 }
 
 export async function getCategoryPerformance(categoryId: string) {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const cookieStore = cookies()
     const supabase = createServerClient(cookieStore)

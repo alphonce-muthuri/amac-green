@@ -152,7 +152,7 @@ export function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
                   <Star
                     key={star}
                     className={`h-5 w-5 ${
-                      star <= userReview.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                      star <= userReview.rating ? "fill-emerald-500 text-gray-700" : "text-gray-300"
                     }`}
                   />
                 ))}
@@ -198,7 +198,7 @@ export function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
               className={`p-3 rounded-md ${
                 message.type === "success"
                   ? "bg-green-50 text-green-700 border border-green-200"
-                  : "bg-red-50 text-red-700 border border-red-200"
+                  : "bg-gray-900 text-gray-700 border border-gray-200"
               }`}
             >
               {message.text}
@@ -217,7 +217,7 @@ export function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
                 >
                   <Star
                     className={`h-6 w-6 transition-colors ${
-                      star <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300 hover:text-yellow-400"
+                      star <= rating ? "fill-emerald-500 text-gray-700" : "text-gray-300 hover:text-gray-700"
                     }`}
                   />
                 </button>

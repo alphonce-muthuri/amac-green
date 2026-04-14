@@ -7,8 +7,12 @@ export async function POST(req: NextRequest) {
     const body = await req.text()
     const signature = req.headers.get('x-paystack-signature')
 
-    // Verify webhook signature (optional but recommended for production)
-    if (process.env.NODE_ENV === 'production' && signature) {
+    // In production the signature header is required and must be valid.
+    if (process.env.NODE_ENV === 'production') {
+      if (!signature) {
+        console.error('[PAYSTACK_WEBHOOK] Missing x-paystack-signature header')
+        return NextResponse.json({ success: false, error: 'Missing signature' }, { status: 400 })
+      }
       const hash = crypto
         .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY!)
         .update(body)

@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
+import { supabaseAdmin, createServerClient } from '@/lib/supabase-server'
+import { cookies } from 'next/headers'
+import { ADMIN_EMAILS } from '@/lib/require-admin'
 
 export async function POST(req: NextRequest) {
   try {
+    // Verify the caller is authenticated.
+    const cookieStore = cookies()
+    const supabase = createServerClient(cookieStore)
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 })
+    }
+
     const { reference } = await req.json()
 
     if (!reference) {
@@ -41,7 +51,7 @@ export async function POST(req: NextRequest) {
       orderId: transaction.metadata?.orderId
     })
 
-    // Extract order ID from metadata
+    // Extract order ID from Paystack metadata.
     const orderId = transaction.metadata?.orderId
     if (!orderId) {
       console.error('[PAYSTACK] No orderId in transaction metadata')
@@ -49,6 +59,30 @@ export async function POST(req: NextRequest) {
         { success: false, error: 'Order ID not found in transaction' },
         { status: 400 }
       )
+    }
+
+    // Look up the order in our DB to verify ownership and expected amount.
+    const { data: dbOrder, error: orderErr } = await supabaseAdmin
+      .from('orders')
+      .select('id, customer_id, total_amount, payment_status')
+      .eq('id', orderId)
+      .single()
+
+    if (orderErr || !dbOrder) {
+      return NextResponse.json({ success: false, error: 'Order not found' }, { status: 404 })
+    }
+
+    const isAdmin = ADMIN_EMAILS.includes((user.email ?? '').toLowerCase())
+    if (!isAdmin && dbOrder.customer_id !== user.id) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 })
+    }
+
+    // Guard against amount tampering: Paystack returns kobo, DB stores KES.
+    // Allow ±1 KES tolerance for floating-point rounding.
+    const paystackAmountKES = transaction.amount / 100
+    if (Math.abs(paystackAmountKES - dbOrder.total_amount) > 1) {
+      console.error('[PAYSTACK] Amount mismatch — DB:', dbOrder.total_amount, 'Paystack:', paystackAmountKES)
+      return NextResponse.json({ success: false, error: 'Amount mismatch' }, { status: 400 })
     }
 
     // Update order based on payment status

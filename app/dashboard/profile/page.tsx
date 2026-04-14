@@ -3,13 +3,12 @@
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { User, Mail, Phone, MapPin, Lock, Save, Camera, Shield, Bell } from "lucide-react"
+import { User, Mail, Phone, MapPin, Lock, Save, Camera, Shield, ChevronRight } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
@@ -27,16 +26,8 @@ export default function ProfilePage() {
 
   const checkUser = useCallback(async () => {
     try {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser()
-
-      if (error || !user) {
-        router.push("/login")
-        return
-      }
-
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error || !user) { router.push("/login"); return }
       setUser(user)
       setFormData({
         first_name: user.user_metadata?.first_name || "",
@@ -46,39 +37,23 @@ export default function ProfilePage() {
         address: user.user_metadata?.address || "",
         city: user.user_metadata?.city || "",
       })
-    } catch (error) {
-      console.error("Error checking user:", error)
+    } catch {
       router.push("/login")
     } finally {
       setLoading(false)
     }
   }, [router])
 
-  useEffect(() => {
-    void checkUser()
-  }, [checkUser])
+  useEffect(() => { void checkUser() }, [checkUser])
 
   const handleSave = async () => {
     setSaving(true)
     try {
-      // Update user metadata
-      const { error } = await supabase.auth.updateUser({
-        data: formData
-      })
-
+      const { error } = await supabase.auth.updateUser({ data: formData })
       if (error) throw error
-
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been updated successfully",
-      })
-    } catch (error) {
-      console.error("Error updating profile:", error)
-      toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
-      })
+      toast({ title: "Profile updated", description: "Your changes have been saved." })
+    } catch {
+      toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" })
     } finally {
       setSaving(false)
     }
@@ -86,223 +61,186 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading profile...</p>
-        </div>
+      <div className="max-w-2xl mx-auto py-2 space-y-2">
+        <Skeleton className="h-44 rounded-2xl" />
+        <Skeleton className="h-44 rounded-2xl" />
+        <Skeleton className="h-32 rounded-2xl" />
+        <Skeleton className="h-10 w-36 rounded-xl" />
       </div>
     )
   }
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null
+
+  const initials = `${formData.first_name?.charAt(0) || ""}${formData.last_name?.charAt(0) || ""}` || "U"
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-extrabold tracking-tighter text-gray-900">Profile Settings</h1>
-        <p className="text-sm text-gray-600 mt-1">Manage your account information and preferences</p>
-      </div>
+    <div className="max-w-2xl mx-auto py-2 space-y-2">
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Profile Summary Card */}
-        <Card className="border border-emerald-200/60 lg:col-span-1 overflow-hidden">
-          <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-          <CardContent className="p-6">
-            <div className="text-center">
-              {/* Avatar */}
-              <div className="relative inline-block mb-4">
-                <div className="w-28 h-28 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center text-emerald-700 text-3xl font-bold">
-                  {formData.first_name?.charAt(0) || "U"}{formData.last_name?.charAt(0) || ""}
-                </div>
-                <button
-                  className="absolute bottom-0 right-0 w-9 h-9 bg-white rounded-full shadow-sm border border-emerald-200 flex items-center justify-center hover:bg-emerald-50"
-                  type="button"
-                  aria-label="Change profile photo"
-                  title="Change profile photo"
-                >
-                  <Camera className="h-5 w-5 text-gray-600" />
-                </button>
-              </div>
-              
-              <h3 className="text-lg font-bold text-gray-900 mb-1">
-                {formData.first_name} {formData.last_name}
-              </h3>
-              <p className="text-sm text-gray-600 mb-3">{formData.email}</p>
-              
-              <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold mb-4 rounded-full">
-                <Shield className="h-3 w-3 mr-1" />
-                Account Active
-              </Badge>
+      {/* ── Profile hero ── */}
+      <div className="relative bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        {/* Subtle gradient strip */}
+        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-emerald-50/80 to-transparent pointer-events-none" />
 
-              <div className="pt-4 border-t space-y-2">
-                <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="text-gray-600">Member Since</span>
-                  <span className="font-semibold text-gray-900">
-                    {new Date(user.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="text-gray-600">Account Type</span>
-                  <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
-                    {user.user_metadata?.role || "Customer"}
-                  </Badge>
-                </div>
+        <div className="relative px-6 pt-6 pb-5">
+          <div className="flex items-start gap-5">
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              <div className="w-[72px] h-[72px] rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-200 border border-emerald-200 flex items-center justify-center text-emerald-800 text-2xl font-bold tracking-tight select-none shadow-sm">
+                {initials}
               </div>
+              <button
+                type="button"
+                aria-label="Change photo"
+                className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-white border border-gray-200 rounded-full shadow flex items-center justify-center hover:bg-gray-50 transition-colors"
+              >
+                <Camera className="h-3 w-3 text-gray-500" />
+              </button>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Profile Form */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Personal Information */}
-          <Card className="border border-emerald-200/60 overflow-hidden">
-            <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-            <CardHeader className="bg-white border-b border-emerald-200/60">
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-4 w-4 text-emerald-600" />
-                <span className="text-lg">Personal Information</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="first_name" className="text-xs sm:text-sm font-semibold text-gray-700">
-                    First Name
-                  </Label>
-                  <Input
-                    id="first_name"
-                    value={formData.first_name}
-                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                    className="border border-emerald-200"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last_name" className="text-xs sm:text-sm font-semibold text-gray-700">
-                    Last Name
-                  </Label>
-                  <Input
-                    id="last_name"
-                    value={formData.last_name}
-                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                    className="border border-emerald-200"
-                  />
-                </div>
+            {/* Name / email / badge */}
+            <div className="flex-1 min-w-0 pt-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base font-semibold text-gray-900 tracking-tight">
+                  {formData.first_name} {formData.last_name}
+                </h2>
+                <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold rounded-full px-2 py-0">
+                  <Shield className="h-2.5 w-2.5 mr-1" />
+                  Active
+                </Badge>
               </div>
+              <p className="text-sm text-gray-400 mt-0.5 truncate">{formData.email}</p>
+            </div>
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-xs sm:text-sm font-semibold text-gray-700">
-                  Email Address
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    disabled
-                    className="pl-10 border border-emerald-200 bg-gray-50"
-                  />
-                </div>
-                <p className="text-xs text-gray-500">Email cannot be changed</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-xs sm:text-sm font-semibold text-gray-700">
-                  Phone Number
-                </Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="pl-10 border border-emerald-200"
-                    placeholder="+254 123 456 789"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Address Information */}
-          <Card className="border border-emerald-200/60 overflow-hidden">
-            <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-            <CardHeader className="bg-white border-b border-emerald-200/60">
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-emerald-600" />
-                <span className="text-lg">Address Information</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="address" className="text-xs sm:text-sm font-semibold text-gray-700">
-                  Street Address
-                </Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="border border-emerald-200"
-                  placeholder="123 Main Street"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="city" className="text-xs sm:text-sm font-semibold text-gray-700">
-                  City
-                </Label>
-                <Input
-                  id="city"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="border border-emerald-200"
-                  placeholder="Nairobi"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Security Settings */}
-          <Card className="border border-emerald-200/60 overflow-hidden">
-            <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-            <CardHeader className="bg-white border-b border-emerald-200/60">
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5 text-emerald-600" />
-                <span className="text-lg">Security Settings</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <Button variant="outline" className="w-full border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300">
-                <Lock className="h-4 w-4 mr-2" />
-                Change Password
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Save Button */}
-          <div className="flex gap-3">
-            <Button 
-              onClick={handleSave} 
-              disabled={saving}
-              className="bg-emerald-600 hover:bg-emerald-700 flex-1"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => router.push("/dashboard")}
-              className="border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300"
-            >
-              Cancel
-            </Button>
+          {/* Divider + meta row */}
+          <div className="mt-5 pt-4 border-t border-gray-100 grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-400 font-medium">Account</p>
+              <p className="text-xs font-semibold text-gray-700 mt-1">{user.user_metadata?.role || "Customer"}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-400 font-medium">Member since</p>
+              <p className="text-xs font-semibold text-gray-700 mt-1">{new Date(user.created_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</p>
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-gray-400 font-medium">Status</p>
+              <p className="text-xs font-semibold text-emerald-600 mt-1">Verified</p>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* ── Personal information ── */}
+      <Section label="Personal Information" icon={<User className="h-3.5 w-3.5" />}>
+        <Row label="First name">
+          <Input
+            value={formData.first_name}
+            onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+            className="h-7 text-sm border-0 shadow-none bg-transparent focus-visible:ring-0 p-0 text-right text-gray-700 w-48"
+          />
+        </Row>
+        <Row label="Last name">
+          <Input
+            value={formData.last_name}
+            onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+            className="h-7 text-sm border-0 shadow-none bg-transparent focus-visible:ring-0 p-0 text-right text-gray-700 w-48"
+          />
+        </Row>
+        <Row label="Email">
+          <span className="text-sm text-gray-400 flex items-center gap-1.5">
+            <Mail className="h-3.5 w-3.5" />
+            {formData.email}
+          </span>
+        </Row>
+        <Row label="Phone" last>
+          <div className="flex items-center gap-1.5">
+            <Phone className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+            <Input
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="+254 123 456 789"
+              className="h-7 text-sm border-0 shadow-none bg-transparent focus-visible:ring-0 p-0 text-right text-gray-700 w-44 placeholder:text-gray-300"
+            />
+          </div>
+        </Row>
+      </Section>
+
+      {/* ── Address ── */}
+      <Section label="Address" icon={<MapPin className="h-3.5 w-3.5" />}>
+        <Row label="Street address">
+          <Input
+            value={formData.address}
+            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            placeholder="123 Main Street"
+            className="h-7 text-sm border-0 shadow-none bg-transparent focus-visible:ring-0 p-0 text-right text-gray-700 w-48 placeholder:text-gray-300"
+          />
+        </Row>
+        <Row label="City" last>
+          <Input
+            value={formData.city}
+            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            placeholder="Nairobi"
+            className="h-7 text-sm border-0 shadow-none bg-transparent focus-visible:ring-0 p-0 text-right text-gray-700 w-48 placeholder:text-gray-300"
+          />
+        </Row>
+      </Section>
+
+      {/* ── Security ── */}
+      <Section label="Security" icon={<Lock className="h-3.5 w-3.5" />}>
+        <button
+          type="button"
+          className="w-full flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
+        >
+          <span className="text-sm font-medium text-gray-700">Change Password</span>
+          <div className="flex items-center gap-2 text-gray-400">
+            <span className="text-xs tracking-widest">••••••••</span>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </div>
+        </button>
+      </Section>
+
+      {/* ── Actions ── */}
+      <div className="flex items-center gap-2 pt-2">
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="h-8 px-5 text-sm bg-emerald-600 hover:bg-emerald-700 rounded-xl font-medium"
+        >
+          <Save className="h-3.5 w-3.5 mr-1.5" />
+          {saving ? "Saving…" : "Save Changes"}
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => router.push("/dashboard")}
+          className="h-8 px-4 text-sm text-gray-400 hover:text-gray-600 rounded-xl"
+        >
+          Cancel
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+/* ── Helpers ── */
+
+function Section({ label, icon, children }: { label: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="flex items-center gap-2 px-5 py-2.5 border-b border-gray-100">
+        <span className="text-gray-400">{icon}</span>
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">{label}</span>
+      </div>
+      <div className="divide-y divide-gray-100">{children}</div>
+    </div>
+  )
+}
+
+function Row({ label, children, last = false }: { label: string; children: React.ReactNode; last?: boolean }) {
+  return (
+    <div className={`flex items-center justify-between px-5 py-3 ${last ? "" : ""}`}>
+      <span className="text-sm font-medium text-gray-600 shrink-0">{label}</span>
+      <div className="flex items-center justify-end">{children}</div>
     </div>
   )
 }

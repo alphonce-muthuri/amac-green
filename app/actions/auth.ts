@@ -1,12 +1,56 @@
 "use server"
 
+import { createClient } from "@supabase/supabase-js"
 import { supabaseAdmin } from "@/lib/supabase-server"
-import { supabase } from "@/lib/supabase"
 import type { VendorApplication, ProfessionalApplication, CustomerProfile, DeliveryApplication } from "@/lib/supabase"
+import { z } from "zod"
+
+// Server-side auth client using implicit (OTP) flow — PKCE requires browser
+// localStorage which doesn't exist in server actions, causing FK violations.
+const supabaseServerAuth = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false,
+      flowType: "implicit",
+    },
+  }
+)
+
+const registrationAuthSchema = z
+  .object({
+    email: z.string().trim().email("Please enter a valid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  })
+
+function validateRegistrationAuth(formData: FormData) {
+  const result = registrationAuthSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  })
+
+  if (!result.success) {
+    const firstError = result.error.issues[0]?.message || "Please check your registration details and try again."
+    return { success: false as const, error: firstError }
+  }
+
+  return { success: true as const, data: result.data }
+}
 
 async function signUpWithEmailVerification(email: string, password: string, metadata: any) {
-  // First, sign up the user with email verification
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+  // First, sign up the user with email verification.
+  // Uses the server-side implicit-flow client so no PKCE code verifier is
+  // needed — browser localStorage is unavailable in server actions.
+  const { data: signUpData, error: signUpError } = await supabaseServerAuth.auth.signUp({
     email,
     password,
     options: {
@@ -19,12 +63,23 @@ async function signUpWithEmailVerification(email: string, password: string, meta
     return { success: false, error: signUpError.message, data: null }
   }
 
+  // Supabase returns user:null silently when the email already exists
+  // (to prevent email enumeration). Surface this as a clear error.
+  if (!signUpData?.user) {
+    return { success: false, error: "An account with this email may already exist. Please try signing in instead.", data: null }
+  }
+
   return { success: true, data: signUpData, error: null }
 }
 
 export async function registerVendor(formData: FormData) {
   try {
-    const password = formData.get("password") as string
+    const authValidation = validateRegistrationAuth(formData)
+    if (!authValidation.success) {
+      return { success: false, error: authValidation.error }
+    }
+
+    const password = authValidation.data.password
 
     const vendorData: Omit<VendorApplication, "id" | "created_at" | "user_id"> = {
       company_name: formData.get("companyName") as string,
@@ -88,7 +143,12 @@ export async function registerVendor(formData: FormData) {
 
 export async function registerProfessional(formData: FormData) {
   try {
-    const password = formData.get("password") as string
+    const authValidation = validateRegistrationAuth(formData)
+    if (!authValidation.success) {
+      return { success: false, error: authValidation.error }
+    }
+
+    const password = authValidation.data.password
 
     const professionalData: Omit<ProfessionalApplication, "id" | "created_at" | "user_id"> = {
       company_name: formData.get("companyName") as string,
@@ -149,7 +209,12 @@ export async function registerProfessional(formData: FormData) {
 
 export async function registerCustomer(formData: FormData) {
   try {
-    const password = formData.get("password") as string
+    const authValidation = validateRegistrationAuth(formData)
+    if (!authValidation.success) {
+      return { success: false, error: authValidation.error }
+    }
+
+    const password = authValidation.data.password
 
     const customerData: Omit<CustomerProfile, "id" | "created_at" | "user_id"> = {
       first_name: formData.get("firstName") as string,
@@ -203,7 +268,12 @@ export async function registerCustomer(formData: FormData) {
 
 export async function registerDelivery(formData: FormData) {
   try {
-    const password = formData.get("password") as string
+    const authValidation = validateRegistrationAuth(formData)
+    if (!authValidation.success) {
+      return { success: false, error: authValidation.error }
+    }
+
+    const password = authValidation.data.password
 
     const deliveryData: Omit<DeliveryApplication, "id" | "created_at" | "user_id"> = {
       first_name: formData.get("firstName") as string,

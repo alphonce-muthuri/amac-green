@@ -1,3 +1,6 @@
+/* Leaflet CSS loaded from local node_modules — avoids CDN dependency at runtime */
+@import 'leaflet/dist/leaflet.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,6 +8,22 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  /* Thin scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 9999px;
   }
   /* Hide scrollbar while keeping scroll behavior */
   .scrollbar-hide {

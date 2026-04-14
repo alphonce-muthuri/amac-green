@@ -1,23 +1,20 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { 
-  TrendingUp, 
-  DollarSign, 
-  Package, 
-  ShoppingCart, 
-  Star,
-  AlertTriangle,
-  RefreshCw,
-  BarChart3,
-  Award,
-  TrendingDown
-} from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { VendorHeader } from "@/components/vendor/vendor-header"
 import { supabase } from "@/lib/supabase"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { cn } from "@/lib/utils"
+import { useAnalytics } from "@/hooks/use-analytics"
+import {
+  TrendingUp, DollarSign, Package, ShoppingCart,
+  Star, AlertTriangle, RefreshCw, Award,
+} from "lucide-react"
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip,
+  BarChart, Bar, PieChart, Pie, Cell,
+} from "recharts"
 
 interface AnalyticsData {
   totalProducts: number
@@ -27,166 +24,178 @@ interface AnalyticsData {
   averageRating: number
   lowStockItems: number
   outOfStockItems: number
-  topProducts: Array<{
-    id: string
-    name: string
-    price: number
-    inventory_quantity: number
-    revenue: number
-  }>
-  recentOrders: Array<{
-    id: string
-    order_number: string
-    total_amount: number
-    status: string
-    created_at: string
-  }>
-  categoryBreakdown: Array<{
-    category: string
-    products: number
-    revenue: number
-  }>
+  topProducts: Array<{ id: string; name: string; price: number; inventory_quantity: number; revenue: number }>
+  recentOrders: Array<{ id: string; order_number: string; total_amount: number; status: string; created_at: string }>
+  categoryBreakdown: Array<{ category: string; products: number; revenue: number }>
+  revenueTrend: Array<{ day: string; revenue: number; orders: number }>
 }
+
+const STATUS_COLORS: Record<string, string> = {
+  completed: "#10b981",
+  pending:   "#f59e0b",
+  processing: "#6366f1",
+  cancelled:  "#ef4444",
+}
+
+const PALETTE = ["#10b981", "#6366f1", "#f59e0b", "#ef4444", "#3b82f6", "#8b5cf6"]
+
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 async function generateVendorAnalytics(vendorId: string, days: number): Promise<AnalyticsData> {
-  // Get products
   const { data: productsData } = await supabase
-    .from("products")
-    .select("*")
-    .eq("vendor_id", vendorId)
-    .order("created_at", { ascending: false })
-  
+    .from("products").select("*").eq("vendor_id", vendorId).order("created_at", { ascending: false })
   const products = productsData || []
-  
-  // Get orders
+
   const startDate = new Date()
   startDate.setDate(startDate.getDate() - days)
-  
+
   const { data: ordersData } = await supabase
-    .from("orders")
-    .select("*")
-    .gte("created_at", startDate.toISOString())
-    .order("created_at", { ascending: false })
-  
+    .from("orders").select("*").gte("created_at", startDate.toISOString()).order("created_at", { ascending: false })
   const orders = ordersData || []
 
-  // Get reviews
   const { data: reviewsData } = await supabase
-    .from("product_reviews")
-    .select("*")
-    .in("product_id", products.map(p => p.id))
-  
+    .from("product_reviews").select("*").in("product_id", products.map((p) => p.id))
   const reviews = reviewsData || []
 
-  const totalProducts = products.length
-  const activeProducts = products.filter(p => p.status === "active").length
-  const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0)
-  const totalOrders = orders.length
-  const averageRating = reviews.length > 0 
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
-    : 0
-
-  const lowStockItems = products.filter(p => (p.inventory_quantity || 0) <= p.low_stock_threshold && (p.inventory_quantity || 0) > 0).length
-  const outOfStockItems = products.filter(p => (p.inventory_quantity || 0) === 0).length
-
-  const topProducts = products
-    .map(product => ({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      inventory_quantity: product.inventory_quantity || 0,
-      revenue: product.price * (product.inventory_quantity || 0)
-    }))
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, 5)
-
-  const recentOrders = orders.slice(0, 10).map(order => ({
-    id: order.id,
-    order_number: order.order_number,
-    total_amount: order.total_amount,
-    status: order.status,
-    created_at: order.created_at
-  }))
-
-  const categoryMap: { [key: string]: { products: number; revenue: number } } = {}
-  products.forEach(product => {
-    const category = product.category || 'Uncategorized'
-    if (!categoryMap[category]) {
-      categoryMap[category] = { products: 0, revenue: 0 }
+  // Revenue trend (last 7 days)
+  const today = new Date()
+  const revenueTrend = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today)
+    d.setDate(today.getDate() - (6 - i))
+    const dateStr = d.toDateString()
+    const dayOrders = orders.filter((o) => new Date(o.created_at).toDateString() === dateStr)
+    return {
+      day: DAYS[d.getDay()],
+      revenue: dayOrders.reduce((s, o) => s + (o.total_amount || 0), 0),
+      orders: dayOrders.length,
     }
-    categoryMap[category].products++
-    categoryMap[category].revenue += product.price * (product.inventory_quantity || 0)
   })
 
-  const categoryBreakdown = Object.entries(categoryMap)
-    .map(([category, data]) => ({ category, ...data }))
-    .sort((a, b) => b.revenue - a.revenue)
+  const categoryMap: Record<string, { products: number; revenue: number }> = {}
+  products.forEach((p) => {
+    const cat = p.category || "Uncategorized"
+    if (!categoryMap[cat]) categoryMap[cat] = { products: 0, revenue: 0 }
+    categoryMap[cat].products++
+    categoryMap[cat].revenue += p.price * (p.inventory_quantity || 0)
+  })
 
   return {
-    totalProducts,
-    activeProducts,
-    totalRevenue,
-    totalOrders,
-    averageRating,
-    lowStockItems,
-    outOfStockItems,
-    topProducts,
-    recentOrders,
-    categoryBreakdown
+    totalProducts: products.length,
+    activeProducts: products.filter((p) => p.status === "active").length,
+    totalRevenue: orders.reduce((s, o) => s + (o.total_amount || 0), 0),
+    totalOrders: orders.length,
+    averageRating: reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0,
+    lowStockItems: products.filter((p) => (p.inventory_quantity || 0) <= p.low_stock_threshold && (p.inventory_quantity || 0) > 0).length,
+    outOfStockItems: products.filter((p) => (p.inventory_quantity || 0) === 0).length,
+    topProducts: products
+      .map((p) => ({ id: p.id, name: p.name, price: p.price, inventory_quantity: p.inventory_quantity || 0, revenue: p.price * (p.inventory_quantity || 0) }))
+      .sort((a, b) => b.revenue - a.revenue).slice(0, 5),
+    recentOrders: orders.slice(0, 10).map((o) => ({
+      id: o.id, order_number: o.order_number, total_amount: o.total_amount, status: o.status, created_at: o.created_at,
+    })),
+    categoryBreakdown: Object.entries(categoryMap)
+      .map(([category, data]) => ({ category, ...data }))
+      .sort((a, b) => b.revenue - a.revenue),
+    revenueTrend,
   }
 }
+
+function StatTile({
+  label, value, sub, icon: Icon, color,
+}: {
+  label: string; value: string | number; sub?: string; icon: React.ElementType
+  color: "emerald" | "indigo" | "amber" | "gray"
+}) {
+  const iconBg  = { emerald: "bg-emerald-500", indigo: "bg-indigo-500", amber: "bg-amber-400", gray: "bg-gray-400" }[color]
+  const valClr  = { emerald: "text-emerald-700", indigo: "text-indigo-700", amber: "text-amber-700", gray: "text-gray-700" }[color]
+  const ring    = { emerald: "ring-emerald-100", indigo: "ring-indigo-100", amber: "ring-amber-100", gray: "ring-gray-100" }[color]
+  return (
+    <div className={cn("rounded-2xl bg-white border border-gray-100 p-4 flex items-center gap-3 ring-1", ring)}>
+      <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", iconBg)}>
+        <Icon className="h-4 w-4 text-white" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">{label}</p>
+        <p className={cn("text-xl font-bold tabular-nums tracking-tight leading-none mt-0.5", valClr)}>{value}</p>
+        {sub && <p className="text-[10px] text-gray-400 mt-0.5 truncate">{sub}</p>}
+      </div>
+    </div>
+  )
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl bg-white border border-gray-100 overflow-hidden">
+      <div className="px-4 py-3 border-b border-gray-100">
+        <p className="text-xs font-semibold text-gray-700">{title}</p>
+      </div>
+      <div className="p-4">{children}</div>
+    </div>
+  )
+}
+
+const TABS = ["overview", "products", "orders"] as const
+type Tab = typeof TABS[number]
 
 export default function VendorAnalytics() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
   const [timeRange, setTimeRange] = useState("30")
+  const [tab, setTab] = useState<Tab>("overview")
+  const { trackEvent, identifyUser } = useAnalytics()
 
   const loadAnalytics = useCallback(async () => {
     setLoading(true)
-    
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      
       if (user) {
-        setUser(user)
+        // Associate all subsequent events with this vendor.
+        identifyUser(user.id, { role: "vendor", email: user.email })
+
         const data = await generateVendorAnalytics(user.id, parseInt(timeRange))
         setAnalytics(data)
+
+        // Snapshot KPIs so PostHog can surface them in cohort filters.
+        trackEvent("vendor_analytics_viewed", {
+          time_range_days:   parseInt(timeRange),
+          total_revenue:     data.totalRevenue,
+          total_orders:      data.totalOrders,
+          active_products:   data.activeProducts,
+          avg_rating:        parseFloat(data.averageRating.toFixed(2)),
+          low_stock_items:   data.lowStockItems,
+          out_of_stock_items: data.outOfStockItems,
+        })
       }
-    } catch (error) {
-      console.error("Error loading analytics:", error)
-      setAnalytics(null)
+    } catch (e) {
+      console.error(e)
     }
-    
     setLoading(false)
-  }, [timeRange])
+  }, [timeRange, trackEvent, identifyUser])
 
-  useEffect(() => {
-    void loadAnalytics()
-  }, [loadAnalytics])
-
-  const formatCurrency = (amount: number) => `KSH ${amount.toLocaleString()}`
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800'
-      case 'pending': return 'bg-yellow-100 text-yellow-800'
-      case 'cancelled': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
+  useEffect(() => { void loadAnalytics() }, [loadAnalytics])
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center">
-          <div className="w-16 h-16 relative mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <BarChart3 className="absolute inset-0 m-auto h-8 w-8 text-indigo-600" />
+      <div className="flex flex-col min-h-screen bg-[#f5f5f7]">
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-white px-6">
+          <Skeleton className="h-7 w-7 rounded-md" />
+          <Skeleton className="h-4 w-px mx-1" />
+          <Skeleton className="h-4 w-24" />
+        </header>
+        <div className="flex-1 p-5 space-y-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-2xl bg-white border border-gray-100 p-4 flex items-center gap-3">
+                <Skeleton className="h-9 w-9 rounded-xl" />
+                <div className="space-y-1.5"><Skeleton className="h-2.5 w-16" /><Skeleton className="h-5 w-12" /></div>
+              </div>
+            ))}
           </div>
-          <p className="text-lg font-bold text-gray-900">Loading Analytics</p>
-          <p className="text-sm text-gray-600 mt-1">Analyzing your data...</p>
+          <div className="grid lg:grid-cols-2 gap-3">
+            <Skeleton className="h-44 rounded-2xl" />
+            <Skeleton className="h-44 rounded-2xl" />
+          </div>
+          <Skeleton className="h-48 rounded-2xl" />
         </div>
       </div>
     )
@@ -194,313 +203,300 @@ export default function VendorAnalytics() {
 
   if (!analytics) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="container mx-auto px-4 py-6">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border border-red-300">
-              <CardContent className="text-center py-16">
-                <div className="w-24 h-24 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <BarChart3 className="h-12 w-12 text-red-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">No Analytics Data</h3>
-                <p className="text-gray-600 mb-6">Unable to load analytics. Please try again.</p>
-                <Button onClick={loadAnalytics} className="bg-indigo-600 hover:bg-indigo-700">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Retry
-                </Button>
-              </CardContent>
-            </Card>
+      <div className="flex flex-col min-h-screen bg-[#f5f5f7]">
+        <VendorHeader title="Analytics" />
+        <div className="flex-1 flex items-center justify-center p-5">
+          <div className="rounded-2xl bg-white border border-gray-100 p-10 flex flex-col items-center gap-3 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+              <TrendingUp className="h-6 w-6 text-gray-400" />
+            </div>
+            <p className="text-sm font-medium text-gray-700">Unable to load analytics</p>
+            <Button size="sm" className="h-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs mt-1" onClick={() => void loadAnalytics()}>
+              <RefreshCw className="h-3.5 w-3.5 mr-1" />Retry
+            </Button>
           </div>
         </div>
       </div>
     )
   }
 
+  // Donut data for order statuses
+  const statusCounts: Record<string, number> = {}
+  analytics.recentOrders.forEach((o) => { statusCounts[o.status] = (statusCounts[o.status] || 0) + 1 })
+  const orderDonut = Object.entries(statusCounts).map(([status, value]) => ({
+    name: status.charAt(0).toUpperCase() + status.slice(1), value, fill: STATUS_COLORS[status] ?? "#94a3b8",
+  }))
+
+  const catChart = analytics.categoryBreakdown.slice(0, 6).map((c) => ({
+    cat: c.category.length > 10 ? c.category.slice(0, 10) + "…" : c.category,
+    products: c.products,
+    revenue: Math.round(c.revenue / 1000),
+  }))
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Hero Header */}
-          <div className="relative overflow-hidden">
-            <Card className="border border-indigo-300 shadow-md overflow-hidden">
-              <div className="h-2 bg-indigo-500/30" />
-              <CardContent className="relative p-6 sm:p-8">
-                <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
-                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-indigo-700 border border-indigo-800 rounded-xl flex items-center justify-center shadow-md">
-                      <BarChart3 className="h-8 w-8 text-white" />
-                    </div>
-                    <div>
-                      <h1 className="text-xl font-semibold text-gray-900 mb-2">Analytics</h1>
-                      <p className="text-lg text-gray-600">Track your business performance and insights</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <select
-                      value={timeRange}
-                      onChange={(e) => setTimeRange(e.target.value)}
-                      className="h-12 px-4 border border-indigo-300 rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    >
-                      <option value="7">Last 7 days</option>
-                      <option value="30">Last 30 days</option>
-                      <option value="90">Last 90 days</option>
-                    </select>
-                    <Button onClick={loadAnalytics} variant="outline" className="h-12 border">
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Key Metrics */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border border-green-200 hover:shadow-sm transition-shadow">
-              <div className="h-2 bg-emerald-500/30" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center">
-                    <DollarSign className="h-5 w-5 text-green-600" />
-                  </div>
-                  <Badge className="rounded-full bg-green-600 text-white">Revenue</Badge>
-                </div>
-                <p className="text-xl font-semibold text-green-700 mb-1">
-                  {(analytics.totalRevenue / 1000).toFixed(0)}K
-                </p>
-                <p className="text-sm text-gray-600">Total Revenue (KSH)</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-blue-200 hover:shadow-sm transition-shadow">
-              <div className="h-2 bg-blue-500/30" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center">
-                    <ShoppingCart className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <Badge className="rounded-full bg-blue-600 text-white">Orders</Badge>
-                </div>
-                <p className="text-xl font-semibold text-blue-700 mb-1">{analytics.totalOrders}</p>
-                <p className="text-sm text-gray-600">Total Orders</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-purple-200 hover:shadow-sm transition-shadow">
-              <div className="h-2 bg-purple-500/30" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-center">
-                    <Package className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <Badge className="rounded-full bg-purple-600 text-white">Products</Badge>
-                </div>
-                <p className="text-xl font-semibold text-purple-700 mb-1">{analytics.activeProducts}</p>
-                <p className="text-sm text-gray-600">Active Products</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-yellow-200 hover:shadow-sm transition-shadow">
-              <div className="h-2 bg-amber-500/30" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-center">
-                    <Star className="h-5 w-5 text-yellow-600" />
-                  </div>
-                  <Badge className="rounded-full bg-yellow-600 text-white">Rating</Badge>
-                </div>
-                <p className="text-xl font-semibold text-yellow-700 mb-1">{analytics.averageRating.toFixed(1)}</p>
-                <p className="text-sm text-gray-600">Average Rating</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Inventory Alerts */}
-          {(analytics.lowStockItems > 0 || analytics.outOfStockItems > 0) && (
-            <Card className="border border-orange-200 bg-orange-50/80">
-              <div className="h-2 bg-orange-500/30" />
-            <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-                    <AlertTriangle className="h-5 w-5 text-orange-600" />
-                  </div>
-                  <CardTitle className="text-orange-900">Inventory Alerts</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-4">
-                  {analytics.lowStockItems > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Badge className="rounded-full bg-orange-600 text-white">{analytics.lowStockItems}</Badge>
-                      <span className="text-orange-800 font-semibold">items low in stock</span>
-                    </div>
-                  )}
-                  {analytics.outOfStockItems > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Badge className="rounded-full bg-red-600 text-white">{analytics.outOfStockItems}</Badge>
-                      <span className="text-red-800 font-semibold">items out of stock</span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Analytics Tabs */}
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="products">Products</TabsTrigger>
-              <TabsTrigger value="orders">Orders</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid lg:grid-cols-2 gap-6">
-                <Card className="border border-indigo-200">
-                  <div className="h-2 bg-indigo-500/30"></div>
-                  <CardHeader className="bg-white border-b border-indigo-200">
-                    <CardTitle className="flex items-center gap-2">
-                      <Award className="h-5 w-5" />
-                      Top Products by Revenue
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      {analytics.topProducts.map((product, index) => (
-                        <div key={product.id} className="p-4 bg-indigo-50 rounded-xl border border-indigo-200 hover:shadow-sm transition-all">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center font-bold text-indigo-700">
-                                {index + 1}
-                              </div>
-                              <div>
-                                <p className="font-bold">{product.name}</p>
-                                <p className="text-sm text-gray-600">Stock: {product.inventory_quantity}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold text-lg text-indigo-700">{formatCurrency(product.revenue)}</p>
-                              <p className="text-sm text-gray-600">{formatCurrency(product.price)} each</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border border-blue-200">
-                  <div className="h-2 bg-blue-500/30" />
-            <CardHeader className="bg-white border-b border-blue-200">
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
-                      Category Performance
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      {analytics.categoryBreakdown.slice(0, 5).map((category, index) => (
-                        <div key={category.category} className="p-4 bg-blue-50 rounded-xl border border-blue-200 hover:shadow-sm transition-all">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center font-bold text-blue-700">
-                                {index + 1}
-                              </div>
-                              <div>
-                                <p className="font-bold">{category.category}</p>
-                                <p className="text-sm text-gray-600">{category.products} products</p>
-                              </div>
-                            </div>
-                            <p className="font-bold text-lg text-blue-700">{formatCurrency(category.revenue)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="products">
-              <Card className="border border-purple-200">
-                <div className="h-2 bg-purple-500/30" />
-            <CardHeader className="bg-white border-b border-purple-200">
-                  <CardTitle>Product Status Overview</CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">Total Products</span>
-                        <Badge className="rounded-full bg-purple-600 text-white">{analytics.totalProducts}</Badge>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-emerald-50 rounded-xl border border-green-200">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">Active Products</span>
-                        <Badge className="rounded-full bg-green-600 text-white">{analytics.activeProducts}</Badge>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">Low Stock Items</span>
-                        <Badge className="rounded-full bg-orange-600 text-white">{analytics.lowStockItems}</Badge>
-                      </div>
-                    </div>
-                    <div className="p-4 bg-red-50 rounded-xl border border-red-200">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">Out of Stock</span>
-                        <Badge className="rounded-full bg-red-600 text-white">{analytics.outOfStockItems}</Badge>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="orders">
-              <Card className="border border-green-200">
-                <div className="h-2 bg-emerald-500/30" />
-            <CardHeader className="bg-white border-b border-emerald-200">
-                  <CardTitle>Recent Orders</CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  {analytics.recentOrders.length === 0 ? (
-                    <div className="text-center py-12">
-                      <ShoppingCart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p className="text-gray-600">No recent orders</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {analytics.recentOrders.map((order) => (
-                        <div key={order.id} className="p-4 bg-emerald-50 rounded-xl border border-green-200 hover:shadow-sm transition-all">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-bold">#{order.order_number}</p>
-                              <p className="text-sm text-gray-600">
-                                {new Date(order.created_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <div className="text-right flex items-center gap-3">
-                              <p className="font-bold text-lg text-green-700">{formatCurrency(order.total_amount)}</p>
-                              <Badge className={getStatusColor(order.status)}>
-                                {order.status}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+    <div className="flex flex-col min-h-screen bg-[#f5f5f7]">
+      <VendorHeader title="Analytics">
+        <div className="flex items-center gap-2">
+          <select
+            value={timeRange}
+            onChange={(e) => {
+              setTimeRange(e.target.value)
+              trackEvent("vendor_analytics_time_range_changed", { days: parseInt(e.target.value) })
+            }}
+            className="h-8 px-2 text-xs border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-8 gap-1.5 rounded-xl text-xs"
+            onClick={() => {
+              trackEvent("vendor_analytics_refreshed", { time_range_days: parseInt(timeRange) })
+              void loadAnalytics()
+            }}
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Refresh
+          </Button>
         </div>
+      </VendorHeader>
+
+      <div className="flex-1 overflow-y-auto scrollbar-thin p-5 space-y-4">
+
+        {/* KPI tiles */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatTile label="Revenue"         value={`${(analytics.totalRevenue / 1000).toFixed(0)}K`} sub="KES total"       icon={DollarSign}  color="emerald" />
+          <StatTile label="Total Orders"    value={analytics.totalOrders}                             sub={`last ${timeRange}d`} icon={ShoppingCart} color="indigo" />
+          <StatTile label="Active Products" value={analytics.activeProducts}                          sub={`of ${analytics.totalProducts} total`} icon={Package} color="gray" />
+          <StatTile label="Avg Rating"      value={analytics.averageRating.toFixed(1)}               sub="from reviews"   icon={Star}         color="amber" />
+        </div>
+
+        {/* Inventory alerts */}
+        {(analytics.lowStockItems > 0 || analytics.outOfStockItems > 0) && (
+          <div
+            className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-center gap-3"
+            ref={(el) => {
+              // Fire once when the banner first becomes visible.
+              if (!el) return
+              const io = new IntersectionObserver(([entry]) => {
+                if (entry.isIntersecting) {
+                  trackEvent("vendor_analytics_stock_alert_seen", {
+                    low_stock_items:    analytics.lowStockItems,
+                    out_of_stock_items: analytics.outOfStockItems,
+                  })
+                  io.disconnect()
+                }
+              }, { threshold: 1 })
+              io.observe(el)
+            }}
+          >
+            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+            <p className="text-xs text-amber-700">
+              {analytics.lowStockItems > 0 && <span className="font-semibold">{analytics.lowStockItems} low stock</span>}
+              {analytics.lowStockItems > 0 && analytics.outOfStockItems > 0 && " · "}
+              {analytics.outOfStockItems > 0 && <span className="font-semibold">{analytics.outOfStockItems} out of stock</span>}
+              <span className="font-normal"> — visit Inventory to restock</span>
+            </p>
+          </div>
+        )}
+
+        {/* Tab bar */}
+        <div className="flex items-center gap-1">
+          {TABS.map((t) => (
+            <button
+              key={t}
+              onClick={() => {
+                setTab(t)
+                if (t !== tab) trackEvent("vendor_analytics_tab_changed", { tab: t, previous_tab: tab })
+              }}
+              className={cn(
+                "rounded-xl px-4 py-1.5 text-[11px] font-medium transition-colors capitalize",
+                tab === t ? "bg-gray-900 text-white" : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"
+              )}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Overview ── */}
+        {tab === "overview" && (
+          <div className="space-y-4">
+            {/* Revenue trend + status donut */}
+            <div className="grid lg:grid-cols-[1fr_200px] gap-3">
+              <Section title="Revenue Trend (7 days)">
+                <ResponsiveContainer width="100%" height={130}>
+                  <AreaChart data={analytics.revenueTrend} margin={{ top: 2, right: 2, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="#10b981" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="day" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{ fontSize: 11, borderRadius: 8, border: "none", boxShadow: "0 2px 8px rgba(0,0,0,.1)" }}
+                      formatter={(val: number) => [`KES ${val.toLocaleString()}`, "Revenue"]}
+                    />
+                    <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2} fill="url(#revFill)" dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </Section>
+
+              <Section title="Order Mix">
+                {orderDonut.length === 0 ? (
+                  <div className="flex h-[130px] items-center justify-center text-xs text-gray-400">No orders yet</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={130}>
+                    <PieChart>
+                      <Pie data={orderDonut} cx="50%" cy="50%" innerRadius={32} outerRadius={52} dataKey="value" paddingAngle={2}>
+                        {orderDonut.map((entry, i) => (
+                          <Cell key={i} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "none", boxShadow: "0 2px 8px rgba(0,0,0,.1)" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </Section>
+            </div>
+
+            {/* Daily orders bar */}
+            <Section title="Daily Orders (7 days)">
+              <ResponsiveContainer width="100%" height={110}>
+                <BarChart data={analytics.revenueTrend} margin={{ top: 0, right: 4, left: -28, bottom: 0 }} barSize={18}>
+                  <XAxis dataKey="day" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "none", boxShadow: "0 2px 8px rgba(0,0,0,.1)" }} />
+                  <Bar dataKey="orders" radius={[4, 4, 0, 0]}>
+                    {analytics.revenueTrend.map((_, i) => (
+                      <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </Section>
+          </div>
+        )}
+
+        {/* ── Products ── */}
+        {tab === "products" && (
+          <div className="space-y-4">
+            <div className="grid lg:grid-cols-2 gap-3">
+              {/* Top products */}
+              <Section title="Top Products by Value">
+                <div className="space-y-2">
+                  {analytics.topProducts.length === 0 ? (
+                    <p className="text-xs text-gray-400 py-4 text-center">No products yet</p>
+                  ) : analytics.topProducts.map((p, i) => (
+                    <div
+                      key={p.id}
+                      onClick={() => trackEvent("vendor_analytics_top_product_clicked", {
+                        product_id:   p.id,
+                        product_name: p.name,
+                        rank:         i + 1,
+                        revenue:      p.revenue,
+                      })}
+                      className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/60 px-3 py-2.5 hover:bg-gray-100/60 transition-colors cursor-pointer"
+                    >
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-700">
+                        {i + 1}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-gray-900 truncate">{p.name}</p>
+                        <p className="text-[10px] text-gray-400">{p.inventory_quantity} units · KES {p.price.toLocaleString()} each</p>
+                      </div>
+                      <p className="text-xs font-bold text-emerald-700 tabular-nums whitespace-nowrap">
+                        KES {p.revenue.toLocaleString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+
+              {/* Category breakdown */}
+              <Section title="Category Performance">
+                {catChart.length === 0 ? (
+                  <p className="text-xs text-gray-400 py-4 text-center">No categories yet</p>
+                ) : (
+                  <ResponsiveContainer width="100%" height={180}>
+                    <BarChart data={catChart} layout="vertical" margin={{ top: 0, right: 8, left: 4, bottom: 0 }} barSize={12}>
+                      <XAxis type="number" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="cat" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} width={72} />
+                      <Tooltip
+                        contentStyle={{ fontSize: 11, borderRadius: 8, border: "none", boxShadow: "0 2px 8px rgba(0,0,0,.1)" }}
+                        formatter={(val: number) => [`${val}K KES`, "Value"]}
+                      />
+                      <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
+                        {catChart.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </Section>
+            </div>
+
+            {/* Product status tiles */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                { label: "Total Products",  value: analytics.totalProducts,   color: "bg-gray-100 text-gray-700" },
+                { label: "Active",          value: analytics.activeProducts,  color: "bg-emerald-50 text-emerald-700" },
+                { label: "Low Stock",       value: analytics.lowStockItems,   color: "bg-amber-50 text-amber-700" },
+                { label: "Out of Stock",    value: analytics.outOfStockItems, color: "bg-red-50 text-red-700" },
+              ].map((tile) => (
+                <div key={tile.label} className={cn("rounded-2xl border border-gray-100 px-4 py-3", tile.color)}>
+                  <p className="text-xl font-bold tabular-nums">{tile.value}</p>
+                  <p className="text-[10px] font-medium mt-0.5 opacity-70">{tile.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Orders ── */}
+        {tab === "orders" && (
+          <Section title={`Recent Orders (${analytics.recentOrders.length})`}>
+            {analytics.recentOrders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-2">
+                <ShoppingCart className="h-8 w-8 text-gray-300" />
+                <p className="text-xs text-gray-400">No recent orders</p>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {analytics.recentOrders.map((order) => {
+                  const dotColor = STATUS_COLORS[order.status] ?? "#94a3b8"
+                  return (
+                    <div key={order.id} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-2.5 hover:bg-gray-100/50 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: dotColor }} />
+                        <div>
+                          <p className="text-xs font-semibold text-gray-900">#{order.order_number}</p>
+                          <p className="text-[10px] text-gray-400">{new Date(order.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <p className="text-xs font-bold text-emerald-700 tabular-nums">
+                          KES {order.total_amount.toLocaleString()}
+                        </p>
+                        <span
+                          className="text-[10px] font-medium px-2 py-0.5 rounded-full border capitalize"
+                          style={{ color: dotColor, borderColor: dotColor + "40", backgroundColor: dotColor + "15" }}
+                        >
+                          {order.status}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </Section>
+        )}
       </div>
-</div>
+    </div>
   )
 }
-
-

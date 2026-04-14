@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { ALL_KENYA_COUNTIES, getSubCounties, getWards } from "@/lib/kenya-locations"
+import { getCountyNames, getSubCounties, getWards } from "@/lib/kenya-locations"
 
 interface KenyaLocationFieldsProps {
   sectionTitle?: string
@@ -33,12 +33,10 @@ export function KenyaLocationFields({
   const [subCounties, setSubCounties] = useState<string[]>([])
   const [wards, setWards] = useState<string[]>([])
 
-  // Update sub-counties when county changes
   useEffect(() => {
     if (formData.county) {
       const subs = getSubCounties(formData.county)
       setSubCounties(subs)
-      // Reset dependent fields
       if (formData.sub_county && !subs.includes(formData.sub_county)) {
         onChange("sub_county", "")
         onChange("ward", "")
@@ -49,12 +47,10 @@ export function KenyaLocationFields({
     }
   }, [formData.county, formData.sub_county, onChange])
 
-  // Update wards when sub-county changes
   useEffect(() => {
     if (formData.county && formData.sub_county) {
       const wardList = getWards(formData.county, formData.sub_county)
       setWards(wardList)
-      // Reset ward if it's not in the new list
       if (formData.ward && !wardList.includes(formData.ward)) {
         onChange("ward", "")
       }
@@ -63,139 +59,136 @@ export function KenyaLocationFields({
     }
   }, [formData.county, formData.sub_county, formData.ward, onChange])
 
+  const labelCls = "text-[11px] font-medium text-gray-400 uppercase tracking-[0.15em]"
+  const inputCls = (field: string) =>
+    `h-11 rounded-none border-0 border-b text-sm bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 ${
+      errors[field] ? "border-red-400" : "border-gray-200 focus:border-gray-900"
+    } transition-colors`
+  const triggerCls = (field: string) =>
+    `rounded-none border-0 border-b bg-transparent px-0 text-sm focus:ring-0 focus:ring-offset-0 h-11 ${
+      errors[field] ? "border-red-400" : "border-gray-200 focus:border-gray-900"
+    } transition-colors`
+
+  const Err = ({ field }: { field: string }) =>
+    errors[field] ? <p className="text-xs text-red-500 mt-1">{errors[field]}</p> : null
+
   return (
-    <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
-        <h3 className="font-semibold text-blue-900">{sectionTitle}</h3>
-      </div>
-      <p className="text-sm text-blue-700 mb-4">{sectionDescription}</p>
-
-      {/* County */}
-      <div className="space-y-2">
-        <Label htmlFor="county">
-          County <span className="text-red-500">*</span>
-        </Label>
-        <Select value={formData.county || ""} onValueChange={(value) => onChange("county", value)}>
-          <SelectTrigger id="county" className={errors.county ? "border-red-500" : ""}>
-            <SelectValue placeholder="Select county" />
-          </SelectTrigger>
-          <SelectContent className="max-h-[300px]">
-            {ALL_KENYA_COUNTIES.map((county) => (
-              <SelectItem key={county} value={county}>
-                {county}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.county && <p className="text-sm text-red-500">{errors.county}</p>}
+    <div className="space-y-1">
+      {/* Section header */}
+      <div className="border-t border-gray-100 pb-6 pt-8">
+        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.4em] mb-2">{sectionTitle}</p>
+        <p className="text-sm text-gray-400">{sectionDescription}</p>
       </div>
 
-      {/* Sub-County */}
-      <div className="space-y-2">
-        <Label htmlFor="sub_county">
-          Sub-County <span className="text-red-500">*</span>
-        </Label>
-        <Select
-          value={formData.sub_county || ""}
-          onValueChange={(value) => onChange("sub_county", value)}
-          disabled={!formData.county || subCounties.length === 0}
-        >
-          <SelectTrigger id="sub_county" className={errors.sub_county ? "border-red-500" : ""}>
-            <SelectValue placeholder={formData.county ? "Select sub-county" : "Select county first"} />
-          </SelectTrigger>
-          <SelectContent className="max-h-[300px]">
-            {subCounties.map((subCounty) => (
-              <SelectItem key={subCounty} value={subCounty}>
-                {subCounty}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.sub_county && <p className="text-sm text-red-500">{errors.sub_county}</p>}
-      </div>
+      <div className="space-y-6">
+        {/* County */}
+        <div>
+          <Label className={labelCls}>County <span className="text-red-500">*</span></Label>
+          <Select value={formData.county || ""} onValueChange={(v) => onChange("county", v)}>
+            <SelectTrigger id="county" className={triggerCls("county")}>
+              <SelectValue placeholder="Select county" />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              {getCountyNames().map((county) => (
+                <SelectItem key={county} value={county}>{county}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Err field="county" />
+        </div>
 
-      {/* Ward */}
-      <div className="space-y-2">
-        <Label htmlFor="ward">
-          Ward/Location <span className="text-red-500">*</span>
-        </Label>
-        <Select
-          value={formData.ward || ""}
-          onValueChange={(value) => onChange("ward", value)}
-          disabled={!formData.sub_county || wards.length === 0}
-        >
-          <SelectTrigger id="ward" className={errors.ward ? "border-red-500" : ""}>
-            <SelectValue placeholder={formData.sub_county ? "Select ward" : "Select sub-county first"} />
-          </SelectTrigger>
-          <SelectContent className="max-h-[300px]">
-            {wards.map((ward) => (
-              <SelectItem key={ward} value={ward}>
-                {ward}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {errors.ward && <p className="text-sm text-red-500">{errors.ward}</p>}
-      </div>
+        {/* Sub-County */}
+        <div>
+          <Label className={labelCls}>Sub-County <span className="text-red-500">*</span></Label>
+          <Select
+            value={formData.sub_county || ""}
+            onValueChange={(v) => onChange("sub_county", v)}
+            disabled={!formData.county || subCounties.length === 0}
+          >
+            <SelectTrigger id="sub_county" className={triggerCls("sub_county")}>
+              <SelectValue placeholder={formData.county ? "Select sub-county" : "Select county first"} />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              {subCounties.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Err field="sub_county" />
+        </div>
 
-      {/* Sub-Location / Village / Estate */}
-      <div className="space-y-2">
-        <Label htmlFor="sub_location">
-          Sub-Location / Village / Estate <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="sub_location"
-          value={formData.sub_location || ""}
-          onChange={(e) => onChange("sub_location", e.target.value)}
-          placeholder="e.g., Kilimani Estate, Githurai 44"
-          className={errors.sub_location ? "border-red-500" : ""}
-        />
-        {errors.sub_location && <p className="text-sm text-red-500">{errors.sub_location}</p>}
-      </div>
+        {/* Ward */}
+        <div>
+          <Label className={labelCls}>Ward / Location <span className="text-red-500">*</span></Label>
+          <Select
+            value={formData.ward || ""}
+            onValueChange={(v) => onChange("ward", v)}
+            disabled={!formData.sub_county || wards.length === 0}
+          >
+            <SelectTrigger id="ward" className={triggerCls("ward")}>
+              <SelectValue placeholder={formData.sub_county ? "Select ward" : "Select sub-county first"} />
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              {wards.map((w) => (
+                <SelectItem key={w} value={w}>{w}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Err field="ward" />
+        </div>
 
-      {/* Street / Building / House Number */}
-      <div className="space-y-2">
-        <Label htmlFor="street_address">
-          Street / Building / House Number <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="street_address"
-          value={formData.street_address || ""}
-          onChange={(e) => onChange("street_address", e.target.value)}
-          placeholder="e.g., Moi Avenue, Apartment 5B, House No. 123"
-          className={errors.street_address ? "border-red-500" : ""}
-        />
-        {errors.street_address && <p className="text-sm text-red-500">{errors.street_address}</p>}
-      </div>
+        {/* Sub-Location */}
+        <div>
+          <Label className={labelCls}>Sub-Location / Village / Estate <span className="text-red-500">*</span></Label>
+          <Input
+            id="sub_location"
+            value={formData.sub_location || ""}
+            onChange={(e) => onChange("sub_location", e.target.value)}
+            placeholder="e.g. Kilimani Estate, Githurai 44"
+            className={inputCls("sub_location")}
+          />
+          <Err field="sub_location" />
+        </div>
 
-      {/* Landmark */}
-      <div className="space-y-2">
-        <Label htmlFor="landmark">
-          Landmark <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="landmark"
-          value={formData.landmark || ""}
-          onChange={(e) => onChange("landmark", e.target.value)}
-          placeholder="e.g., Opposite Nakumatt, Next to Shell Petrol Station"
-          className={errors.landmark ? "border-red-500" : ""}
-        />
-        <p className="text-xs text-gray-500">Provide a nearby landmark to help locate your address</p>
-        {errors.landmark && <p className="text-sm text-red-500">{errors.landmark}</p>}
-      </div>
+        {/* Street / Building */}
+        <div>
+          <Label className={labelCls}>Street / Building / House No. <span className="text-red-500">*</span></Label>
+          <Input
+            id="street_address"
+            value={formData.street_address || ""}
+            onChange={(e) => onChange("street_address", e.target.value)}
+            placeholder="e.g. Moi Avenue, Apt 5B, House No. 123"
+            className={inputCls("street_address")}
+          />
+          <Err field="street_address" />
+        </div>
 
-      {/* Additional Delivery Instructions */}
-      <div className="space-y-2">
-        <Label htmlFor="gas_delivery_instructions">Additional Delivery Instructions (Optional)</Label>
-        <Textarea
-          id="gas_delivery_instructions"
-          value={formData.delivery_instructions || ""}
-          onChange={(e) => onChange("delivery_instructions", e.target.value)}
-          placeholder="e.g., Gate code is 1234, Call when you arrive, Deliver to back entrance"
-          rows={3}
-        />
-        <p className="text-xs text-gray-500">Any special instructions for the delivery team</p>
+        {/* Landmark */}
+        <div>
+          <Label className={labelCls}>Landmark <span className="text-red-500">*</span></Label>
+          <Input
+            id="landmark"
+            value={formData.landmark || ""}
+            onChange={(e) => onChange("landmark", e.target.value)}
+            placeholder="e.g. Opposite Nakumatt, Next to Shell Station"
+            className={inputCls("landmark")}
+          />
+          <p className="text-[11px] text-gray-400 mt-1">A nearby landmark helps the delivery team find you faster</p>
+          <Err field="landmark" />
+        </div>
+
+        {/* Additional instructions */}
+        <div>
+          <Label className={labelCls}>Additional Instructions <span className="normal-case text-gray-300 font-normal">(optional)</span></Label>
+          <Textarea
+            id="gas_delivery_instructions"
+            value={formData.delivery_instructions || ""}
+            onChange={(e) => onChange("delivery_instructions", e.target.value)}
+            placeholder="e.g. Gate code is 1234, call on arrival, deliver to back entrance…"
+            className={`rounded-none border-0 border-b text-sm bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none border-gray-200 focus:border-gray-900 transition-colors`}
+            rows={2}
+          />
+        </div>
       </div>
     </div>
   )

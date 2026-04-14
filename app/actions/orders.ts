@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-server"
 import { createServerClient } from "@/lib/supabase-server"
 import { cookies } from "next/headers"
 import type { CreateOrderData } from "@/lib/types/order"
-import { supabase } from "@/lib/supabase"
+import { requireAdmin, ADMIN_EMAILS } from "@/lib/require-admin"
 
 // Generate a proper UUID for simulation
 function generateUUID() {
@@ -15,7 +15,7 @@ function generateUUID() {
   })
 }
 
-export async function createOrder(orderData: any, userId?: string) {
+export async function createOrder(orderData: any) {
   try {
     // Check if we're in simulation mode - Use environment variable or default to false
     const isSimulation = process.env.ORDER_SIMULATION === 'true' || false
@@ -71,38 +71,19 @@ export async function createOrder(orderData: any, userId?: string) {
       }
     }
 
-    // Real database operations
-    console.log('[ORDER_DEBUG] Starting real database order creation with userId:', userId)
-    
-    let user_id = userId
-    let userEmail = orderData.shipping_email
+    // Real database operations — always verify identity server-side.
+    const cookieStore = await cookies()
+    const supabaseUser = createServerClient(cookieStore)
+    const { data: { user: authUser }, error: authError } = await supabaseUser.auth.getUser()
 
-    // If no userId provided, try to get from session
-    if (!user_id) {
-      console.log('[ORDER_DEBUG] No userId provided, trying to get from session')
-      const cookieStore = await cookies()
-      const supabase = createServerClient(cookieStore)
-      
-      const authResult = await supabase.auth.getUser()
-      const user = authResult.data.user
-      const authError = authResult.error
-
-      console.log('[ORDER_DEBUG] Auth result:', { 
-        hasUser: !!user, 
-        userId: user?.id, 
-        error: authError?.message 
-      })
-
-      if (authError || !user) {
-        console.error("[ORDER_DEBUG] Authentication error:", authError)
-        return { success: false, error: "User not authenticated" }
-      }
-
-      user_id = user.id
-      userEmail = user.email || orderData.shipping_email
+    if (authError || !authUser) {
+      console.error("[ORDER_DEBUG] Authentication error:", authError)
+      return { success: false, error: "User not authenticated" }
     }
 
-    console.log('[ORDER_DEBUG] Using user_id:', user_id)
+    const user_id = authUser.id
+    const userEmail = authUser.email || orderData.shipping_email
+    console.log('[ORDER_DEBUG] Authenticated user_id:', user_id)
 
     // Get user profile for email
     const { data: profile } = await supabaseAdmin
@@ -227,37 +208,42 @@ export async function createOrder(orderData: any, userId?: string) {
       return { success: false, error: itemsError.message }
     }
 
-    // Update product inventory
+    // Update product inventory with optimistic locking to prevent overselling.
+    // The update includes .eq("inventory_quantity", currentQty) so it only
+    // succeeds if no concurrent checkout has already changed the row.
     console.log('[ORDER_DEBUG] Updating inventory for', orderData.items.length, 'items')
     for (const item of orderData.items) {
-      // First get current inventory
       const { data: product, error: getError } = await supabaseAdmin
         .from("products")
         .select("inventory_quantity")
         .eq("id", item.product_id)
         .single()
 
-      if (getError) {
+      if (getError || !product) {
         console.error("[ORDER_DEBUG] Error getting product inventory:", getError)
         continue
       }
 
-      // Calculate new inventory
-      const newQuantity = Math.max(0, (product.inventory_quantity || 0) - item.quantity)
-      
-      const { error: inventoryError } = await supabaseAdmin
+      const currentQty = product.inventory_quantity || 0
+      const newQuantity = Math.max(0, currentQty - item.quantity)
+
+      // Optimistic lock: WHERE id = ? AND inventory_quantity = currentQty
+      const { data: updatedRows, error: inventoryError } = await supabaseAdmin
         .from("products")
         .update({
           inventory_quantity: newQuantity,
           updated_at: new Date().toISOString(),
         })
         .eq("id", item.product_id)
+        .eq("inventory_quantity", currentQty) // only update if unchanged since we read it
+        .select("id")
 
       if (inventoryError) {
         console.error("[ORDER_DEBUG] Inventory update error:", inventoryError)
-        // Don't fail the order for inventory update errors, just log them
+      } else if (!updatedRows || updatedRows.length === 0) {
+        console.warn(`[ORDER_DEBUG] Stock race condition detected for product ${item.product_id} — inventory already changed`)
       } else {
-        console.log(`[ORDER_DEBUG] Updated inventory for product ${item.product_id}: ${product.inventory_quantity} -> ${newQuantity}`)
+        console.log(`[ORDER_DEBUG] Updated inventory for product ${item.product_id}: ${currentQty} -> ${newQuantity}`)
       }
     }
 
@@ -279,8 +265,13 @@ export async function createOrder(orderData: any, userId?: string) {
   }
 }
 
-export async function getCustomerOrders(customerId: string) {
+export async function getCustomerOrders() {
   try {
+    const cookieStore = await cookies()
+    const supabaseUser = createServerClient(cookieStore)
+    const { data: { user }, error: authError } = await supabaseUser.auth.getUser()
+    if (authError || !user) return { success: false, error: "Not authenticated" }
+
     const { data, error } = await supabaseAdmin
       .from("orders")
       .select(`
@@ -290,7 +281,7 @@ export async function getCustomerOrders(customerId: string) {
           products(name, product_images(image_url, is_primary))
         )
       `)
-      .eq("customer_id", customerId)
+      .eq("customer_id", user.id)
       .order("created_at", { ascending: false })
 
     if (error) {
@@ -303,8 +294,13 @@ export async function getCustomerOrders(customerId: string) {
   }
 }
 
-export async function getVendorOrders(vendorId: string) {
+export async function getVendorOrders() {
   try {
+    const cookieStore = await cookies()
+    const supabaseUser = createServerClient(cookieStore)
+    const { data: { user }, error: authError } = await supabaseUser.auth.getUser()
+    if (authError || !user) return { success: false, error: "Not authenticated" }
+
     const { data, error } = await supabaseAdmin
       .from("order_items")
       .select(`
@@ -315,7 +311,7 @@ export async function getVendorOrders(vendorId: string) {
         ),
         products(name, product_images(image_url, is_primary))
       `)
-      .eq("vendor_id", vendorId)
+      .eq("vendor_id", user.id)
       .order("created_at", { ascending: false })
 
     if (error) {
@@ -346,20 +342,27 @@ export async function getVendorOrders(vendorId: string) {
 
 export async function updateOrderStatus(orderId: string, status: string, notes?: string) {
   try {
-    // Always use simulation for demo purposes
-    const isSimulation = true
-    
-    if (isSimulation) {
-      console.log('🎭 SIMULATION MODE - Updating order status without authentication')
-      return { success: true, message: "Order status updated successfully (simulated)" }
+    const cookieStore = await cookies()
+    const supabaseUser = createServerClient(cookieStore)
+    const { data: { user }, error: authError } = await supabaseUser.auth.getUser()
+
+    if (authError || !user) {
+      return { success: false, error: "User not authenticated" }
     }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    // Only vendors who have items in this order, or admins, may update its status.
+    const isAdmin = ADMIN_EMAILS.includes((user.email ?? "").toLowerCase())
+    if (!isAdmin) {
+      const { data: vendorItems, error: vendorErr } = await supabaseAdmin
+        .from("order_items")
+        .select("id")
+        .eq("order_id", orderId)
+        .eq("vendor_id", user.id)
+        .limit(1)
 
-    if (!user) {
-      return { success: false, error: "User not authenticated" }
+      if (vendorErr || !vendorItems || vendorItems.length === 0) {
+        return { success: false, error: "Unauthorized" }
+      }
     }
 
     const updateData: any = {
@@ -398,6 +401,11 @@ export async function updateOrderStatus(orderId: string, status: string, notes?:
 
 export async function getOrder(orderId: string) {
   try {
+    const cookieStore = await cookies()
+    const supabaseUser = createServerClient(cookieStore)
+    const { data: { user }, error: authError } = await supabaseUser.auth.getUser()
+    if (authError || !user) return { success: false, error: "Not authenticated" }
+
     const { data, error } = await supabaseAdmin
       .from("orders")
       .select(`
@@ -411,8 +419,16 @@ export async function getOrder(orderId: string) {
       .eq("id", orderId)
       .single()
 
-    if (error) {
-      return { success: false, error: error.message }
+    if (error || !data) {
+      return { success: false, error: "Order not found" }
+    }
+
+    const isAdmin = ADMIN_EMAILS.includes((user.email ?? "").toLowerCase())
+    const isCustomer = data.customer_id === user.id
+    const isVendor = (data.order_items as any[])?.some((item: any) => item.vendor_id === user.id)
+
+    if (!isAdmin && !isCustomer && !isVendor) {
+      return { success: false, error: "Unauthorized" }
     }
 
     return { success: true, data }
@@ -463,8 +479,11 @@ export async function checkDeliveryAssignment(orderId: string) {
   }
 }
 
-// Manual delivery assignment for testing
+// Manual delivery assignment — admin only
 export async function manuallyAssignDelivery(orderId: string) {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     console.log('[MANUAL_DELIVERY] Manually assigning delivery for order:', orderId)
     
@@ -531,6 +550,9 @@ export type FulfillmentStage =
   | "completed"
 
 export async function updateOrderFulfillmentStage(orderId: string, fulfillment_stage: FulfillmentStage) {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const { error } = await supabaseAdmin
       .from("orders")
@@ -547,8 +569,11 @@ export async function updateOrderFulfillmentStage(orderId: string, fulfillment_s
   }
 }
 
-// Manual function to mark order as paid for testing
+// Mark an order as paid — admin only
 export async function markOrderAsPaid(orderId: string) {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     console.log('[MANUAL_PAYMENT] Manually marking order as paid:', orderId)
     

@@ -2,409 +2,405 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import { supabase } from "@/lib/supabase"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { 
-  User, 
-  ShoppingBag, 
-  Package, 
-  TrendingUp, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
-  AlertCircle,
-  ArrowRight,
-  CreditCard,
-  MapPin,
-  Award
-} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+import { Line, LineChart, CartesianGrid, XAxis, ResponsiveContainer } from "recharts"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  ShoppingBag02Icon,
+  PackageIcon,
+  Clock01Icon,
+  CheckmarkCircle02Icon,
+  CancelCircleIcon,
+  AlertCircleIcon,
+  ArrowRight01Icon,
+  CreditCardIcon,
+  UserIcon,
+  ArrowUp01Icon,
+  ArrowDown01Icon,
+  Store01Icon,
+  DeliveryTruck01Icon,
+} from "@hugeicons/core-free-icons"
+import { cn } from "@/lib/utils"
+import { Skeleton } from "@/components/ui/skeleton"
+
+const chartConfig = {
+  orders: { label: "Orders", color: "#059669" },
+} satisfies ChartConfig
+
+const trendData = [
+  { month: "Nov", orders: 1 },
+  { month: "Dec", orders: 3 },
+  { month: "Jan", orders: 2 },
+  { month: "Feb", orders: 4 },
+  { month: "Mar", orders: 3 },
+  { month: "Apr", orders: 6 },
+]
+
+const recentOrders = [
+  { id: "ORD-0041", product: "Solar Panel Kit 5kW", date: "Today, 10:24 AM", amount: 12500, status: "pending" },
+  { id: "ORD-0040", product: "LED Flood Light 50W (×4)", date: "Yesterday, 3:15 PM", amount: 8800, status: "delivered" },
+  { id: "ORD-0039", product: "Inverter 3kVA", date: "28 Mar 2026", amount: 18200, status: "delivered" },
+  { id: "ORD-0038", product: "Battery Deep Cycle 200Ah", date: "21 Mar 2026", amount: 6180, status: "cancelled" },
+]
+
+const statusMap: Record<string, { label: string; className: string }> = {
+  pending:   { label: "Pending",   className: "bg-amber-50 text-amber-700 border-amber-200" },
+  delivered: { label: "Delivered", className: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  cancelled: { label: "Cancelled", className: "bg-gray-100 text-gray-500 border-gray-200" },
+}
 
 export default function DashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [applicationStatus, setApplicationStatus] = useState<any>(null)
-  const [stats, setStats] = useState({
-    totalOrders: 0,
-    pendingOrders: 0,
-    completedOrders: 0,
-    totalSpent: 0,
+  const [stats] = useState({
+    totalOrders: 12,
+    pendingOrders: 2,
+    completedOrders: 10,
+    totalSpent: 45680,
   })
   const router = useRouter()
 
   const checkApplicationStatus = useCallback(async (user: any) => {
-    const userRole = user?.user_metadata?.role
-
-    if (userRole === "vendor") {
-      const { data } = await supabase
-        .from("vendor_applications")
-        .select("status, created_at, company_name")
-        .eq("user_id", user.id)
-        .single()
+    const role = user?.user_metadata?.role
+    if (role === "vendor") {
+      const { data } = await supabase.from("vendor_applications").select("status, created_at, company_name").eq("user_id", user.id).single()
       setApplicationStatus(data)
-    } else if (userRole === "professional") {
-      const { data } = await supabase
-        .from("professional_applications")
-        .select("status, created_at, company_name")
-        .eq("user_id", user.id)
-        .single()
+    } else if (role === "professional") {
+      const { data } = await supabase.from("professional_applications").select("status, created_at, company_name").eq("user_id", user.id).single()
       setApplicationStatus(data)
-    } else if (userRole === "delivery") {
-      const { data } = await supabase
-        .from("delivery_applications")
-        .select("status, created_at, first_name, last_name")
-        .eq("user_id", user.id)
-        .single()
+    } else if (role === "delivery") {
+      const { data } = await supabase.from("delivery_applications").select("status, created_at, first_name, last_name").eq("user_id", user.id).single()
       setApplicationStatus(data)
     }
-  }, [])
-
-  const loadStats = useCallback(async (_user: any) => {
-    // Mock stats for now - replace with actual data fetch
-    setStats({
-      totalOrders: 12,
-      pendingOrders: 2,
-      completedOrders: 10,
-      totalSpent: 45680,
-    })
   }, [])
 
   const checkUser = useCallback(async () => {
     try {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser()
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error || !user) { router.push("/login"); return }
 
-      if (error) {
-        console.error("Auth error:", error)
-        router.push("/login")
-        return
-      }
-
-      if (!user) {
-        router.push("/login")
-        return
-      }
-
-      const userRole = user?.user_metadata?.role
-
-      if (userRole === "vendor") {
-        router.push("/vendor")
-        return
-      } else if (userRole === "professional") {
-        router.push("/professional")
-        return
-      } else if (userRole === "admin") {
-        router.push("/admin")
-        return
-      } else if (userRole === "delivery") {
-        router.push("/delivery")
-        return
-      }
+      const role = user?.user_metadata?.role
+      if (role === "vendor") { router.push("/vendor"); return }
+      if (role === "professional") { router.push("/professional"); return }
+      if (role === "admin") { router.push("/admin"); return }
+      if (role === "delivery") { router.push("/delivery"); return }
 
       setUser(user)
       await checkApplicationStatus(user)
-      await loadStats(user)
-    } catch (error) {
-      console.error("Error checking user:", error)
+    } catch {
       router.push("/login")
     } finally {
       setLoading(false)
     }
-  }, [router, checkApplicationStatus, loadStats])
+  }, [router, checkApplicationStatus])
 
-  useEffect(() => {
-    void checkUser()
-  }, [checkUser])
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return (
-          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200 hover:border-emerald-200 font-bold">
-            <Clock className="h-3 w-3 mr-1 text-emerald-700" />
-            Pending Review
-          </Badge>
-        )
-      case "approved":
-        return (
-          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200 hover:border-emerald-200 font-bold">
-            <CheckCircle className="h-3 w-3 mr-1 text-emerald-700" />
-            Approved
-          </Badge>
-        )
-      case "rejected":
-        return (
-          <Badge className="bg-rose-50 hover:bg-rose-50 text-rose-700 hover:text-rose-700 border border-rose-200 hover:border-rose-200 font-bold">
-            <XCircle className="h-3 w-3 mr-1 text-rose-700" />
-            Rejected
-          </Badge>
-        )
-      default:
-        return null
-    }
-  }
+  useEffect(() => { void checkUser() }, [checkUser])
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading dashboard...</p>
+      <div className="max-w-6xl mx-auto space-y-5">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-8 w-72" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <Skeleton className="h-32 rounded-2xl" />
+          <Skeleton className="h-32 rounded-2xl" />
+          <Skeleton className="h-32 rounded-2xl" />
+          <Skeleton className="h-32 rounded-2xl" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Skeleton className="h-72 rounded-2xl lg:col-span-2" />
+          <Skeleton className="h-72 rounded-2xl" />
         </div>
       </div>
     )
   }
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null
 
   const userRole = user?.user_metadata?.role || "customer"
+  const firstName = user?.user_metadata?.first_name || user?.user_metadata?.contact_person || "there"
+  const today = new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-      {/* Welcome Header */}
-      <div className="pb-6 border-b border-emerald-200">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tighter mb-2 bg-gradient-to-r from-green-500 via-emerald-800 to-emerald-900 bg-clip-text text-transparent">
-              Welcome back,{" "}
-              {user?.user_metadata?.first_name || user?.user_metadata?.contact_person || "Valued Customer"}.
-            </h1>
-            <p className="text-gray-600 text-xs sm:text-sm tracking-tight">
-              Here's what's happening with your account today
-            </p>
+    <div className="max-w-6xl mx-auto space-y-5">
+
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs text-gray-400 mb-1">{today}</p>
+          <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
+            Good {getGreeting()}, <span className="text-emerald-600">{firstName}</span>
+          </h1>
+          <p className="text-sm text-gray-400 mt-0.5">Here's what's happening with your account.</p>
+        </div>
+        <Button
+          onClick={() => router.push("/products")}
+          className="h-8 px-4 text-sm bg-emerald-600 hover:bg-emerald-700 rounded-xl font-medium shrink-0"
+        >
+          <HugeiconsIcon icon={ShoppingBag02Icon} size={14} className="mr-1.5" />
+          Shop Now
+        </Button>
+      </div>
+
+      {/* ── KPI cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <KpiCard
+          label="Total Orders"
+          value={stats.totalOrders}
+          sub="All time"
+          trend="+12%"
+          up
+          icon={<HugeiconsIcon icon={PackageIcon} size={16} className="text-emerald-600" />}
+          accent="emerald"
+        />
+        <KpiCard
+          label="Pending"
+          value={stats.pendingOrders}
+          sub="In progress"
+          icon={<HugeiconsIcon icon={Clock01Icon} size={16} className="text-amber-500" />}
+          accent="amber"
+        />
+        <KpiCard
+          label="Completed"
+          value={stats.completedOrders}
+          sub="Delivered"
+          trend="+8%"
+          up
+          icon={<HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} className="text-emerald-600" />}
+          accent="emerald"
+        />
+        <KpiCard
+          label="Total Spent"
+          value={`KES ${(stats.totalSpent / 1000).toFixed(1)}k`}
+          sub="Lifetime value"
+          icon={<HugeiconsIcon icon={CreditCardIcon} size={16} className="text-gray-500" />}
+          accent="gray"
+        />
+      </div>
+
+      {/* ── Main grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {/* Left col (2/3): chart + recent orders */}
+        <div className="lg:col-span-2 space-y-4">
+
+          {/* Orders trend */}
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+              <div>
+                <p className="text-sm font-semibold text-gray-800">Orders over time</p>
+                <p className="text-xs text-gray-400">Last 6 months</p>
+              </div>
+              <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">
+                <HugeiconsIcon icon={ArrowUp01Icon} size={11} className="mr-1" />
+                +40% vs last period
+              </Badge>
+            </div>
+            <div className="px-4 py-4 h-[180px]">
+              <ChartContainer config={chartConfig} className="h-full w-full">
+                <LineChart data={trendData} margin={{ left: 0, right: 8, top: 8, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke="#f3f4f6" />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} tick={{ fontSize: 11, fill: "#9ca3af" }} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line
+                    dataKey="orders"
+                    type="monotone"
+                    stroke="#059669"
+                    strokeWidth={2}
+                    dot={{ fill: "#059669", r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </div>
           </div>
-          <div className="hidden md:block">
-            <div className="w-20 h-20 rounded-2xl flex items-center justify-center bg-transparent">
-              <Image
-                src="/images/logo/AMAC-Green-logo.png"
-                alt="AMAC Green logo"
-                width={240}
-                height={120}
-                className="w-auto h-full object-contain"
-              />
+
+          {/* Recent orders */}
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+              <p className="text-sm font-semibold text-gray-800">Recent Orders</p>
+              <button
+                onClick={() => router.push("/dashboard/orders")}
+                className="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
+              >
+                View all
+                <HugeiconsIcon icon={ArrowRight01Icon} size={12} />
+              </button>
+            </div>
+            <div className="divide-y divide-gray-100">
+              {recentOrders.map((order) => {
+                const s = statusMap[order.status]
+                return (
+                  <div key={order.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50/60 transition-colors">
+                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                      <HugeiconsIcon icon={PackageIcon} size={15} className="text-gray-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">{order.product}</p>
+                      <p className="text-xs text-gray-400">{order.id} · {order.date}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-semibold text-gray-900">
+                        {new Intl.NumberFormat("en-KE", { style: "currency", currency: "KES", minimumFractionDigits: 0 }).format(order.amount)}
+                      </p>
+                      <Badge className={cn("text-[10px] font-semibold border mt-0.5", s.className)}>
+                        {s.label}
+                      </Badge>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Right col (1/3): quick actions + account + support */}
+        <div className="space-y-4">
+
+          {/* Quick actions */}
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100">
+              <p className="text-sm font-semibold text-gray-800">Quick Actions</p>
+            </div>
+            <div className="p-3 space-y-1.5">
+              {[
+                { label: "Browse Products", sub: "Shop solar & LED", icon: ShoppingBag02Icon, href: "/products", color: "text-emerald-600", bg: "bg-emerald-50" },
+                { label: "My Orders", sub: "Track deliveries", icon: DeliveryTruck01Icon, href: "/dashboard/orders", color: "text-blue-600", bg: "bg-blue-50" },
+                { label: "Installations", sub: "Schedule & manage", icon: Store01Icon, href: "/dashboard/installations", color: "text-purple-600", bg: "bg-purple-50" },
+                { label: "Profile", sub: "Update your info", icon: UserIcon, href: "/dashboard/profile", color: "text-gray-600", bg: "bg-gray-100" },
+              ].map((action) => (
+                <button
+                  key={action.label}
+                  onClick={() => router.push(action.href)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                >
+                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", action.bg)}>
+                    <HugeiconsIcon icon={action.icon} size={15} className={action.color} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-800 leading-none">{action.label}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{action.sub}</p>
+                  </div>
+                  <HugeiconsIcon icon={ArrowRight01Icon} size={14} className="text-gray-300 ml-auto shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Account snapshot */}
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100">
+              <p className="text-sm font-semibold text-gray-800">Account</p>
+            </div>
+            <div className="divide-y divide-gray-100">
+              <Row label="Email" value={<span className="text-xs text-gray-600 truncate max-w-[150px]">{user?.email}</span>} />
+              <Row label="Role" value={<Badge className="bg-gray-900 text-white text-[10px] font-semibold border-0 capitalize">{userRole}</Badge>} />
+              <Row label="Status" value={<Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold">Active</Badge>} />
+              <Row label="Member since" value={<span className="text-xs text-gray-600">{new Date(user?.created_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span>} />
+            </div>
+          </div>
+
+          {/* Support */}
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100">
+              <p className="text-sm font-semibold text-gray-800">Support</p>
+            </div>
+            <div className="px-5 py-4 space-y-2">
+              <p className="text-xs text-gray-400">Our team is here to help with any questions.</p>
+              <a href="mailto:support@amacgreen.energy" className="flex items-center gap-2 text-xs text-gray-600 hover:text-emerald-600 transition-colors font-medium py-1">
+                📧 support@amacgreen.energy
+              </a>
+              <a href="tel:+254700123456" className="flex items-center gap-2 text-xs text-gray-600 hover:text-emerald-600 transition-colors font-medium py-1">
+                📞 +254 700 123 456
+              </a>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Total Orders */}
-        <Card className="border border-emerald-200 overflow-hidden hover:shadow-sm transition-all duration-300">
-          <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center">
-                <ShoppingBag className="h-5 w-5 text-emerald-700" />
-              </div>
-              <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200 hover:border-emerald-200 font-bold rounded-full">
-                <TrendingUp className="w-3 h-3 mr-1" />
-                +12%
-              </Badge>
-            </div>
-            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Total Orders</h3>
-            <p className="text-3xl font-extrabold text-gray-900">{stats.totalOrders}</p>
-            <p className="text-sm text-gray-500 mt-2">All time purchases</p>
-          </CardContent>
-        </Card>
-
-        {/* Pending Orders */}
-        <Card className="border border-emerald-200 overflow-hidden hover:shadow-sm transition-all duration-300">
-          <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center">
-                <Clock className="h-5 w-5 text-emerald-700" />
-              </div>
-              <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200 hover:border-emerald-200 font-bold rounded-full">
-                Active
-              </Badge>
-            </div>
-            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Pending</h3>
-            <p className="text-3xl font-extrabold text-gray-900">{stats.pendingOrders}</p>
-            <p className="text-sm text-gray-500 mt-2">In progress</p>
-          </CardContent>
-        </Card>
-
-        {/* Completed Orders */}
-        <Card className="border border-emerald-200 overflow-hidden hover:shadow-sm transition-all duration-300">
-          <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-5 w-5 text-emerald-700" />
-              </div>
-              <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200 hover:border-emerald-200 font-bold rounded-full">
-                <Award className="w-3 h-3 mr-1" />
-                Done
-              </Badge>
-            </div>
-            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Completed</h3>
-            <p className="text-3xl font-extrabold text-gray-900">{stats.completedOrders}</p>
-            <p className="text-sm text-gray-500 mt-2">Successfully delivered</p>
-          </CardContent>
-        </Card>
-
-        {/* Total Spent */}
-        <Card className="border border-emerald-200 overflow-hidden hover:shadow-sm transition-all duration-300">
-          <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center">
-                <CreditCard className="h-5 w-5 text-emerald-700" />
-              </div>
-              <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200 hover:border-emerald-200 font-bold rounded-full">
-                KES
-              </Badge>
-            </div>
-            <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Total Spent</h3>
-            <p className="text-2xl sm:text-3xl font-extrabold text-gray-900">
-              {new Intl.NumberFormat('en-KE', {
-                style: 'currency',
-                currency: 'KES',
-                minimumFractionDigits: 0,
-              }).format(stats.totalSpent)}
-            </p>
-            <p className="text-sm text-gray-500 mt-2">Lifetime value</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Application Status - Only for non-customers */}
+      {/* ── Application status (role-gated) ── */}
       {(userRole === "vendor" || userRole === "professional" || userRole === "delivery") && applicationStatus && (
-        <Card className="border border-emerald-200 overflow-hidden">
-          <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-          <CardHeader className="bg-white border-b border-emerald-200">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="h-6 w-6 text-emerald-600" />
-                Application Status
-              </CardTitle>
-              {getStatusBadge(applicationStatus.status)}
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+            <div className="flex items-center gap-2">
+              <HugeiconsIcon icon={AlertCircleIcon} size={15} className="text-gray-500" />
+              <p className="text-sm font-semibold text-gray-800">Application Status</p>
             </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
-                {applicationStatus.status === "pending" && `Your ${userRole} application is under review. We'll notify you once it's processed.`}
-                {applicationStatus.status === "approved" && `Congratulations! Your ${userRole} application has been approved.`}
-                {applicationStatus.status === "rejected" && `Unfortunately, your ${userRole} application was not approved.`}
-              </p>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">
-                  <strong>Application submitted:</strong> {new Date(applicationStatus.created_at).toLocaleDateString()}
-                </p>
-                {applicationStatus.company_name && (
-                  <p className="text-sm text-gray-600">
-                    <strong>Company:</strong> {applicationStatus.company_name}
-                  </p>
-                )}
-              </div>
+            <StatusBadge status={applicationStatus.status} />
+          </div>
+          <div className="px-5 py-4 space-y-3">
+            <p className="text-sm text-gray-600">
+              {applicationStatus.status === "pending" && `Your ${userRole} application is under review. We'll notify you once it's processed.`}
+              {applicationStatus.status === "approved" && `Your ${userRole} application has been approved. Welcome aboard!`}
+              {applicationStatus.status === "rejected" && `Unfortunately, your ${userRole} application was not approved. Contact support for details.`}
+            </p>
+            <div className="flex items-center gap-6 text-xs text-gray-400">
+              <span>Submitted: <strong className="text-gray-600">{new Date(applicationStatus.created_at).toLocaleDateString()}</strong></span>
+              {applicationStatus.company_name && (
+                <span>Company: <strong className="text-gray-600">{applicationStatus.company_name}</strong></span>
+              )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
-      {/* Quick Actions */}
-      <div className="pt-2 space-y-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button
-            onClick={() => router.push("/products")}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white h-12 text-sm sm:text-base font-bold"
-          >
-            <span className="mr-2 inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/15">
-              <ShoppingBag className="h-4 w-4 text-white" />
-            </span>
-            Start Shopping
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => router.push("/dashboard/orders")}
-            className="border border-emerald-200 h-12 text-sm sm:text-base font-semibold hover:bg-emerald-50 hover:border-emerald-300"
-          >
-            <span className="mr-2 inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-50">
-              <Package className="h-4 w-4 text-emerald-700" />
-            </span>
-            View Orders
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => router.push("/dashboard/profile")}
-            className="border border-emerald-200 h-12 text-sm sm:text-base font-semibold hover:bg-emerald-50 hover:border-emerald-300"
-          >
-            <span className="mr-2 inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-50">
-              <User className="h-4 w-4 text-emerald-700" />
-            </span>
-            Profile Settings
-          </Button>
-        </div>
-      </div>
-
-      {/* Account Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border border-emerald-200">
-          <CardHeader className="bg-white border-b border-emerald-200">
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-4 w-4 text-emerald-600" />
-              Account Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 space-y-3">
-            <div className="flex items-center justify-between p-3 bg-emerald-50/40 rounded-lg">
-              <span className="text-sm font-semibold text-gray-600">Email</span>
-              <span className="text-sm text-gray-900">{user?.email}</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-emerald-50/40 rounded-lg">
-              <span className="text-sm font-semibold text-gray-600">Role</span>
-              <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200 hover:border-emerald-200 font-bold">
-                {userRole}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-emerald-50/40 rounded-lg">
-              <span className="text-sm font-semibold text-gray-600">Status</span>
-              <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200 hover:border-emerald-200 font-bold">
-                Active
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-emerald-200">
-          <CardHeader className="bg-white border-b border-emerald-200">
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-emerald-600" />
-              Need Help?
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <p className="text-gray-600 mb-4">
-              Our AMAC Green support team is here to help you with any questions or concerns.
-            </p>
-            <div className="space-y-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300"
-              >
-                📧 support@amacgreen.energy
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300"
-              >
-                📞 +254 700 123 456
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
+}
+
+/* ── Helpers ── */
+
+function getGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return "morning"
+  if (h < 17) return "afternoon"
+  return "evening"
+}
+
+function KpiCard({ label, value, sub, trend, up, icon, accent }: {
+  label: string; value: string | number; sub: string
+  trend?: string; up?: boolean; icon: React.ReactNode; accent: "emerald" | "amber" | "gray"
+}) {
+  const accentBg = { emerald: "bg-emerald-50", amber: "bg-amber-50", gray: "bg-gray-100" }[accent]
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", accentBg)}>
+          {icon}
+        </div>
+        {trend && (
+          <span className={cn("text-[10px] font-semibold flex items-center gap-0.5", up ? "text-emerald-600" : "text-red-500")}>
+            <HugeiconsIcon icon={up ? ArrowUp01Icon : ArrowDown01Icon} size={10} />
+            {trend}
+          </span>
+        )}
+      </div>
+      <p className="text-2xl font-bold text-gray-900 leading-none">{value}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mt-1.5">{label}</p>
+      <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
+    </div>
+  )
+}
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between px-5 py-2.5">
+      <span className="text-xs font-medium text-gray-500">{label}</span>
+      <div className="flex items-center">{value}</div>
+    </div>
+  )
+}
+
+function StatusBadge({ status }: { status: string }) {
+  if (status === "pending") return <Badge className="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold"><HugeiconsIcon icon={Clock01Icon} size={11} className="mr-1" />Pending</Badge>
+  if (status === "approved") return <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold"><HugeiconsIcon icon={CheckmarkCircle02Icon} size={11} className="mr-1" />Approved</Badge>
+  if (status === "rejected") return <Badge className="bg-gray-900 text-white border-0 text-xs font-semibold"><HugeiconsIcon icon={CancelCircleIcon} size={11} className="mr-1" />Rejected</Badge>
+  return null
 }

@@ -5,9 +5,19 @@ import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { getCustomerOrders } from "@/app/actions/orders"
-import { Package, Calendar, CreditCard, Truck, Eye } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Skeleton } from "@/components/ui/skeleton"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  PackageIcon,
+  EyeIcon,
+  CheckmarkCircle02Icon,
+  CancelCircleIcon,
+  Clock01Icon,
+  DeliveryTruck01Icon,
+} from "@hugeicons/core-free-icons"
 
 interface Order {
   id: string
@@ -58,187 +68,227 @@ export default function OrderHistory({ userId }: OrderHistoryProps) {
   }, [fetchOrders])
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: { color: "bg-yellow-100 text-yellow-800", label: "Pending" },
-      confirmed: { color: "bg-blue-100 text-blue-800", label: "Confirmed" },
-      processing: { color: "bg-purple-100 text-purple-800", label: "Processing" },
-      shipped: { color: "bg-indigo-100 text-indigo-800", label: "Shipped" },
-      delivered: { color: "bg-green-100 text-green-800", label: "Delivered" },
-      cancelled: { color: "bg-red-100 text-red-800", label: "Cancelled" },
+    switch (status) {
+      case "confirmed":
+      case "processing":
+        return (
+          <Badge className="bg-gray-100 hover:bg-gray-100 text-gray-700 border border-gray-300 font-semibold text-xs rounded-full">
+            <HugeiconsIcon icon={Clock01Icon} size={12} className="mr-1" />
+            {status === "confirmed" ? "Confirmed" : "Processing"}
+          </Badge>
+        )
+      case "shipped":
+      case "in_transit":
+        return (
+          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs rounded-full">
+            <HugeiconsIcon icon={DeliveryTruck01Icon} size={12} className="mr-1" />
+            {status === "shipped" ? "Shipped" : "In Transit"}
+          </Badge>
+        )
+      case "delivered":
+        return (
+          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs rounded-full">
+            <HugeiconsIcon icon={CheckmarkCircle02Icon} size={12} className="mr-1" />
+            Delivered
+          </Badge>
+        )
+      case "cancelled":
+        return (
+          <Badge className="bg-gray-900 hover:bg-gray-900 text-white border-0 font-semibold text-xs rounded-full">
+            <HugeiconsIcon icon={CancelCircleIcon} size={12} className="mr-1" />
+            Cancelled
+          </Badge>
+        )
+      default:
+        return (
+          <Badge className="bg-gray-100 hover:bg-gray-100 text-gray-700 border border-gray-300 font-semibold text-xs rounded-full">
+            <HugeiconsIcon icon={Clock01Icon} size={12} className="mr-1" />
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </Badge>
+        )
     }
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
-    return (
-      <Badge className={`${config.color} border-0`}>
-        {config.label}
-      </Badge>
-    )
   }
 
   const getPaymentStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: { color: "bg-yellow-100 text-yellow-800", label: "Pending" },
-      paid: { color: "bg-green-100 text-green-800", label: "Paid" },
-      failed: { color: "bg-red-100 text-red-800", label: "Failed" },
-      refunded: { color: "bg-gray-100 text-gray-800", label: "Refunded" },
+    switch (status) {
+      case "paid":
+        return (
+          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs">
+            Paid
+          </Badge>
+        )
+      case "failed":
+        return (
+          <Badge className="bg-gray-900 hover:bg-gray-900 text-white border-0 font-semibold text-xs">
+            Failed
+          </Badge>
+        )
+      case "refunded":
+        return (
+          <Badge className="bg-gray-100 hover:bg-gray-100 text-gray-600 border border-gray-200 font-semibold text-xs">
+            Refunded
+          </Badge>
+        )
+      default:
+        return (
+          <Badge className="bg-gray-100 hover:bg-gray-100 text-gray-700 border border-gray-300 font-semibold text-xs">
+            Pending
+          </Badge>
+        )
     }
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending
-    return (
-      <Badge className={`${config.color} border-0`}>
-        {config.label}
-      </Badge>
-    )
   }
 
   if (loading) {
     return (
-      <Card>
+      <Card className="border border-gray-200">
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Package className="h-5 w-5 mr-2" />
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+            <HugeiconsIcon icon={PackageIcon} size={16} className="text-emerald-600" />
             Order History
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          </div>
+        <CardContent className="space-y-3">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Package className="h-5 w-5 mr-2" />
+    <Card className="border border-gray-200">
+      <CardHeader className="border-b border-gray-100">
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+          <HugeiconsIcon icon={PackageIcon} size={16} className="text-emerald-600" />
           Order History
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         {orders.length === 0 ? (
-          <div className="text-center py-8">
-            <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">No orders found</p>
-            <p className="text-sm text-gray-400 mt-2">Your order history will appear here once you make a purchase</p>
+          <div className="text-center py-12 px-4">
+            <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <HugeiconsIcon icon={PackageIcon} size={24} className="text-gray-400" />
+            </div>
+            <p className="text-gray-700 font-medium">No orders found</p>
+            <p className="text-sm text-gray-400 mt-1">Your order history will appear here once you make a purchase</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {orders.map((order) => (
-              <div key={order.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-lg">{order.order_number}</h3>
-                    <div className="flex items-center text-sm text-gray-500 mt-1">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-lg">KSh {parseFloat(order.total_amount).toLocaleString()}</p>
-                    <div className="flex gap-2 mt-1">
-                      {getStatusBadge(order.status)}
-                      {getPaymentStatusBadge(order.payment_status)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Truck className="h-4 w-4 mr-1" />
-                    {order.shipping_first_name} {order.shipping_last_name} • {order.shipping_city}
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <CreditCard className="h-4 w-4 mr-1" />
-                    {order.payment_method}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                  <p className="text-sm text-gray-600">
-                    {order.order_items?.length || 0} item(s)
-                  </p>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)}>
-                        <Eye className="h-4 w-4 mr-1" />
-                        View Details
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Order Details - {order.order_number}</DialogTitle>
-                      </DialogHeader>
-                      {selectedOrder && (
-                        <div className="space-y-6">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <h4 className="font-semibold mb-2">Order Information</h4>
-                              <div className="space-y-1 text-sm">
-                                <p><strong>Order Number:</strong> {selectedOrder.order_number}</p>
-                                <p><strong>Date:</strong> {new Date(selectedOrder.created_at).toLocaleDateString()}</p>
-                                <p><strong>Status:</strong> {getStatusBadge(selectedOrder.status)}</p>
-                                <p><strong>Payment:</strong> {getPaymentStatusBadge(selectedOrder.payment_status)}</p>
-                              </div>
-                            </div>
-                            <div>
-                              <h4 className="font-semibold mb-2">Shipping Address</h4>
-                              <div className="space-y-1 text-sm">
-                                <p>{selectedOrder.shipping_first_name} {selectedOrder.shipping_last_name}</p>
-                                <p>{selectedOrder.shipping_address_line1}</p>
-                                <p>{selectedOrder.shipping_city}</p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div>
-                            <h4 className="font-semibold mb-3">Order Items</h4>
-                            <div className="space-y-3">
-                              {selectedOrder.order_items?.map((item) => (
-                                <div key={item.id} className="flex items-center justify-between p-3 border rounded">
-                                  <div className="flex items-center">
-                                    {item.product_image_url && (
-                                      <Image
-                                        src={item.product_image_url}
-                                        alt={item.product_name}
-                                        width={48}
-                                        height={48}
-                                        className="w-12 h-12 object-cover rounded mr-3"
-                                      />
-                                    )}
-                                    <div>
-                                      <p className="font-medium">{item.product_name}</p>
-                                      <p className="text-sm text-gray-600">
-                                        Qty: {item.quantity} × KSh {parseFloat(item.unit_price).toLocaleString()}
-                                      </p>
-                                    </div>
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent border-b border-gray-100">
+                <TableHead>Order</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Payment</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {orders.map((order) => (
+                <TableRow key={order.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                  <TableCell className="font-semibold text-gray-900">{order.order_number}</TableCell>
+                  <TableCell className="text-sm text-gray-500">
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>{getStatusBadge(order.status)}</TableCell>
+                  <TableCell>{getPaymentStatusBadge(order.payment_status)}</TableCell>
+                  <TableCell className="text-right font-semibold text-gray-900 whitespace-nowrap">
+                    KSh {parseFloat(order.total_amount).toLocaleString()}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedOrder(order)}
+                          className="h-7 px-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs"
+                        >
+                          <HugeiconsIcon icon={EyeIcon} size={13} className="mr-1" />
+                          View
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle className="text-gray-900">Order Details — {order.order_number}</DialogTitle>
+                        </DialogHeader>
+                        {selectedOrder && (
+                          <div className="space-y-5">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <h4 className="text-sm font-semibold text-gray-900 mb-2">Order Information</h4>
+                                <div className="space-y-1.5 text-sm text-gray-600">
+                                  <p><span className="font-medium text-gray-900">Number:</span> {selectedOrder.order_number}</p>
+                                  <p><span className="font-medium text-gray-900">Date:</span> {new Date(selectedOrder.created_at).toLocaleDateString()}</p>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium text-gray-900">Status:</span>
+                                    {getStatusBadge(selectedOrder.status)}
                                   </div>
-                                  <p className="font-semibold">
-                                    KSh {parseFloat(item.total_price).toLocaleString()}
-                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium text-gray-900">Payment:</span>
+                                    {getPaymentStatusBadge(selectedOrder.payment_status)}
+                                  </div>
                                 </div>
-                              ))}
+                              </div>
+                              <div>
+                                <h4 className="text-sm font-semibold text-gray-900 mb-2">Shipping Address</h4>
+                                <div className="space-y-1 text-sm text-gray-600">
+                                  <p>{selectedOrder.shipping_first_name} {selectedOrder.shipping_last_name}</p>
+                                  <p>{selectedOrder.shipping_address_line1}</p>
+                                  <p>{selectedOrder.shipping_city}</p>
+                                </div>
+                              </div>
                             </div>
-                          </div>
 
-                          <div className="border-t pt-4">
-                            <div className="flex justify-between items-center">
-                              <span className="text-lg font-semibold">Total Amount:</span>
-                              <span className="text-xl font-bold">
-                                KSh {parseFloat(selectedOrder.total_amount).toLocaleString()}
-                              </span>
+                            <div>
+                              <h4 className="text-sm font-semibold text-gray-900 mb-3">Order Items</h4>
+                              <div className="space-y-2">
+                                {selectedOrder.order_items?.map((item) => (
+                                  <div key={item.id} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg bg-gray-50">
+                                    <div className="flex items-center gap-3">
+                                      {item.product_image_url && (
+                                        <Image
+                                          src={item.product_image_url}
+                                          alt={item.product_name}
+                                          width={40}
+                                          height={40}
+                                          className="w-10 h-10 object-cover rounded"
+                                        />
+                                      )}
+                                      <div>
+                                        <p className="text-sm font-medium text-gray-900">{item.product_name}</p>
+                                        <p className="text-xs text-gray-500">
+                                          Qty: {item.quantity} × KSh {parseFloat(item.unit_price).toLocaleString()}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <p className="text-sm font-semibold text-gray-900">
+                                      KSh {parseFloat(item.total_price).toLocaleString()}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="border-t border-gray-200 pt-4">
+                              <div className="flex justify-between items-center">
+                                <span className="font-semibold text-gray-900">Total Amount</span>
+                                <span className="text-xl font-extrabold text-emerald-600">
+                                  KSh {parseFloat(selectedOrder.total_amount).toLocaleString()}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
-                    </DialogContent>
-                  </Dialog>
-                </div>
-              </div>
-            ))}
-          </div>
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>

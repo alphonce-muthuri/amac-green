@@ -5,10 +5,14 @@ import "./globals.css"
 import { AuthProvider } from "@/lib/auth-context"
 import { CartProvider } from "@/lib/cart-context"
 import { Toaster } from "@/components/ui/toaster"
+import { PHProvider } from "@/components/analytics/posthog-provider"
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
+  fallback: ["system-ui", "Arial", "sans-serif"],
+  preload: false,
 })
 
 export const metadata: Metadata = {
@@ -33,23 +37,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link
-          rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-          crossOrigin=""
-        />
         <link rel="icon" type="image/png" href="/images/logo/AMAC-Green-logo.png" />
         <link rel="shortcut icon" href="/images/logo/AMAC-Green-logo.png" />
         <meta name="theme-color" content="#16a34a" />
       </head>
       <body className={dmSans.className}>
-        <AuthProvider>
-          <CartProvider>
-            {children}
-            <Toaster />
-          </CartProvider>
-        </AuthProvider>
+        <PHProvider>
+          <AuthProvider>
+            <CartProvider>
+              {children}
+              <Toaster />
+            </CartProvider>
+          </AuthProvider>
+        </PHProvider>
       </body>
     </html>
   )

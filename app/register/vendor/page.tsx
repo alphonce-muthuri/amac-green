@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { z } from "zod"
+import { FieldErrors, useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,46 +17,118 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { FileUpload } from "@/components/ui/file-upload"
 import { registerVendor } from "@/app/actions/auth"
 import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
+import { toast } from "@/hooks/use-toast"
+import { getFriendlyRegistrationError } from "@/lib/registration-errors"
+
+const draftStorageKey = "vendor-registration-draft"
+
+const vendorSchema = z
+  .object({
+    companyName: z.string().min(2, "Company name is required"),
+    contactPerson: z.string().min(2, "Contact person is required"),
+    email: z.string().email("Enter a valid email address"),
+    phone: z.string().min(7, "Phone number is required"),
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+    confirmPassword: z.string().min(6, "Confirm your password"),
+    businessType: z.string().min(1, "Business type is required"),
+    description: z.string().optional(),
+    address: z.string().min(2, "Business address is required"),
+    city: z.string().min(2, "City is required"),
+    country: z.string().min(2, "Country is required"),
+    website: z.union([z.literal(""), z.string().url("Enter a valid URL starting with https://")]),
+    taxId: z.string().min(2, "Tax ID / Registration Number is required"),
+    bankName: z.string().min(2, "Bank name is required"),
+    accountNumber: z.string().min(2, "Bank account number is required"),
+    acceptTerms: z.literal(true, { errorMap: () => ({ message: "Please accept the terms and conditions" }) }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+
+type VendorFormValues = z.infer<typeof vendorSchema>
 
 export default function VendorRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
-  const [formData, setFormData] = useState({
-    businessType: "",
-    acceptTerms: false,
-    password: "",
-    confirmPassword: "",
-  })
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const router = useRouter()
 
-  const handleSubmit = async (formData: FormData) => {
-    if (!formData.get("acceptTerms")) {
-      setMessage({ type: "error", text: "Please accept the terms and conditions" })
-      return
-    }
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<VendorFormValues>({
+    resolver: zodResolver(vendorSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
+    defaultValues: {
+      companyName: "",
+      contactPerson: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      businessType: "",
+      description: "",
+      address: "",
+      city: "",
+      country: "",
+      website: "",
+      taxId: "",
+      bankName: "",
+      accountNumber: "",
+      acceptTerms: false,
+    },
+  })
 
-    if (formData.get("password") !== formData.get("confirmPassword")) {
-      setMessage({ type: "error", text: "Passwords do not match" })
-      return
-    }
+  const businessType = watch("businessType")
+  const acceptTerms = watch("acceptTerms")
+  const password = watch("password")
+  const confirmPassword = watch("confirmPassword")
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword
 
-    if ((formData.get("password") as string).length < 6) {
-      setMessage({ type: "error", text: "Password must be at least 6 characters long" })
-      return
+  useEffect(() => {
+    const raw = sessionStorage.getItem(draftStorageKey)
+    if (!raw) return
+
+    try {
+      const parsed = JSON.parse(raw) as Partial<VendorFormValues>
+      reset({ ...parsed })
+    } catch {
+      sessionStorage.removeItem(draftStorageKey)
     }
+  }, [reset])
+
+  useEffect(() => {
+    const subscription = watch((values) => {
+      sessionStorage.setItem(draftStorageKey, JSON.stringify(values))
+    })
+    return () => subscription.unsubscribe()
+  }, [watch])
+
+  const onSubmit = async (values: VendorFormValues) => {
+    const submissionData = new FormData()
+    Object.entries(values).forEach(([key, value]) => {
+      if (key === "acceptTerms") {
+        if (value) submissionData.append(key, "on")
+        return
+      }
+      submissionData.append(key, String(value ?? ""))
+    })
 
     setIsSubmitting(true)
-    setMessage(null)
 
-    const result = await registerVendor(formData)
+    const result = await registerVendor(submissionData)
 
     if (result.success) {
       // Upload documents if any
       if (uploadedFiles.length > 0 && result.applicationId) {
-        setMessage({ type: "success", text: "Application submitted! Uploading documents..." })
+        toast({ title: "Application submitted", description: "Uploading documents..." })
         
         const uploadPromises = uploadedFiles.map(async (file, index) => {
           const documentFormData = new FormData()
@@ -93,83 +167,91 @@ export default function VendorRegistration() {
         }
         
         if (failedUploads.length > 0) {
-          setMessage({ 
-            type: "error", 
-            text: `Application submitted but ${failedUploads.length} document(s) failed to upload. Please contact support.` 
+          toast({
+            title: "Some documents failed to upload",
+            description: `Your application was submitted, but ${failedUploads.length} document(s) failed. Please try again or contact support.`,
+            variant: "destructive",
           })
         } else {
-          setMessage({ 
-            type: "success", 
-            text: `${result.message} All documents uploaded successfully!` 
-          })
+          toast({ title: "Success", description: `${result.message} All documents uploaded successfully!` })
         }
       } else {
-        setMessage({ type: "success", text: result.message })
+        toast({ title: "Success", description: result.message })
       }
+
+      sessionStorage.removeItem(draftStorageKey)
       
-      // Don't auto-redirect, let user read the verification message
-      // setTimeout(() => {
-      //   router.push("/login")
-      // }, 3000)
     } else {
-      setMessage({ type: "error", text: result.error })
+      toast({
+        title: "Couldn't submit application",
+        description: getFriendlyRegistrationError(result.error),
+        variant: "destructive",
+      })
     }
 
     setIsSubmitting(false)
   }
 
+  const onInvalid = (formErrors: FieldErrors<VendorFormValues>) => {
+    const firstError = Object.values(formErrors)[0]
+    const message =
+      firstError && typeof firstError === "object" && "message" in firstError
+        ? String(firstError.message)
+        : "Please fix the highlighted fields and try again."
+    toast({ title: "Please check your details", description: message, variant: "destructive" })
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-white flex flex-col">
       <SiteHeader />
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-6">
-            <Link href="/register" className="flex items-center text-emerald-600 hover:text-emerald-700 font-medium mb-4 transition-colors">
+      <main className="flex-1 -mt-20 pt-28 sm:pt-32">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">
+          <div className="mb-8">
+            <Link href="/register" className="inline-flex items-center text-sm text-emerald-700 hover:text-emerald-600 font-medium mb-5 transition-colors">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to registration options
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tighter">Vendor Registration</h1>
-            <p className="text-gray-600 mt-2 tracking-tight">Join our marketplace and start selling renewable energy products</p>
+            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.4em] mb-3">Vendor Registration</p>
+            <h1 className="text-3xl sm:text-4xl font-semibold text-gray-900 tracking-tight leading-none">
+              Build your supplier profile.
+            </h1>
+            <p className="text-gray-500 mt-3 text-sm leading-relaxed max-w-2xl">
+              Share your company details to join our marketplace and start selling renewable energy products.
+            </p>
           </div>
 
-          <Card className="rounded-2xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white shadow-sm hover:border-emerald-200/80 transition-colors overflow-hidden">
-            <CardHeader className="border-b border-gray-200/70 bg-white/80">
-              <CardTitle className="text-xl tracking-tighter">Company Information</CardTitle>
-              <CardDescription>Please provide accurate information about your business</CardDescription>
+          <Card className="rounded-2xl border border-gray-200 bg-white shadow-none overflow-hidden">
+            <CardHeader className="border-b border-gray-100 bg-white">
+              <CardTitle className="text-xl tracking-tight">Company Information</CardTitle>
+              <CardDescription className="text-gray-500">
+                Please provide accurate information about your business.
+              </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              {message && (
-                <div
-                  className={`mb-4 p-4 rounded-xl border ${
-                    message.type === "success"
-                      ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
-                      : "bg-red-50 text-red-800 border-red-200/80"
-                  }`}
-                >
-                  {message.text}
-                </div>
-              )}
-
-              <form action={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="companyName">Company Name *</Label>
-                    <Input id="companyName" name="companyName" required />
+                    <Input id="companyName" {...register("companyName")} />
+                    {errors.companyName && <p className="text-xs text-red-600">{errors.companyName.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="contactPerson">Contact Person *</Label>
-                    <Input id="contactPerson" name="contactPerson" required />
+                    <Input id="contactPerson" {...register("contactPerson")} />
+                    {errors.contactPerson && <p className="text-xs text-red-600">{errors.contactPerson.message}</p>}
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address *</Label>
-                    <Input id="email" name="email" type="email" required />
+                    <Input id="email" type="email" {...register("email")} />
+                    {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
-                    <Input id="phone" name="phone" type="tel" required />
+                    <Input id="phone" type="tel" {...register("phone")} />
+                    {errors.phone && <p className="text-xs text-red-600">{errors.phone.message}</p>}
                   </div>
                 </div>
 
@@ -179,11 +261,8 @@ export default function VendorRegistration() {
                     <div className="relative">
                       <Input
                         id="password"
-                        name="password"
                         type={showPassword ? "text" : "password"}
-                        required
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        {...register("password")}
                       />
                       <Button
                         type="button"
@@ -199,17 +278,15 @@ export default function VendorRegistration() {
                         )}
                       </Button>
                     </div>
+                    {errors.password && <p className="text-xs text-red-600">{errors.password.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm Password *</Label>
                     <div className="relative">
                       <Input
                         id="confirmPassword"
-                        name="confirmPassword"
                         type={showConfirmPassword ? "text" : "password"}
-                        required
-                        value={formData.confirmPassword}
-                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        {...register("confirmPassword")}
                       />
                       <Button
                         type="button"
@@ -225,15 +302,20 @@ export default function VendorRegistration() {
                         )}
                       </Button>
                     </div>
+                    {confirmPassword.length > 0 && !errors.confirmPassword && (
+                      <p className={`text-xs ${passwordsMatch ? "text-emerald-600" : "text-red-600"}`}>
+                        {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+                      </p>
+                    )}
+                    {errors.confirmPassword && <p className="text-xs text-red-600">{errors.confirmPassword.message}</p>}
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="businessType">Business Type *</Label>
                   <Select
-                    name="businessType"
-                    onValueChange={(value) => setFormData({ ...formData, businessType: value })}
-                    required
+                    value={businessType}
+                    onValueChange={(value) => setValue("businessType", value, { shouldValidate: true, shouldDirty: true })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select business type" />
@@ -246,59 +328,67 @@ export default function VendorRegistration() {
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
-                  <input type="hidden" name="businessType" value={formData.businessType} />
+                  {errors.businessType && <p className="text-xs text-red-600">{errors.businessType.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="description">Business Description</Label>
                   <Textarea
                     id="description"
-                    name="description"
+                    {...register("description")}
                     placeholder="Describe your business and the products you offer"
                   />
+                  {errors.description && <p className="text-xs text-red-600">{errors.description.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="address">Business Address *</Label>
-                  <Input id="address" name="address" required />
+                  <Input id="address" {...register("address")} />
+                  {errors.address && <p className="text-xs text-red-600">{errors.address.message}</p>}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="city">City *</Label>
-                    <Input id="city" name="city" required />
+                    <Input id="city" {...register("city")} />
+                    {errors.city && <p className="text-xs text-red-600">{errors.city.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="country">Country *</Label>
-                    <Input id="country" name="country" required />
+                    <Input id="country" {...register("country")} />
+                    {errors.country && <p className="text-xs text-red-600">{errors.country.message}</p>}
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="website">Website (Optional)</Label>
-                  <Input id="website" name="website" type="url" placeholder="https://yourwebsite.com" />
+                  <Input id="website" type="url" placeholder="https://yourwebsite.com" {...register("website")} />
+                  {errors.website && <p className="text-xs text-red-600">{errors.website.message}</p>}
                 </div>
 
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Financial Information</h3>
+                <div className="border-t border-gray-100 pt-6">
+                  <h3 className="text-lg font-semibold tracking-tight mb-4">Financial Information</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="taxId">Tax ID / Registration Number *</Label>
-                      <Input id="taxId" name="taxId" required />
+                      <Input id="taxId" {...register("taxId")} />
+                      {errors.taxId && <p className="text-xs text-red-600">{errors.taxId.message}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="bankName">Bank Name *</Label>
-                      <Input id="bankName" name="bankName" required />
+                      <Input id="bankName" {...register("bankName")} />
+                      {errors.bankName && <p className="text-xs text-red-600">{errors.bankName.message}</p>}
                     </div>
                   </div>
                   <div className="space-y-2 mt-4">
                     <Label htmlFor="accountNumber">Bank Account Number *</Label>
-                    <Input id="accountNumber" name="accountNumber" required />
+                    <Input id="accountNumber" {...register("accountNumber")} />
+                    {errors.accountNumber && <p className="text-xs text-red-600">{errors.accountNumber.message}</p>}
                   </div>
                 </div>
 
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Document Upload</h3>
+                <div className="border-t border-gray-100 pt-6">
+                  <h3 className="text-lg font-semibold tracking-tight mb-4">Document Upload</h3>
                   <div className="space-y-4">
                     <FileUpload
                       onFilesChange={setUploadedFiles}
@@ -308,17 +398,19 @@ export default function VendorRegistration() {
                       maxSize={10}
                     />
                     
-                    <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200/60">
-                      <h4 className="font-semibold text-emerald-800 mb-2">Required Documents:</h4>
-                      <ul className="text-sm text-emerald-700 space-y-1">
-                        <li>• Business Registration Certificate</li>
-                        <li>• Tax Identification Number (PIN Certificate)</li>
-                        <li>• Business License</li>
-                        <li>• Bank Statement or Letter</li>
-                        <li>• Director's ID Copy (optional)</li>
+                    <div className="rounded-lg border border-emerald-200/60 bg-emerald-50/70 p-3">
+                      <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-800 mb-2">
+                        Required Documents
+                      </h4>
+                      <ul className="space-y-1 text-xs text-emerald-700 leading-relaxed">
+                        <li>Business Registration Certificate</li>
+                        <li>Tax Identification Number (PIN Certificate)</li>
+                        <li>Business License</li>
+                        <li>Bank Statement or Letter</li>
+                        <li>Director&apos;s ID Copy (optional)</li>
                       </ul>
-                      <p className="text-xs text-emerald-600 mt-2">
-                        Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max 10MB each)
+                      <p className="mt-2 text-[11px] text-emerald-700/90">
+                        PDF, DOC, DOCX, JPG, PNG - max 10MB each
                       </p>
                     </div>
                   </div>
@@ -327,9 +419,8 @@ export default function VendorRegistration() {
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="acceptTerms"
-                    name="acceptTerms"
-                    checked={formData.acceptTerms}
-                    onCheckedChange={(checked) => setFormData({ ...formData, acceptTerms: checked as boolean })}
+                    checked={acceptTerms}
+                    onCheckedChange={(checked) => setValue("acceptTerms", checked === true, { shouldValidate: true, shouldDirty: true })}
                   />
                   <Label htmlFor="acceptTerms" className="text-sm">
                     I agree to the{" "}
@@ -342,32 +433,24 @@ export default function VendorRegistration() {
                     </Link>
                   </Label>
                 </div>
+                {errors.acceptTerms && <p className="text-xs text-red-600">{errors.acceptTerms.message}</p>}
 
-                <Button
-                  type="submit"
-                  className="w-full bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all"
-                  disabled={!formData.acceptTerms || isSubmitting}
-                >
-                  {isSubmitting ? "Submitting Application..." : "Submit Application"}
-                </Button>
+                <div className="pt-2">
+                  <Button
+                    type="submit"
+                    className="w-full bg-emerald-700 hover:bg-emerald-600 text-white rounded-full h-10 text-sm font-medium transition-colors"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Submitting Application..." : "Submit Application"}
+                  </Button>
+                </div>
 
-                {message?.type === "success" && (
-                  <div className="mt-4 text-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full rounded-full border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-                      onClick={() => router.push("/login")}
-                    >
-                      Go to Login Page
-                    </Button>
-                  </div>
-                )}
               </form>
             </CardContent>
           </Card>
         </div>
-      </div>
+      </main>
+      <SiteFooter />
     </div>
   )
 }

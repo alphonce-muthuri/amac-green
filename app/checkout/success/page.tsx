@@ -8,6 +8,7 @@ import { CheckCircle, Package, CreditCard, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
 import { supabase } from "@/lib/supabase"
 import { markOrderAsPaid } from "@/app/actions/orders"
 import { showFinancingSimulationUi } from "@/lib/feature-flags"
@@ -300,10 +301,10 @@ function CheckoutSuccessContent() {
       case "paid":
         return "text-green-600"
       case "pending":
-        return "text-yellow-600"
+        return "text-gray-700"
       case "cancelled":
       case "failed":
-        return "text-red-600"
+        return "text-gray-700"
       default:
         return "text-gray-600"
     }
@@ -315,10 +316,10 @@ function CheckoutSuccessContent() {
       case "paid":
         return <CheckCircle className="h-5 w-5 text-green-600" />
       case "pending":
-        return <Clock className="h-5 w-5 text-yellow-600" />
+        return <Clock className="h-5 w-5 text-gray-700" />
       case "cancelled":
       case "failed":
-        return <CheckCircle className="h-5 w-5 text-red-600" />
+        return <CheckCircle className="h-5 w-5 text-gray-700" />
       default:
         return <Package className="h-5 w-5 text-gray-600" />
     }
@@ -326,23 +327,24 @@ function CheckoutSuccessContent() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="flex flex-col min-h-screen bg-white">
         <SiteHeader />
-        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="max-w-2xl mx-auto text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
             <p>Loading order details...</p>
           </div>
         </main>
+        <SiteFooter />
       </div>
     )
   }
 
   if (!order) {
     return (
-      <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="flex flex-col min-h-screen bg-white">
         <SiteHeader />
-        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="max-w-2xl mx-auto text-center">
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter mb-4">Order Not Found</h1>
             <p className="text-gray-600 mb-6">The order you're looking for could not be found.</p>
@@ -351,22 +353,27 @@ function CheckoutSuccessContent() {
             </Button>
           </div>
         </main>
+        <SiteFooter />
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="flex flex-col min-h-screen bg-white">
       <SiteHeader />
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-4xl">
+      <main className="flex-1">
+        <section className="border-b border-gray-100 bg-gradient-to-b from-emerald-50/30 via-white to-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+            <div className="max-w-4xl mx-auto">
           {/* Success Header */}
-          <div className="text-center mb-8">
-            <CheckCircle className="h-16 w-16 text-emerald-600 mx-auto mb-4" />
+          <div className="text-center mb-8 sm:mb-10">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50">
+              <CheckCircle className="h-10 w-10 text-emerald-600" />
+            </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-gray-900 mb-2">
               {order.financing_status === "pending" ? "Financing application received" : "Order Confirmed!"}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 max-w-2xl mx-auto">
               {order.financing_status === "pending"
                 ? "Your KCB financing request is being processed. Complete payment after approval."
                 : "Thank you for your order. We've received your payment and will process your order shortly."}
@@ -374,9 +381,9 @@ function CheckoutSuccessContent() {
           </div>
 
           {order.financing_status === "pending" && showFinancingSimulationUi() && (
-            <Card className="mb-6 border-amber-200 bg-amber-50">
+            <Card className="mb-6 border-gray-200 bg-gray-50 shadow-sm">
               <CardHeader>
-                <CardTitle className="text-amber-900 text-base">Simulate KCB financing (dev)</CardTitle>
+                <CardTitle className="text-gray-700 text-base">Simulate KCB financing (dev)</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2">
                 <Button size="sm" disabled={updating} onClick={() => simulateFinancing("approved")}>
@@ -390,7 +397,7 @@ function CheckoutSuccessContent() {
           )}
 
           {order.financing_status === "approved" && order.payment_status === "pending" && (
-            <Card className="mb-6 border-emerald-200 bg-emerald-50">
+            <Card className="mb-6 border-emerald-200 bg-emerald-50 shadow-sm">
               <CardContent className="py-4 text-sm text-emerald-900">
                 Financing approved{order.financing_reference ? ` (${order.financing_reference})` : ""}. Complete payment
                 from your dashboard or use the test tools below.
@@ -400,7 +407,7 @@ function CheckoutSuccessContent() {
 
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Order Details */}
-            <Card>
+            <Card className="border-gray-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Package className="h-5 w-5" />
@@ -431,7 +438,7 @@ function CheckoutSuccessContent() {
             </Card>
 
             {/* Payment Details */}
-            <Card>
+            <Card className="border-gray-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5" />
@@ -465,11 +472,11 @@ function CheckoutSuccessContent() {
                 
                 {/* Manual Payment Completion - For Testing */}
                 {order.payment_status !== 'paid' && (
-                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="text-sm font-semibold text-blue-800 mb-2">
+                  <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <h4 className="text-sm font-semibold text-emerald-800 mb-2">
                       🔧 Manual Payment Completion
                     </h4>
-                    <p className="text-xs text-blue-700 mb-3">
+                    <p className="text-xs text-emerald-700 mb-3">
                       Mark this order as paid to trigger delivery workflow (for testing purposes):
                     </p>
                     <div className="flex gap-2">
@@ -477,7 +484,7 @@ function CheckoutSuccessContent() {
                         size="sm" 
                         onClick={handleManualPayment}
                         disabled={updating}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
                       >
                         {updating ? "Processing..." : "✅ Mark as Paid"}
                       </Button>
@@ -487,7 +494,7 @@ function CheckoutSuccessContent() {
                           onClick={() => simulateCallback('success')}
                           disabled={updating}
                           variant="outline"
-                          className="border-green-300 text-green-600 hover:bg-green-50"
+                        className="border-emerald-300 text-emerald-700 hover:bg-emerald-100"
                         >
                           🧪 Simulate Success
                         </Button>
@@ -498,11 +505,11 @@ function CheckoutSuccessContent() {
 
                 {/* Sandbox Testing Buttons */}
                 {order.payment_status === 'pending' && process.env.NODE_ENV === 'development' && (
-                  <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <h4 className="text-sm font-semibold text-yellow-800 mb-2">
+                  <div className="mt-6 p-4 bg-gray-100 border border-gray-200 rounded-lg">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
                       🧪 Sandbox Testing (Development Only)
                     </h4>
-                    <p className="text-xs text-yellow-700 mb-3">
+                    <p className="text-xs text-gray-700 mb-3">
                       Since this is a sandbox environment, simulate the payment result:
                     </p>
                     <div className="flex gap-2">
@@ -517,7 +524,7 @@ function CheckoutSuccessContent() {
                         size="sm" 
                         variant="outline"
                         onClick={() => simulatePayment('failed')}
-                        className="border-red-300 text-red-600 hover:bg-red-50"
+                        className="border-gray-200 text-gray-700 hover:bg-gray-900"
                       >
                         ❌ Simulate Failure
                       </Button>
@@ -530,14 +537,14 @@ function CheckoutSuccessContent() {
 
           {/* Order Items */}
           {order.order_items && order.order_items.length > 0 && (
-            <Card className="mt-6">
+            <Card className="mt-6 border-gray-200 shadow-sm">
               <CardHeader>
                 <CardTitle>Order Items</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {order.order_items.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                    <div key={item.id} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg bg-white">
                       {item.product_image_url && (
                         <Image
                           src={item.product_image_url}
@@ -564,15 +571,18 @@ function CheckoutSuccessContent() {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mt-8 justify-center">
-            <Button asChild className="bg-green-600 hover:bg-green-700">
+            <Button asChild className="bg-emerald-600 hover:bg-emerald-500 rounded-full px-8">
               <Link href="/products">Continue Shopping</Link>
             </Button>
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="rounded-full px-8 border-gray-300 hover:bg-gray-50">
               <a href="/dashboard">View My Orders</a>
             </Button>
           </div>
         </div>
+          </div>
+        </section>
       </main>
+      <SiteFooter />
     </div>
   )
 }

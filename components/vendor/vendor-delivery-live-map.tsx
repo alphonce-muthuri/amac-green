@@ -382,7 +382,7 @@ export function VendorDeliveryLiveMap() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center">
-                <Package className="h-8 w-8 text-purple-600" />
+                <Package className="h-8 w-8 text-gray-700" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Active Deliveries</p>
                   <p className="text-2xl font-bold text-gray-900">{locations.length}</p>
@@ -394,7 +394,7 @@ export function VendorDeliveryLiveMap() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center">
-                <Clock className="h-8 w-8 text-amber-600" />
+                <Clock className="h-8 w-8 text-gray-700" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Pending</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.pendingDeliveries}</p>
@@ -406,7 +406,7 @@ export function VendorDeliveryLiveMap() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center">
-                <Truck className="h-8 w-8 text-blue-600" />
+                <Truck className="h-8 w-8 text-emerald-700" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">In Transit</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.inTransitDeliveries}</p>
@@ -436,7 +436,7 @@ export function VendorDeliveryLiveMap() {
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5" />
               Your Products Live Delivery Tracking
-              <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+              <Badge variant="secondary" className="bg-gray-100 text-gray-700">
                 {locations.length} active deliveries
               </Badge>
             </CardTitle>
@@ -458,7 +458,7 @@ export function VendorDeliveryLiveMap() {
             {(loading || mapInitializing) && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-50 bg-opacity-90 rounded-lg">
                 <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-200 mx-auto mb-4"></div>
                   <p className="text-gray-600">
                     {mapInitializing ? "Initializing map..." : "Loading your delivery locations..."}
                   </p>
@@ -486,11 +486,11 @@ export function VendorDeliveryLiveMap() {
               <h4 className="text-sm font-semibold text-gray-700 mb-2">Map Legend:</h4>
               <div className="flex flex-wrap gap-4 text-xs text-gray-600">
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-purple-600 rounded-full flex items-center justify-center text-white text-xs">📦</div>
+                  <div className="w-4 h-4 bg-gray-100 rounded-full flex items-center justify-center text-white text-xs">📦</div>
                   <span>Delivery driver carrying your products</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
+                  <div className="w-4 h-4 bg-gray-900 rounded-full flex items-center justify-center text-white text-xs font-bold">3</div>
                   <span>Number of your products being delivered</span>
                 </div>
               </div>

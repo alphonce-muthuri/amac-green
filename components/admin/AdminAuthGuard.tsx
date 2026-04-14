@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { checkAdminAccess } from "@/app/actions/admin";
+import { CenteredPanelSkeleton } from "@/components/loaders/page-skeletons";
 
 export default function AdminAuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function AdminAuthGuard({ children }: { children: React.ReactNode
   }, [router]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return <CenteredPanelSkeleton />;
   }
 
   return <>{children}</>;

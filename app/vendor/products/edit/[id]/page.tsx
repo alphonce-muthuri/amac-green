@@ -97,9 +97,9 @@ export default function EditProductPage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
           <div className="w-16 h-16 relative mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <Edit className="absolute inset-0 m-auto h-8 w-8 text-indigo-600" />
+            <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+            <Edit className="absolute inset-0 m-auto h-8 w-8 text-emerald-600" />
           </div>
           <p className="text-lg font-bold text-gray-900">Loading Product</p>
           <p className="text-sm text-gray-600 mt-1">Please wait...</p>
@@ -113,14 +113,14 @@ export default function EditProductPage() {
       <div className="min-h-screen bg-slate-50">
         <div className="container mx-auto px-4 py-6">
           <div className="max-w-4xl mx-auto">
-            <Card className="border border-red-300">
+            <Card className="border border-gray-200">
               <CardContent className="text-center py-16">
-                <div className="w-24 h-24 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Package className="h-12 w-12 text-red-400" />
+                <div className="w-24 h-24 bg-gray-100 border border-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Package className="h-12 w-12 text-gray-400" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">Product Not Found</h3>
                 <p className="text-gray-600 mb-6">The product you're looking for doesn't exist</p>
-                <Button asChild className="bg-purple-600 hover:bg-purple-700">
+                <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
                   <Link href="/vendor/products">Back to Products</Link>
                 </Button>
               </CardContent>
@@ -137,15 +137,15 @@ export default function EditProductPage() {
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Hero Header */}
           <div className="relative overflow-hidden">
-            <Card className="border border-indigo-300 shadow-md">
-              <div className="h-2 bg-indigo-500/30" />
+            <Card className="border border-gray-200 shadow-md">
+              <div className="h-1 bg-emerald-600" />
               <CardContent className="relative p-6 sm:p-8">
-                <Link href="/vendor/products" className="inline-flex items-center text-indigo-600 hover:text-indigo-700 mb-4 font-semibold">
+                <Link href="/vendor/products" className="inline-flex items-center text-emerald-600 hover:text-emerald-700 mb-4 font-semibold">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to Products
                 </Link>
                 <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 bg-indigo-700 border border-indigo-800 rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-16 h-16 bg-emerald-600 rounded-xl flex items-center justify-center shadow-md">
                     <Edit className="h-8 w-8 text-white" />
                   </div>
                   <div>
@@ -187,11 +187,11 @@ export default function EditProductPage() {
 
           <form action={handleSubmit} className="space-y-6">
             {/* Basic Information */}
-            <Card className="border border-blue-200 shadow-sm">
-              <div className="h-2 bg-blue-500/30" />
-            <CardHeader className="bg-white border-b border-blue-200">
+            <Card className="border border-gray-200 shadow-sm">
+              <div className="h-1 bg-emerald-600" />
+            <CardHeader className="bg-white border-b border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-700 border border-blue-800 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
                     <Package className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -268,15 +268,15 @@ export default function EditProductPage() {
             </Card>
 
             {/* Product Images */}
-            <Card className="border border-purple-200 shadow-sm">
-              <div className="h-2 bg-purple-500/30" />
-            <CardHeader className="bg-white border-b border-purple-200">
+            <Card className="border border-gray-200 shadow-sm">
+              <div className="h-1 bg-gray-300" />
+            <CardHeader className="bg-white border-b border-gray-100">
                 <CardTitle className="text-xl">Product Images</CardTitle>
                 <CardDescription>Update your product images</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
                 <ImageUpload onImagesChange={setProductImages} maxImages={5} existingImages={productImages} />
-                <p className="text-sm text-gray-600 mt-3 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <p className="text-sm text-gray-600 mt-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
                   💡 The first image will be used as the main product image
                 </p>
               </CardContent>
@@ -334,7 +334,7 @@ export default function EditProductPage() {
               <Button 
                 type="submit" 
                 disabled={isSubmitting} 
-                className="flex-1 h-14 bg-indigo-600 hover:bg-indigo-700 hover:bg-indigo-700 text-base font-bold shadow-sm"
+                className="flex-1 h-14 bg-emerald-600 hover:bg-emerald-700 text-base font-bold shadow-sm"
               >
                 {isSubmitting ? (
                   <>

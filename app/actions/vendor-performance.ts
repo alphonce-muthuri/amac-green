@@ -1,6 +1,7 @@
 "use server"
 
 import { supabaseAdmin } from "@/lib/supabase-server"
+import { requireAdmin } from "@/lib/require-admin"
 
 export interface VendorPerformance {
   vendorId: string
@@ -28,6 +29,9 @@ export interface VendorListItem {
 }
 
 export async function getAllVendors(): Promise<{ success: boolean; data?: VendorListItem[]; error?: string }> {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const { data, error } = await supabaseAdmin
       .from('vendor_applications')
@@ -56,6 +60,9 @@ export async function getAllVendors(): Promise<{ success: boolean; data?: Vendor
 }
 
 export async function getVendorPerformance(vendorId: string): Promise<{ success: boolean; data?: VendorPerformance; error?: string }> {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     console.log('[VENDOR_PERFORMANCE] Fetching performance for vendor:', vendorId)
 
@@ -219,6 +226,9 @@ export async function getVendorPerformance(vendorId: string): Promise<{ success:
 }
 
 export async function getAllVendorsPerformance(): Promise<{ success: boolean; data?: VendorPerformance[]; error?: string }> {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const vendorsResult = await getAllVendors()
     

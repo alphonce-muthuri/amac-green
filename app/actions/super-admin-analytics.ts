@@ -1,6 +1,7 @@
 "use server"
 
 import { supabaseAdmin } from "@/lib/supabase-server"
+import { requireAdmin } from "@/lib/require-admin"
 
 export interface PlatformAnalytics {
   totalRevenue: number
@@ -34,6 +35,9 @@ export interface AnalyticsFilters {
 }
 
 export async function getPlatformAnalytics(filters?: AnalyticsFilters): Promise<{ success: boolean; data?: PlatformAnalytics; error?: string }> {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     console.log('[SUPER_ADMIN] Fetching platform analytics with filters:', filters)
 

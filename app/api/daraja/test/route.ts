@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { darajaAPI, getDarajaCallbackUrl } from "@/lib/daraja"
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
   try {
     console.log('[DARAJA_TEST] Testing Daraja API connection...')
     
@@ -40,6 +43,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
   try {
     const body = await request.json()
     const { phoneNumber, amount = 1 } = body

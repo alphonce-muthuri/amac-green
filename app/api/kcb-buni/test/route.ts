@@ -2,6 +2,9 @@ import { NextResponse } from "next/server"
 import { getKCBBuniClient } from "@/lib/kcb-buni"
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
   try {
     console.log('[KCB_BUNI_TEST] Testing KCB Buni connection...')
     
@@ -65,6 +68,9 @@ export async function GET() {
 }
 
 export async function POST() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
   try {
     console.log('[KCB_BUNI_TEST] Testing STK Push with multiple phone numbers...')
     

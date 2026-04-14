@@ -3,6 +3,10 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase-server'
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
+
   const cookieStore = cookies()
   const supabase = createServerClient(cookieStore)
 

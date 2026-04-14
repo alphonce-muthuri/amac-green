@@ -88,7 +88,7 @@ export function ReviewsList({ productId, refreshTrigger }: ReviewsListProps) {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-red-600">Error loading reviews: {error}</p>
+            <p className="text-gray-700">Error loading reviews: {error}</p>
             <Button onClick={loadReviews} variant="outline" className="mt-2">
               Try Again
             </Button>
@@ -125,7 +125,7 @@ export function ReviewsList({ productId, refreshTrigger }: ReviewsListProps) {
                       <Star
                         key={star}
                         className={`h-4 w-4 ${
-                          star <= Math.round(averageRating) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                          star <= Math.round(averageRating) ? "fill-emerald-500 text-gray-700" : "text-gray-300"
                         }`}
                       />
                     ))}
@@ -140,7 +140,7 @@ export function ReviewsList({ productId, refreshTrigger }: ReviewsListProps) {
                         <span className="text-sm text-gray-600 w-4">{rating}</span>
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-yellow-400 h-2 rounded-full"
+                            className="bg-gray-100 h-2 rounded-full"
                             style={{
                               width: `${reviews.length > 0 ? (ratingDistribution[rating as keyof typeof ratingDistribution] / reviews.length) * 100 : 0}%`
                             }}
@@ -177,7 +177,7 @@ export function ReviewsList({ productId, refreshTrigger }: ReviewsListProps) {
                           <Star
                             key={star}
                             className={`h-4 w-4 ${
-                              star <= review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+                              star <= review.rating ? "fill-emerald-500 text-gray-700" : "text-gray-300"
                             }`}
                           />
                         ))}

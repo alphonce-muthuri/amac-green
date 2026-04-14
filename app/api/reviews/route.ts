@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Product ID is required" }, { status: 400 })
   }
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
@@ -33,26 +33,17 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
-    // Get current user session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    let user = session?.user
-    const body = await request.json()
-    const { productId, rating, title, comment, userId } = body
-
-    // Fallback: if session is not available, use userId from request body
-    if (!user && userId) {
-      console.log("🎭 Using fallback userId from request body:", userId)
-      user = { id: userId } as any
-    }
-
-    if (!user) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 })
     }
+
+    const body = await request.json()
+    const { productId, rating, title, comment } = body
 
     if (!productId || !rating) {
       return NextResponse.json({ error: "Product ID and rating are required" }, { status: 400 })

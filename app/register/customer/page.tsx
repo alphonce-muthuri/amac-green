@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { FieldErrors, useForm } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,50 +15,128 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { registerCustomer } from "@/app/actions/auth"
 import { SiteHeader } from "@/components/site-header"
+import { toast } from "@/hooks/use-toast"
+import { getFriendlyRegistrationError } from "@/lib/registration-errors"
+
+const draftStorageKey = "customer-registration-draft"
+
+const customerSchema = z
+  .object({
+    firstName: z.string().min(2, "First name is required"),
+    lastName: z.string().min(2, "Last name is required"),
+    email: z.string().email("Enter a valid email address"),
+    phone: z.string().min(7, "Phone number is required"),
+    password: z.string().min(6, "Password must be at least 6 characters long"),
+    confirmPassword: z.string().min(6, "Confirm your password"),
+    customerType: z.string().min(1, "Customer type is required"),
+    organizationName: z.string().optional(),
+    address: z.string().min(2, "Address is required"),
+    city: z.string().min(2, "City is required"),
+    country: z.string().min(2, "Country is required"),
+    acceptMarketing: z.boolean(),
+    acceptTerms: z.literal(true, { errorMap: () => ({ message: "Please accept the terms and conditions" }) }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+
+type CustomerFormValues = z.infer<typeof customerSchema>
 
 export default function CustomerRegistration() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
-  const [formData, setFormData] = useState({
-    customerType: "",
-    acceptTerms: false,
-    acceptMarketing: false,
-    password: "",
-    confirmPassword: "",
-  })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const router = useRouter()
 
-  const handleSubmit = async (formData: FormData) => {
-    if (!formData.get("acceptTerms")) {
-      setMessage({ type: "error", text: "Please accept the terms and conditions" })
-      return
-    }
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      customerType: "",
+      organizationName: "",
+      address: "",
+      city: "",
+      country: "",
+      acceptMarketing: false,
+      acceptTerms: false,
+    },
+  })
 
-    if (formData.get("password") !== formData.get("confirmPassword")) {
-      setMessage({ type: "error", text: "Passwords do not match" })
-      return
-    }
+  const customerType = watch("customerType")
+  const acceptMarketing = watch("acceptMarketing")
+  const acceptTerms = watch("acceptTerms")
+  const password = watch("password")
+  const confirmPassword = watch("confirmPassword")
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword
 
-    if ((formData.get("password") as string).length < 6) {
-      setMessage({ type: "error", text: "Password must be at least 6 characters long" })
-      return
+  useEffect(() => {
+    const raw = sessionStorage.getItem(draftStorageKey)
+    if (!raw) return
+    try {
+      const parsed = JSON.parse(raw) as Partial<CustomerFormValues>
+      reset({ ...parsed })
+    } catch {
+      sessionStorage.removeItem(draftStorageKey)
     }
+  }, [reset])
+
+  useEffect(() => {
+    const subscription = watch((values) => {
+      sessionStorage.setItem(draftStorageKey, JSON.stringify(values))
+    })
+    return () => subscription.unsubscribe()
+  }, [watch])
+
+  const onSubmit = async (values: CustomerFormValues) => {
+    const submissionData = new FormData()
+    Object.entries(values).forEach(([key, value]) => {
+      if (key === "acceptTerms" || key === "acceptMarketing") {
+        if (value) submissionData.append(key, "on")
+        return
+      }
+      submissionData.append(key, String(value ?? ""))
+    })
 
     setIsSubmitting(true)
-    setMessage(null)
 
-    const result = await registerCustomer(formData)
+    const result = await registerCustomer(submissionData)
 
     if (result.success) {
-      setMessage({ type: "success", text: result.message })
+      toast({ title: "Success", description: result.message })
+      sessionStorage.removeItem(draftStorageKey)
       // Don't auto-redirect, let user read the verification message
     } else {
-      setMessage({ type: "error", text: result.error })
+      toast({
+        title: "Couldn't create account",
+        description: getFriendlyRegistrationError(result.error),
+        variant: "destructive",
+      })
     }
 
     setIsSubmitting(false)
+  }
+
+  const onInvalid = (formErrors: FieldErrors<CustomerFormValues>) => {
+    const firstError = Object.values(formErrors)[0]
+    const message =
+      firstError && typeof firstError === "object" && "message" in firstError
+        ? String(firstError.message)
+        : "Please fix the highlighted fields and try again."
+    toast({ title: "Please check your details", description: message, variant: "destructive" })
   }
 
   return (
@@ -79,38 +159,30 @@ export default function CustomerRegistration() {
               <CardDescription>Please provide your details to create your account</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              {message && (
-                <div
-                  className={`mb-4 p-4 rounded-xl border ${
-                    message.type === "success"
-                      ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
-                      : "bg-red-50 text-red-800 border-red-200/80"
-                  }`}
-                >
-                  {message.text}
-                </div>
-              )}
-
-              <form action={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name *</Label>
-                    <Input id="firstName" name="firstName" required />
+                    <Input id="firstName" {...register("firstName")} />
+                    {errors.firstName && <p className="text-xs text-red-600">{errors.firstName.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Last Name *</Label>
-                    <Input id="lastName" name="lastName" required />
+                    <Input id="lastName" {...register("lastName")} />
+                    {errors.lastName && <p className="text-xs text-red-600">{errors.lastName.message}</p>}
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address *</Label>
-                    <Input id="email" name="email" type="email" required />
+                    <Input id="email" type="email" {...register("email")} />
+                    {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
-                    <Input id="phone" name="phone" type="tel" required />
+                    <Input id="phone" type="tel" {...register("phone")} />
+                    {errors.phone && <p className="text-xs text-red-600">{errors.phone.message}</p>}
                   </div>
                 </div>
 
@@ -120,11 +192,8 @@ export default function CustomerRegistration() {
                     <div className="relative">
                       <Input
                         id="password"
-                        name="password"
                         type={showPassword ? "text" : "password"}
-                        required
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        {...register("password")}
                       />
                       <Button
                         type="button"
@@ -140,17 +209,15 @@ export default function CustomerRegistration() {
                         )}
                       </Button>
                     </div>
+                    {errors.password && <p className="text-xs text-red-600">{errors.password.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm Password *</Label>
                     <div className="relative">
                       <Input
                         id="confirmPassword"
-                        name="confirmPassword"
                         type={showConfirmPassword ? "text" : "password"}
-                        required
-                        value={formData.confirmPassword}
-                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        {...register("confirmPassword")}
                       />
                       <Button
                         type="button"
@@ -166,15 +233,20 @@ export default function CustomerRegistration() {
                         )}
                       </Button>
                     </div>
+                    {confirmPassword.length > 0 && !errors.confirmPassword && (
+                      <p className={`text-xs ${passwordsMatch ? "text-emerald-600" : "text-red-600"}`}>
+                        {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+                      </p>
+                    )}
+                    {errors.confirmPassword && <p className="text-xs text-red-600">{errors.confirmPassword.message}</p>}
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="customerType">Customer Type *</Label>
                   <Select
-                    name="customerType"
-                    onValueChange={(value) => setFormData({ ...formData, customerType: value })}
-                    required
+                    value={customerType}
+                    onValueChange={(value) => setValue("customerType", value, { shouldDirty: true, shouldValidate: true })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select customer type" />
@@ -189,31 +261,34 @@ export default function CustomerRegistration() {
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
-                  <input type="hidden" name="customerType" value={formData.customerType} />
+                  {errors.customerType && <p className="text-xs text-red-600">{errors.customerType.message}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="organizationName">Organization Name (Optional)</Label>
                   <Input 
                     id="organizationName" 
-                    name="organizationName" 
+                    {...register("organizationName")}
                     placeholder="Enter organization name if applicable"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="address">Address *</Label>
-                  <Input id="address" name="address" required />
+                  <Input id="address" {...register("address")} />
+                  {errors.address && <p className="text-xs text-red-600">{errors.address.message}</p>}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="city">City *</Label>
-                    <Input id="city" name="city" required />
+                    <Input id="city" {...register("city")} />
+                    {errors.city && <p className="text-xs text-red-600">{errors.city.message}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="country">Country *</Label>
-                    <Input id="country" name="country" required />
+                    <Input id="country" {...register("country")} />
+                    {errors.country && <p className="text-xs text-red-600">{errors.country.message}</p>}
                   </div>
                 </div>
 
@@ -221,9 +296,10 @@ export default function CustomerRegistration() {
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="acceptMarketing"
-                      name="acceptMarketing"
-                      checked={formData.acceptMarketing}
-                      onCheckedChange={(checked) => setFormData({ ...formData, acceptMarketing: checked as boolean })}
+                      checked={acceptMarketing}
+                      onCheckedChange={(checked) =>
+                        setValue("acceptMarketing", checked === true, { shouldDirty: true, shouldValidate: true })
+                      }
                     />
                     <Label htmlFor="acceptMarketing" className="text-sm">
                       I would like to receive marketing emails about new products and offers
@@ -233,9 +309,10 @@ export default function CustomerRegistration() {
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="acceptTerms"
-                      name="acceptTerms"
-                      checked={formData.acceptTerms}
-                      onCheckedChange={(checked) => setFormData({ ...formData, acceptTerms: checked as boolean })}
+                      checked={acceptTerms}
+                      onCheckedChange={(checked) =>
+                        setValue("acceptTerms", checked === true, { shouldDirty: true, shouldValidate: true })
+                      }
                     />
                     <Label htmlFor="acceptTerms" className="text-sm">
                       I agree to the{" "}
@@ -249,27 +326,16 @@ export default function CustomerRegistration() {
                     </Label>
                   </div>
                 </div>
+                {errors.acceptTerms && <p className="text-xs text-red-600">{errors.acceptTerms.message}</p>}
 
                 <Button
                   type="submit"
                   className="w-full bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all"
-                  disabled={!formData.acceptTerms || isSubmitting}
+                  disabled={isSubmitting}
                 >
                   {isSubmitting ? "Creating Account..." : "Create Account"}
                 </Button>
 
-                {message?.type === "success" && (
-                  <div className="mt-4 text-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full rounded-full border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-                      onClick={() => router.push("/login")}
-                    >
-                      Go to Login Page
-                    </Button>
-                  </div>
-                )}
               </form>
             </CardContent>
           </Card>

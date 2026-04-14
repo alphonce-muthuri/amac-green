@@ -3,10 +3,11 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
+import { requireAdmin } from "@/lib/require-admin"
 
 // Create Supabase client for server actions
-function createClient() {
-  const cookieStore = cookies()
+async function createClient() {
+  const cookieStore = await cookies()
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -69,7 +70,7 @@ export async function testAuthentication() {
       url: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 20) + "...",
     })
     
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const allCookies = (() => {
       const anyCookieStore = cookieStore as any
       if (typeof anyCookieStore.getAll === "function") return anyCookieStore.getAll()
@@ -88,7 +89,7 @@ export async function testAuthentication() {
     })()
     console.log("[AUTH_TEST] Available cookies:", allCookies.map(c => ({ name: c.name, hasValue: !!c.value })))
     
-    const supabase = createClient()
+    const supabase = await createClient()
     console.log("[AUTH_TEST] Created client, getting user...")
     
     const {
@@ -127,25 +128,15 @@ export async function testAuthentication() {
 }
 
 // Update delivery person's location
-export async function updateDeliveryLocation(locationData: DeliveryLocationUpdate, userId?: string) {
+export async function updateDeliveryLocation(locationData: DeliveryLocationUpdate) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
-    let user_id = userId
-    
-    // If no userId provided, try to get from session
-    if (!user_id) {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser()
-      
-      if (userError || !user) {
-        throw new Error("User not authenticated")
-      }
-      
-      user_id = user.id
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      throw new Error("User not authenticated")
     }
+    const user_id = user.id
 
     // Call the database function to update location
     const { data, error } = await supabase.rpc("update_delivery_location", {
@@ -173,10 +164,13 @@ export async function updateDeliveryLocation(locationData: DeliveryLocationUpdat
   }
 }
 
-// Get all active delivery locations (for admin)
+// Get all active delivery locations (admin only)
 export async function getActiveDeliveryLocations() {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
 
@@ -243,23 +237,15 @@ export async function getActiveDeliveryLocations() {
 }
 
 // Update availability status
-export async function updateDeliveryAvailability(isAvailable: boolean, userId?: string) {
+export async function updateDeliveryAvailability(isAvailable: boolean) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
-    let user_id = userId
-    
-    // If no userId provided, try to get from session
-    if (!user_id) {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser()
-      if (userError || !user) {
-        throw new Error("User not authenticated")
-      }
-      user_id = user.id
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      throw new Error("User not authenticated")
     }
+    const user_id = user.id
 
     // Update delivery_locations table
     const { error: locationError } = await supabase
@@ -301,7 +287,7 @@ export async function updateDeliveryAvailability(isAvailable: boolean, userId?: 
 // Get deliveries assigned to current delivery person
 export async function getMyDeliveries() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const {
       data: { user },
@@ -346,24 +332,16 @@ export async function getMyDeliveries() {
 }
 
 // Update delivery status
-export async function updateDeliveryStatus(deliveryId: string, status: string, notes?: string, userId?: string) {
+export async function updateDeliveryStatus(deliveryId: string, status: string, notes?: string) {
   try {
-    console.log("[STATUS_DEBUG] Updating delivery status:", deliveryId, "to:", status, "user:", userId)
-    const supabase = createClient()
+    console.log("[STATUS_DEBUG] Updating delivery status:", deliveryId, "to:", status)
+    const supabase = await createClient()
 
-    let user_id = userId
-    
-    // If no userId provided, try to get from session
-    if (!user_id) {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser()
-      if (userError || !user) {
-        throw new Error("User not authenticated")
-      }
-      user_id = user.id
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      throw new Error("User not authenticated")
     }
+    const user_id = user.id
 
     const updateData: any = {
       delivery_status: status,
@@ -431,10 +409,13 @@ export async function updateDeliveryStatus(deliveryId: string, status: string, n
   }
 }
 
-// Get all deliveries (for admin)
+// Get all deliveries (admin only)
 export async function getAllDeliveries() {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data, error } = await supabase
       .from("deliveries")
@@ -470,10 +451,13 @@ export async function getAllDeliveries() {
   }
 }
 
-// Manually assign delivery to a delivery person (admin function)
+// Manually assign delivery to a delivery person (admin only)
 export async function assignDelivery(deliveryId: string, deliveryPersonId: string) {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { error } = await supabase
       .from("deliveries")
@@ -512,35 +496,17 @@ export async function assignDelivery(deliveryId: string, deliveryPersonId: strin
 // Delivery management functions
 
 // Get deliveries assigned to current delivery person
-export async function getDeliveryPersonDeliveries(userId?: string) {
+export async function getDeliveryPersonDeliveries() {
   try {
-    console.log("[DELIVERY_DEBUG] Starting getDeliveryPersonDeliveries with userId:", userId)
-    const supabase = createClient()
+    const supabase = await createClient()
 
-    let user_id = userId
-    
-    // If no userId provided, try to get from session
-    if (!user_id) {
-      console.log("[DELIVERY_DEBUG] No userId provided, trying to get from session")
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser()
-      
-      console.log("[DELIVERY_DEBUG] Auth result:", { 
-        user: user ? { id: user.id, email: user.email } : null, 
-        error: userError 
-      })
-      
-      if (userError || !user) {
-        console.error("[DELIVERY_DEBUG] Authentication failed:", userError)
-        throw new Error("User not authenticated")
-      }
-      
-      user_id = user.id
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      console.error("[DELIVERY_DEBUG] Authentication failed:", userError)
+      throw new Error("User not authenticated")
     }
-    
-    console.log("[DELIVERY_DEBUG] Using user_id:", user_id)
+    const user_id = user.id
+    console.log("[DELIVERY_DEBUG] Fetching deliveries for user_id:", user_id)
 
     // Get deliveries assigned to this delivery person (minimal query to avoid RLS issues)
     console.log("[DELIVERY_DEBUG] Querying deliveries for user:", user_id)
@@ -596,30 +562,18 @@ export async function getDeliveryPersonDeliveries(userId?: string) {
 }
 
 // Accept delivery
-export async function acceptDelivery(deliveryId: string, userId?: string) {
+export async function acceptDelivery(deliveryId: string) {
   try {
-    console.log("[ACCEPT_DEBUG] Starting acceptDelivery for delivery:", deliveryId, "user:", userId)
-    const supabase = createClient()
+    console.log("[ACCEPT_DEBUG] Starting acceptDelivery for delivery:", deliveryId)
+    const supabase = await createClient()
 
-    let user_id = userId
-    
-    // If no userId provided, try to get from session
-    if (!user_id) {
-      console.log("[ACCEPT_DEBUG] No userId provided, trying to get from session")
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser()
-      
-      if (userError || !user) {
-        console.error("[ACCEPT_DEBUG] Authentication failed:", userError)
-        throw new Error("User not authenticated")
-      }
-      
-      user_id = user.id
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      console.error("[ACCEPT_DEBUG] Authentication failed:", userError)
+      throw new Error("User not authenticated")
     }
-
-    console.log("[ACCEPT_DEBUG] Using user_id:", user_id)
+    const user_id = user.id
+    console.log("[ACCEPT_DEBUG] Authenticated user_id:", user_id)
 
     // Update delivery status to picked_up and set pickup time
     console.log("[ACCEPT_DEBUG] Updating delivery status to picked_up")
@@ -660,35 +614,17 @@ export async function acceptDelivery(deliveryId: string, userId?: string) {
 }
 
 // Get delivery statistics for delivery person dashboard
-export async function getDeliveryStats(userId?: string) {
+export async function getDeliveryStats() {
   try {
-    console.log("[STATS_DEBUG] Starting getDeliveryStats with userId:", userId)
-    const supabase = createClient()
+    const supabase = await createClient()
 
-    let user_id = userId
-    
-    // If no userId provided, try to get from session
-    if (!user_id) {
-      console.log("[STATS_DEBUG] No userId provided, trying to get from session")
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser()
-      
-      console.log("[STATS_DEBUG] Auth result:", { 
-        user: user ? { id: user.id, email: user.email } : null, 
-        error: userError 
-      })
-      
-      if (userError || !user) {
-        console.error("[STATS_DEBUG] Authentication failed:", userError)
-        throw new Error("User not authenticated")
-      }
-      
-      user_id = user.id
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      console.error("[STATS_DEBUG] Authentication failed:", userError)
+      throw new Error("User not authenticated")
     }
-    
-    console.log("[STATS_DEBUG] Using user_id:", user_id)
+    const user_id = user.id
+    console.log("[STATS_DEBUG] Fetching stats for user_id:", user_id)
 
     // Get delivery statistics
     console.log("[STATS_DEBUG] Querying delivery stats for user:", user_id)

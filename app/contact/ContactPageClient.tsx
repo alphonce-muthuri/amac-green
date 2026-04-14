@@ -3,7 +3,6 @@
 import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -13,14 +12,14 @@ import {
   Mail,
   MapPin,
   Clock,
-  MessageSquare,
   CheckCircle,
   AlertCircle,
   Users,
   Zap,
-  HelpCircle,
+  MessageSquare,
   Send,
-  Sparkles,
+  HelpCircle,
+  ArrowRight,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -43,149 +42,168 @@ export function ContactPageClient() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-
     await new Promise((resolve) => setTimeout(resolve, 2000))
-
     setSubmitStatus("success")
     setIsSubmitting(false)
-
     setTimeout(() => {
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        subject: "",
-        category: "",
-        message: "",
-      })
+      setFormData({ name: "", email: "", phone: "", subject: "", category: "", message: "" })
       setSubmitStatus("idle")
     }, 3000)
   }
 
+  const channels = [
+    {
+      num: "01",
+      icon: Phone,
+      title: "Call Us",
+      primary: "+254 700 123 456",
+      secondary: "Mon–Fri: 8AM–6PM EAT",
+    },
+    {
+      num: "02",
+      icon: Mail,
+      title: "Email Us",
+      primary: "hello@amacgreen.energy",
+      secondary: "support@amacgreen.energy",
+    },
+    {
+      num: "03",
+      icon: MapPin,
+      title: "Visit Us",
+      primary: "Westlands, Nairobi",
+      secondary: "Kenya",
+    },
+  ]
+
+  const faqs = [
+    {
+      q: "How do I become a verified vendor?",
+      a: "Register as a vendor, submit required documents, and our team will review your application within 5–7 business days.",
+    },
+    {
+      q: "What payment methods do you accept?",
+      a: "We accept M-Pesa, bank transfers, and major credit cards for secure transactions.",
+    },
+    {
+      q: "Do you provide installation services?",
+      a: "Yes, we connect you with certified professionals for installation and maintenance.",
+    },
+  ]
+
+  const quickLinks = [
+    { label: "Become a Supplier", href: "/register/vendor", icon: Users },
+    { label: "Browse Products", href: "/products", icon: Zap },
+    { label: "Professional Services", href: "/register/professional", icon: MessageSquare },
+  ]
+
   return (
     <>
-      <div className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 py-20 sm:py-28">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-            backgroundSize: '40px 40px'
-          }}></div>
+      {/* Hero — dark monument */}
+      <div className="relative bg-[#0b1a10] overflow-hidden py-28 sm:py-36">
+        <div className="absolute top-0 inset-x-0 h-px bg-white/10" />
+
+        {/* Ghost watermark */}
+        <div className="absolute inset-0 flex items-center justify-end pointer-events-none select-none overflow-hidden">
+          <span className="text-[20rem] font-black text-white/[0.025] tracking-tighter leading-none pr-4 whitespace-nowrap">
+            Hi.
+          </span>
         </div>
-        
-        <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-medium">
-              <MessageSquare className="w-4 h-4" />
-              <span>Get in Touch</span>
+          <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-[0.35em] mb-6">
+            Get in Touch
+          </p>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-semibold text-white tracking-tight leading-[1.04] mb-6">
+            We&apos;re here<br />to help.
+          </h1>
+          <p className="text-[15px] sm:text-lg text-white/40 max-w-xl leading-relaxed">
+            Have questions about renewable energy solutions? Need support with your order? Our team is ready to assist every step of the way.
+          </p>
+        </div>
+
+        <div className="absolute bottom-0 inset-x-0 h-px bg-white/10" />
+      </div>
+
+      {/* Contact channels — editorial columns */}
+      <section className="relative bg-[#0b1a10] overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
+            {channels.map((ch) => (
+              <div key={ch.num} className="relative group px-6 py-10 sm:px-10 sm:py-14 overflow-hidden">
+                <span className="block text-[11px] font-medium text-white/20 tracking-[0.3em] mb-5">
+                  {ch.num}
+                </span>
+                <ch.icon className="w-4 h-4 text-emerald-400/50 mb-5" />
+                <div className="text-3xl sm:text-4xl font-bold text-white tracking-tighter leading-none mb-4 group-hover:text-emerald-300 transition-colors duration-500">
+                  {ch.title}
+                </div>
+                <p className="text-white/70 text-sm font-medium">{ch.primary}</p>
+                <p className="text-white/30 text-[13px] mt-1">{ch.secondary}</p>
+                <div className="absolute bottom-0 left-0 h-[2px] w-0 group-hover:w-full bg-emerald-500 transition-all duration-500 ease-out" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="absolute bottom-0 inset-x-0 h-px bg-white/10" />
+      </section>
+
+      {/* Form + Info — white editorial layout */}
+      <section className="bg-white">
+        {/* Section header */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-10">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-[0.35em] mb-4">
+                Message Us
+              </p>
+              <h2 className="text-4xl md:text-5xl font-semibold text-gray-900 tracking-tight leading-none">
+                Send a message.
+              </h2>
             </div>
-            
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
-              We're Here to Help
-            </h1>
-            
-            <p className="text-lg sm:text-xl text-emerald-50 max-w-3xl mx-auto leading-relaxed">
-              Have questions about renewable energy solutions? Need support with your order? Our team is ready to assist you every step of the way.
+            <p className="text-gray-400 text-[14px] max-w-xs sm:text-right leading-relaxed">
+              We&apos;ll get back to you within 24 hours.
             </p>
           </div>
         </div>
-      </div>
 
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <Card className="group hover:shadow-2xl transition-all duration-300 border-2 border-emerald-100 hover:border-emerald-300 overflow-hidden">
-              <div className="h-2 bg-gradient-to-r from-emerald-600 to-teal-600"></div>
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Phone className="h-8 w-8 text-emerald-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Call Us</h3>
-                <p className="text-gray-600 mb-4">Speak directly with our renewable energy experts</p>
-                <div className="space-y-2">
-                  <p className="font-semibold text-lg text-emerald-600">+254 700 123 456</p>
-                  <p className="text-sm text-gray-500">Mon-Fri: 8AM-6PM EAT</p>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="border-t border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-[1fr_360px] divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
 
-            <Card className="group hover:shadow-2xl transition-all duration-300 border-2 border-teal-100 hover:border-teal-300 overflow-hidden">
-              <div className="h-2 bg-gradient-to-r from-teal-600 to-cyan-600"></div>
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <Mail className="h-8 w-8 text-teal-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Email Us</h3>
-                <p className="text-gray-600 mb-4">We'll respond within 24 hours</p>
-                <div className="space-y-2">
-                  <p className="font-semibold text-teal-600">hello@amacgreen.energy</p>
-                  <p className="text-sm text-gray-500">support@amacgreen.energy</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-2xl transition-all duration-300 border-2 border-cyan-100 hover:border-cyan-300 overflow-hidden">
-              <div className="h-2 bg-gradient-to-r from-cyan-600 to-blue-600"></div>
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <MapPin className="h-8 w-8 text-cyan-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Visit Us</h3>
-                <p className="text-gray-600 mb-4">See our renewable energy showcase</p>
-                <div className="space-y-2">
-                  <p className="font-semibold text-cyan-600">Westlands, Nairobi</p>
-                  <p className="text-sm text-gray-500">Kenya</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12">
-            <Card className="border-2 border-gray-200 hover:shadow-2xl transition-shadow duration-300">
-              <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b-2 border-emerald-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-xl flex items-center justify-center">
-                    <Send className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl text-gray-900">Send us a Message</CardTitle>
-                    <p className="text-gray-600 text-sm mt-1">
-                      We'll get back to you within 24 hours
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-8">
+              {/* Form */}
+              <div className="py-14 lg:pr-14">
                 {submitStatus === "success" ? (
-                  <div className="text-center py-12">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle className="h-12 w-12 text-green-600" />
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="w-12 h-12 rounded-full border border-emerald-200 flex items-center justify-center mb-6">
+                      <CheckCircle className="h-5 w-5 text-emerald-600" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3">Message Sent!</h3>
-                    <p className="text-gray-600">Thank you for contacting us. Our team will respond within 24 hours.</p>
+                    <h3 className="text-2xl font-semibold text-gray-900 tracking-tight mb-2">Message sent.</h3>
+                    <p className="text-gray-400 text-sm">Our team will respond within 24 hours.</p>
+                  </div>
+                ) : submitStatus === "error" ? (
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="w-12 h-12 rounded-full border border-red-200 flex items-center justify-center mb-6">
+                      <AlertCircle className="h-5 w-5 text-red-500" />
+                    </div>
+                    <h3 className="text-2xl font-semibold text-gray-900 tracking-tight mb-2">Something went wrong.</h3>
+                    <p className="text-gray-400 text-sm">Please try again or email us directly.</p>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="name" className="text-gray-700 font-medium">Full Name *</Label>
+                  <form onSubmit={handleSubmit} className="space-y-7">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="name" className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.2em]">Full Name *</Label>
                         <Input
                           id="name"
                           value={formData.name}
                           onChange={(e) => handleInputChange("name", e.target.value)}
                           required
                           placeholder="Your full name"
-                          className="mt-1.5"
+                          className="border-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors placeholder:text-gray-300"
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="email" className="text-gray-700 font-medium">Email Address *</Label>
+                      <div className="space-y-1.5">
+                        <Label htmlFor="email" className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.2em]">Email Address *</Label>
                         <Input
                           id="email"
                           type="email"
@@ -193,29 +211,26 @@ export function ContactPageClient() {
                           onChange={(e) => handleInputChange("email", e.target.value)}
                           required
                           placeholder="your@email.com"
-                          className="mt-1.5"
+                          className="border-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors placeholder:text-gray-300"
                         />
                       </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="phone" className="text-gray-700 font-medium">Phone Number</Label>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="phone" className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.2em]">Phone Number</Label>
                         <Input
                           id="phone"
                           value={formData.phone}
                           onChange={(e) => handleInputChange("phone", e.target.value)}
                           placeholder="+254 700 000 000"
-                          className="mt-1.5"
+                          className="border-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors placeholder:text-gray-300"
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="category" className="text-gray-700 font-medium">Category</Label>
-                        <Select
-                          value={formData.category}
-                          onValueChange={(value) => handleInputChange("category", value)}
-                        >
-                          <SelectTrigger className="mt-1.5">
+                      <div className="space-y-1.5">
+                        <Label htmlFor="category" className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.2em]">Category</Label>
+                        <Select value={formData.category} onValueChange={(v) => handleInputChange("category", v)}>
+                          <SelectTrigger className="border-0 border-b border-gray-200 rounded-none px-0 focus:ring-0 focus-visible:ring-0 shadow-none">
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
@@ -229,20 +244,20 @@ export function ContactPageClient() {
                       </div>
                     </div>
 
-                    <div>
-                      <Label htmlFor="subject" className="text-gray-700 font-medium">Subject *</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="subject" className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.2em]">Subject *</Label>
                       <Input
                         id="subject"
                         value={formData.subject}
                         onChange={(e) => handleInputChange("subject", e.target.value)}
                         required
                         placeholder="Brief description of your inquiry"
-                        className="mt-1.5"
+                        className="border-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors placeholder:text-gray-300"
                       />
                     </div>
 
-                    <div>
-                      <Label htmlFor="message" className="text-gray-700 font-medium">Message *</Label>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="message" className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.2em]">Message *</Label>
                       <Textarea
                         id="message"
                         value={formData.message}
@@ -250,125 +265,113 @@ export function ContactPageClient() {
                         required
                         placeholder="Please provide details about your inquiry..."
                         rows={5}
-                        className="mt-1.5"
+                        className="border-0 border-b border-gray-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-emerald-500 transition-colors resize-none placeholder:text-gray-300"
                       />
                     </div>
 
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-6 text-lg shadow-lg" 
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="w-5 h-5 mr-2" />
-                          Send Message
-                        </>
-                      )}
-                    </Button>
+                    <div className="pt-2">
+                      <Button
+                        type="submit"
+                        className="bg-[#0b1a10] hover:bg-emerald-800 text-white px-10 rounded-full py-6 text-sm tracking-wide transition-colors"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                            Sending…
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4 mr-2" />
+                            Send Message
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </form>
                 )}
-              </CardContent>
-            </Card>
+              </div>
 
-            <div className="space-y-8">
-              <Card className="border-2 border-gray-200">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b-2 border-blue-200">
-                  <CardTitle className="flex items-center text-gray-900">
-                    <Clock className="h-5 w-5 mr-2 text-blue-600" />
+              {/* Sidebar */}
+              <div className="py-14 lg:pl-14 space-y-12">
+
+                {/* Hours */}
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5" />
                     Business Hours
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Monday - Friday</span>
-                    <span className="font-semibold text-gray-900">8:00 AM - 6:00 PM</span>
+                  </p>
+                  <div className="space-y-0 divide-y divide-gray-100">
+                    {[
+                      { day: "Monday – Friday", hours: "8:00 AM – 6:00 PM" },
+                      { day: "Saturday", hours: "9:00 AM – 4:00 PM" },
+                      { day: "Sunday", hours: "Closed" },
+                    ].map((row) => (
+                      <div key={row.day} className="flex justify-between items-center py-3">
+                        <span className="text-[13px] text-gray-500">{row.day}</span>
+                        <span className={`text-[13px] font-medium ${row.hours === "Closed" ? "text-gray-300" : "text-gray-900"}`}>
+                          {row.hours}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Saturday</span>
-                    <span className="font-semibold text-gray-900">9:00 AM - 4:00 PM</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Sunday</span>
-                    <span className="text-gray-500">Closed</span>
-                  </div>
-                  <div className="pt-4 border-t border-gray-200">
-                    <div className="flex items-center text-sm bg-emerald-50 p-3 rounded-lg">
-                      <Sparkles className="h-4 w-4 mr-2 text-emerald-600 flex-shrink-0" />
-                      <span className="text-emerald-700 font-medium">Emergency support available 24/7</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  <p className="mt-4 text-[12px] text-emerald-600 font-medium">
+                    Emergency support available 24/7
+                  </p>
+                </div>
 
-              <Card className="border-2 border-gray-200">
-                <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b-2 border-purple-200">
-                  <CardTitle className="flex items-center text-gray-900">
-                    <HelpCircle className="h-5 w-5 mr-2 text-purple-600" />
-                    Frequently Asked Questions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">How do I become a verified vendor?</h4>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      Register as a vendor, submit required documents, and our team will review your application within 5-7 business days.
-                    </p>
+                {/* FAQs */}
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.3em] mb-6 flex items-center gap-2">
+                    <HelpCircle className="w-3.5 h-3.5" />
+                    Common Questions
+                  </p>
+                  <div className="space-y-0 divide-y divide-gray-100">
+                    {faqs.map((faq, i) => (
+                      <div key={i} className="py-4">
+                        <p className="text-[13px] font-semibold text-gray-900 mb-1">{faq.q}</p>
+                        <p className="text-[13px] text-gray-400 leading-relaxed">{faq.a}</p>
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">What payment methods do you accept?</h4>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      We accept M-Pesa, bank transfers, and major credit cards for secure transactions.
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Do you provide installation services?</h4>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      Yes, we connect you with certified professionals for installation and maintenance services.
-                    </p>
-                  </div>
-                  <Button variant="outline" className="w-full mt-4 border-2 hover:border-purple-300 hover:bg-purple-50" asChild>
-                    <Link href="/faq">View All FAQs</Link>
-                  </Button>
-                </CardContent>
-              </Card>
+                  <Link
+                    href="/faq"
+                    className="mt-4 inline-flex items-center text-[12px] font-medium text-emerald-600 hover:text-emerald-800 transition-colors"
+                  >
+                    View all FAQs
+                    <ArrowRight className="ml-1.5 w-3.5 h-3.5" />
+                  </Link>
+                </div>
 
-              <Card className="border-2 border-gray-200">
-                <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 border-b-2 border-orange-200">
-                  <CardTitle className="text-gray-900">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-3">
-                  <Button variant="outline" className="w-full justify-start border-2 hover:border-emerald-300 hover:bg-emerald-50" asChild>
-                    <Link href="/register/vendor">
-                      <Users className="h-4 w-4 mr-2" />
-                      Become a Supplier
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start border-2 hover:border-emerald-300 hover:bg-emerald-50" asChild>
-                    <Link href="/products">
-                      <Zap className="h-4 w-4 mr-2" />
-                      Browse Products
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start border-2 hover:border-emerald-300 hover:bg-emerald-50" asChild>
-                    <Link href="/register/professional">
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Professional Services
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+                {/* Quick links */}
+                <div>
+                  <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.3em] mb-6">
+                    Quick Actions
+                  </p>
+                  <div className="space-y-0 divide-y divide-gray-100">
+                    {quickLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="group flex items-center justify-between py-4 hover:text-emerald-700 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <link.icon className="w-4 h-4 text-gray-400 group-hover:text-emerald-500 transition-colors" />
+                          <span className="text-[13px] font-medium text-gray-700 group-hover:text-emerald-700 transition-colors">
+                            {link.label}
+                          </span>
+                        </div>
+                        <ArrowRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Footer is provided by the page layout */}
     </>
   )
 }

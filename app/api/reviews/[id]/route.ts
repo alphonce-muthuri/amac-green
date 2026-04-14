@@ -4,29 +4,20 @@ import { cookies } from "next/headers"
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
-    // Get current user session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    let user = session?.user
-    const reviewId = params.id
-    const body = await request.json()
-    const { rating, title, comment, userId } = body
-
-    // Fallback: if session is not available, use userId from request body
-    if (!user && userId) {
-      console.log("🎭 Using fallback userId from request body:", userId)
-      user = { id: userId } as any
-    }
-
-    if (!user) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 })
     }
+
+    const { id: reviewId } = await params
+    const body = await request.json()
+    const { rating, title, comment } = body
 
     if (!rating) {
       return NextResponse.json({ error: "Rating is required" }, { status: 400 })
@@ -85,29 +76,18 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
-    // Get current user session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    let user = session?.user
-    const reviewId = params.id
-    const body = await request.json()
-    const { userId } = body
-
-    // Fallback: if session is not available, use userId from request body
-    if (!user && userId) {
-      console.log("🎭 Using fallback userId from request body:", userId)
-      user = { id: userId } as any
-    }
-
-    if (!user) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 })
     }
+
+    const { id: reviewId } = await params
 
     // Use service role client to bypass RLS
     const { createClient } = await import('@supabase/supabase-js')

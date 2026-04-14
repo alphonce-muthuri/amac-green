@@ -5,28 +5,17 @@ import { cookies } from "next/headers"
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const productId = searchParams.get("productId")
-  const userId = searchParams.get("userId")
 
   if (!productId) {
     return NextResponse.json({ error: "Product ID is required" }, { status: 400 })
   }
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
-    // Get current user session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    let user = session?.user
-
-    // Fallback: if session is not available, use userId from query params
-    if (!user && userId) {
-      console.log("🎭 Using fallback userId from query params:", userId)
-      user = { id: userId } as any
-    }
-
-    if (!user) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 })
     }
 

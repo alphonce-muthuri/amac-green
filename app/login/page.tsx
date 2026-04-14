@@ -171,7 +171,7 @@ export default function LoginPage() {
   return (
     <div className="h-screen overflow-hidden flex bg-gradient-to-b from-white to-gray-50">
       {/* Left panel - brand & benefits (independently scrollable, scrollbar hidden) */}
-      <div className="hidden lg:flex lg:w-1/2 lg:h-screen lg:min-h-0 relative flex-col overflow-y-auto overflow-x-hidden scrollbar-hide bg-gradient-to-br from-green-500 via-emerald-800 to-emerald-900">
+      <div className="hidden lg:flex lg:w-1/2 lg:h-screen lg:min-h-0 relative flex-col overflow-y-auto overflow-x-hidden scrollbar-hide bg-gradient-to-br from-[#052e1a] via-[#0b3b24] to-[#062515]">
         <div className="absolute inset-0 pointer-events-none">
           <Image
             src="/images/hero-renewable-energy.png"
@@ -184,7 +184,7 @@ export default function LoginPage() {
           className="absolute inset-0 opacity-10 bg-[length:40px_40px] [background-image:radial-gradient(circle_at_2px_2px,white_1px,transparent_0)] pointer-events-none"
           aria-hidden
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/95 via-emerald-800/95 to-emerald-900/95 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/90 via-emerald-900/90 to-[#041d12]/90 pointer-events-none" />
 
         <div className="relative z-10 flex flex-col justify-between p-12 text-white w-full min-h-full">
           <Link href="/" className="inline-block group transition-transform duration-300 group-hover:scale-105">
@@ -198,47 +198,47 @@ export default function LoginPage() {
           </Link>
 
           <div className="space-y-8">
-            <p className="text-xs sm:text-sm font-semibold tracking-[0.3em] text-emerald-200 uppercase">
+            <p className="text-xs sm:text-sm font-semibold tracking-[0.3em] text-emerald-200/90 uppercase">
               AMAC GREEN • SIGN IN
             </p>
             <div>
               <h1 className="text-4xl lg:text-5xl font-extrabold mb-6 leading-tight tracking-tighter">
                 Welcome back to<br />
-                <span className="text-emerald-200">clean energy</span>
+                <span className="text-emerald-300">clean energy</span>
               </h1>
-              <p className="text-base text-white/90 leading-relaxed tracking-tight">
+              <p className="text-base text-emerald-50/90 leading-relaxed tracking-tight max-w-xl">
                 Sign in to access Kenya's leading renewable energy marketplace and continue your sustainable journey.
               </p>
             </div>
 
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 p-4 transition-all duration-300">
-                <div className="w-9 h-9 bg-green-400/20 border border-green-400/15 rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-all duration-300 hover:bg-white/[0.06]">
+                <div className="w-9 h-9 bg-emerald-400/20 border border-emerald-300/20 rounded-full flex items-center justify-center flex-shrink-0">
                   <Check className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg tracking-tighter">Verified Suppliers</h3>
-                  <p className="text-emerald-200/90 text-sm tracking-tight">Access 1000+ trusted vendors</p>
+                  <h3 className="font-bold text-base tracking-tight">Verified Suppliers</h3>
+                  <p className="text-emerald-100/80 text-sm tracking-tight">Access 1000+ trusted vendors</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 p-4 transition-all duration-300">
-                <div className="w-9 h-9 bg-green-400/20 border border-green-400/15 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-all duration-300 hover:bg-white/[0.06]">
+                <div className="w-9 h-9 bg-emerald-400/20 border border-emerald-300/20 rounded-full flex items-center justify-center flex-shrink-0">
                   <Shield className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg tracking-tighter">Secure Platform</h3>
-                  <p className="text-emerald-200/90 text-sm tracking-tight">Your data is protected with SSL</p>
+                  <h3 className="font-bold text-base tracking-tight">Secure Platform</h3>
+                  <p className="text-emerald-100/80 text-sm tracking-tight">Your data is protected with SSL</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 p-4 transition-all duration-300">
-                <div className="w-9 h-9 bg-green-400/20 border border-green-400/15 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-all duration-300 hover:bg-white/[0.06]">
+                <div className="w-9 h-9 bg-emerald-400/20 border border-emerald-300/20 rounded-full flex items-center justify-center flex-shrink-0">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg tracking-tighter">Best Prices</h3>
-                  <p className="text-emerald-200/90 text-sm tracking-tight">Compare and save on energy products</p>
+                  <h3 className="font-bold text-base tracking-tight">Best Prices</h3>
+                  <p className="text-emerald-100/80 text-sm tracking-tight">Compare and save on energy products</p>
                 </div>
               </div>
             </div>
@@ -288,8 +288,8 @@ export default function LoginPage() {
                 message.type === "success"
                   ? "bg-emerald-50 border-emerald-200/80 text-emerald-800"
                   : message.type === "warning"
-                  ? "bg-amber-50 border-amber-200/80 text-amber-800"
-                  : "bg-red-50 border-red-200/80 text-red-800"
+                  ? "bg-gray-100 border-gray-300 text-gray-800"
+                  : "bg-gray-900 border-gray-900 text-white"
               }`}
             >
               <div className="w-5 h-5 rounded-full bg-white/80 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold">

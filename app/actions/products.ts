@@ -6,7 +6,7 @@ import { cookies } from "next/headers"
 import type { Product } from "@/lib/types/product"
 
 export async function createProduct(formData: FormData) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
@@ -16,42 +16,10 @@ export async function createProduct(formData: FormData) {
     const formDataKeys = Array.from(formData.keys())
     console.log('🎯 FormData keys:', formDataKeys)
     
-    // Get current user session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    console.log('🎯 Session result:', { session: session?.user?.id, error: sessionError?.message })
-    
-    let user = session?.user
-    
-    // If no session, try to get user from the form data
-    if (!user) {
-      console.log('🎯 No session found, trying to get user from form data...')
-      
-      const userId = formData.get('userId') as string
-      if (!userId) {
-        return { success: false, error: "Authentication required - no user ID provided" }
-      }
-      
-      console.log('🎯 Using user ID from form data:', userId)
-      
-      // Create a minimal user object with the ID
-      user = {
-        id: userId,
-        email: 'user@example.com', // This will be overridden by the actual user data
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        aud: 'authenticated',
-        role: 'authenticated',
-        app_metadata: {},
-        user_metadata: {},
-        identities: [],
-        factors: []
-      } as any
-      
-      console.log('🎯 Created user object from form data:', user.id)
-    }
-    
-    if (!user) {
+    // Always verify identity server-side; getUser() makes a round-trip to
+    // Supabase so the returned identity is cryptographically verified.
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
       return { success: false, error: "Authentication required" }
     }
 
@@ -206,7 +174,7 @@ export async function createProduct(formData: FormData) {
 
 export async function getProductCategories() {
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createServerClient(cookieStore)
     const { data, error } = await supabase.from("product_categories").select("*").eq("is_active", true).order("name")
 
@@ -221,7 +189,7 @@ export async function getProductCategories() {
 }
 
 export async function getVendorProducts(vendorId: string): Promise<Product[]> {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   const { data, error } = await supabase
@@ -260,33 +228,81 @@ export async function getPublicProducts({
   page?: number
   limit?: number
 } = {}) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
-    let query = supabase
-      .from("products")
-      .select(`
-        *,
-        product_images (
-          id,
-          image_url,
-          alt_text,
-          is_primary,
-          sort_order
-        )
-      `)
-      .eq("status", "active")
+    const safeLimit = Math.max(1, Math.trunc(limit) || 12)
+    const requestedPage = Math.max(1, Math.trunc(page) || 1)
 
-    // Filter by category
-    if (category) {
-      query = query.eq("category", category)
+    const { data: approvedVendors, error: approvedVendorsError } = await supabase
+      .from("vendor_applications")
+      .select("user_id, company_name")
+      .eq("status", "approved")
+
+    if (approvedVendorsError) {
+      console.error("Error fetching approved vendors:", approvedVendorsError)
+      return { success: false, data: [], totalPages: 0, totalCount: 0, currentPage: 1 }
     }
 
-    // Search functionality
-    if (search) {
-      query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%,short_description.ilike.%${search}%`)
+    const vendorMap = new Map<string, string>()
+    const approvedVendorIds: string[] = []
+    for (const vendor of approvedVendors || []) {
+      approvedVendorIds.push(vendor.user_id)
+      vendorMap.set(vendor.user_id, vendor.company_name)
     }
+
+    if (approvedVendorIds.length === 0) {
+      return { success: true, data: [], totalPages: 0, totalCount: 0, currentPage: 1 }
+    }
+
+    const applySharedFilters = (query: any) => {
+      let nextQuery = query
+        .eq("status", "active")
+        .in("vendor_id", approvedVendorIds)
+
+      if (category) {
+        nextQuery = nextQuery.eq("category_id", category)
+      }
+
+      if (search) {
+        nextQuery = nextQuery.or(`name.ilike.%${search}%,description.ilike.%${search}%,short_description.ilike.%${search}%`)
+      }
+
+      return nextQuery
+    }
+
+    const { count, error: countError } = await applySharedFilters(
+      supabase.from("products").select("*", { count: "exact", head: true })
+    )
+
+    if (countError) {
+      console.error("Error counting products:", countError)
+      return { success: false, data: [], totalPages: 0, totalCount: 0, currentPage: 1 }
+    }
+
+    const totalCount = count ?? 0
+    const totalPages = totalCount > 0 ? Math.ceil(totalCount / safeLimit) : 0
+    const currentPage = totalPages > 0 ? Math.min(requestedPage, totalPages) : 1
+
+    if (totalCount === 0) {
+      return { success: true, data: [], totalPages: 0, totalCount: 0, currentPage }
+    }
+
+    let query = applySharedFilters(
+      supabase
+        .from("products")
+        .select(`
+          *,
+          product_images (
+            id,
+            image_url,
+            alt_text,
+            is_primary,
+            sort_order
+          )
+        `)
+    )
 
     // Sorting
     switch (sort) {
@@ -309,72 +325,42 @@ export async function getPublicProducts({
         query = query.order("created_at", { ascending: false })
     }
 
-    // Get total count for pagination
-    const { count } = await supabase.from("products").select("*", { count: "exact", head: true }).eq("status", "active")
-
     // Apply pagination
-    const from = (page - 1) * limit
-    const to = from + limit - 1
+    const from = (currentPage - 1) * safeLimit
+    const to = from + safeLimit - 1
     query = query.range(from, to)
 
     const { data: products, error: productsError } = await query
 
     if (productsError) {
       console.error("Error fetching products:", productsError)
-      return { success: false, data: [], totalPages: 0, totalCount: 0 }
+      return { success: false, data: [], totalPages: 0, totalCount: 0, currentPage: 1 }
     }
 
     if (!products || products.length === 0) {
-      return { success: true, data: [], totalPages: 0, totalCount: 0 }
+      return { success: true, data: [], totalPages, totalCount, currentPage }
     }
 
-    // Get unique vendor IDs
-    const vendorIds = [...new Set(products.map((p) => p.vendor_id))]
-
-    // Fetch vendor information for all vendors
-    const { data: vendors, error: vendorsError } = await supabase
-      .from("vendor_applications")
-      .select("user_id, company_name")
-      .in("user_id", vendorIds)
-      .eq("status", "approved")
-
-    if (vendorsError) {
-      console.error("Error fetching vendors:", vendorsError)
-      // Continue without vendor names rather than failing
-    }
-
-    // Create a map of vendor_id to business_name
-    const vendorMap = new Map()
-    if (vendors) {
-      vendors.forEach((vendor) => {
-        vendorMap.set(vendor.user_id, vendor.company_name)
-      })
-    }
-
-    // Add vendor names to products and filter only approved vendors
-    const productsWithVendors = products
-      .filter((product) => vendorMap.has(product.vendor_id))
-      .map((product) => ({
+    const productsWithVendors = products.map((product) => ({
         ...product,
         vendor_name: vendorMap.get(product.vendor_id) || "Unknown Vendor",
       }))
-
-    const totalPages = count ? Math.ceil(count / limit) : 1
 
     return {
       success: true,
       data: productsWithVendors,
       totalPages,
-      totalCount: count,
+      totalCount,
+      currentPage,
     }
   } catch (error) {
     console.error("Error in getPublicProducts:", error)
-    return { success: false, data: [], totalPages: 0, totalCount: 0 }
+    return { success: false, data: [], totalPages: 0, totalCount: 0, currentPage: 1 }
   }
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
@@ -426,39 +412,13 @@ export async function updateProduct(
   id: string,
   formData: FormData,
 ): Promise<{ success: boolean; error?: string }> {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
-    // Get current user session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    let user = session?.user
-    
-    // If no session, try to get user from form data
-    if (!user) {
-      const userId = formData.get('userId') as string
-      if (!userId) {
-        return { success: false, error: "Authentication required - no user ID provided" }
-      }
-      
-      console.log('🎯 Using user ID from form data (updateProduct):', userId)
-      
-      // Create a minimal user object with the ID
-      user = {
-        id: userId,
-        email: 'user@example.com',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        aud: 'authenticated',
-        role: 'authenticated',
-        app_metadata: {},
-        user_metadata: {},
-        identities: [],
-        factors: []
-      } as any
-      
-      console.log('🎯 Created user object from form data (updateProduct):', user.id)
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" }
     }
 
     // Verify ownership
@@ -647,21 +607,11 @@ export async function updateInventoryQuantity(
   userId?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const supabase = createServerClient(cookieStore)
 
-    // Get current user session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    let user = session?.user
-
-    // Fallback: if session is not available, use userId parameter
-    if (!user && userId) {
-      console.log("🎭 Using fallback userId for inventory update:", userId)
-      user = { id: userId } as any
-    }
-
-    if (!user) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
       return { success: false, error: "Authentication required" }
     }
 
@@ -702,38 +652,13 @@ export async function updateInventoryQuantity(
 }
 
 export async function deleteProduct(id: string, userId?: string): Promise<{ success: boolean; error?: string }> {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
-    // Get current user session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    let user = session?.user
-    
-    // If no session, try to get user from parameter
-    if (!user) {
-      if (!userId) {
-        return { success: false, error: "Authentication required - no user ID provided" }
-      }
-      
-      console.log('🎯 Using user ID from parameter:', userId)
-      
-      // Create a minimal user object with the ID
-      user = {
-        id: userId,
-        email: 'user@example.com',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        aud: 'authenticated',
-        role: 'authenticated',
-        app_metadata: {},
-        user_metadata: {},
-        identities: [],
-        factors: []
-      } as any
-      
-      console.log('🎯 Created user object from parameter:', user.id)
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" }
     }
 
     // Verify ownership
@@ -768,38 +693,13 @@ export async function deleteProduct(id: string, userId?: string): Promise<{ succ
 }
 
 export async function toggleProductStatus(id: string, userId?: string): Promise<{ success: boolean; error?: string }> {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supabase = createServerClient(cookieStore)
 
   try {
-    // Get current user session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    
-    let user = session?.user
-    
-    // If no session, try to get user from parameter
-    if (!user) {
-      if (!userId) {
-        return { success: false, error: "Authentication required - no user ID provided" }
-      }
-      
-      console.log('🎯 Using user ID from parameter (toggle):', userId)
-      
-      // Create a minimal user object with the ID
-      user = {
-        id: userId,
-        email: 'user@example.com',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        aud: 'authenticated',
-        role: 'authenticated',
-        app_metadata: {},
-        user_metadata: {},
-        identities: [],
-        factors: []
-      } as any
-      
-      console.log('🎯 Created user object from parameter (toggle):', user.id)
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      return { success: false, error: "Authentication required" }
     }
 
     // Get current product status

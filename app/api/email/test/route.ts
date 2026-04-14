@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 import { sendTestEmail } from "@/lib/email-service"
 
 export async function POST(request: NextRequest) {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
+
   try {
     const { email } = await request.json()
 
@@ -38,6 +42,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
   return NextResponse.json({
     message: "Email test endpoint",
     usage: "POST with { email: 'test@example.com' }"

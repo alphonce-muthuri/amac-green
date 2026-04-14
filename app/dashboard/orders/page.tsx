@@ -3,17 +3,30 @@
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import { getCustomerOrders } from "@/app/actions/orders"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Package, Clock, CheckCircle, Truck, XCircle, Eye, Download, RefreshCw } from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Skeleton } from "@/components/ui/skeleton"
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  PackageIcon,
+  Clock01Icon,
+  DeliveryTruck01Icon,
+  CheckmarkCircle02Icon,
+  CancelCircleIcon,
+  EyeIcon,
+  Download01Icon,
+  RefreshIcon,
+} from "@hugeicons/core-free-icons"
 
 interface Order {
   id: string
   order_number: string
   created_at: string
   status: string
-  total_amount: number
+  total_amount: number | string
   items: any[]
 }
 
@@ -24,35 +37,28 @@ export default function OrdersPage() {
   const [refreshing, setRefreshing] = useState(false)
   const router = useRouter()
 
-  const loadOrders = useCallback(async (_userId: string) => {
-    // Mock orders for now - replace with actual data fetch
-    const mockOrders: Order[] = [
-      {
-        id: "1",
-        order_number: "ORD-2024-001",
-        created_at: new Date().toISOString(),
-        status: "delivered",
-        total_amount: 15000,
-        items: []
-      },
-      {
-        id: "2",
-        order_number: "ORD-2024-002",
-        created_at: new Date(Date.now() - 86400000).toISOString(),
-        status: "in_transit",
-        total_amount: 8500,
-        items: []
-      },
-      {
-        id: "3",
-        order_number: "ORD-2024-003",
-        created_at: new Date(Date.now() - 172800000).toISOString(),
-        status: "pending",
-        total_amount: 22000,
-        items: []
-      },
-    ]
-    setOrders(mockOrders)
+  const loadOrders = useCallback(async (userId: string) => {
+    try {
+      const result = await getCustomerOrders(userId)
+      if (!result.success || !result.data) {
+        setOrders([])
+        return
+      }
+
+      const normalizedOrders: Order[] = result.data.map((order: any) => ({
+        id: order.id,
+        order_number: order.order_number,
+        created_at: order.created_at,
+        status: order.status,
+        total_amount: order.total_amount,
+        items: order.order_items || [],
+      }))
+
+      setOrders(normalizedOrders)
+    } catch (error) {
+      console.error("Error loading orders:", error)
+      setOrders([])
+    }
   }, [])
 
   const checkUser = useCallback(async () => {
@@ -83,60 +89,90 @@ export default function OrdersPage() {
 
   const handleRefresh = async () => {
     if (!user) return
-    setRefreshing(true)
-    await loadOrders(user.id)
-    setRefreshing(false)
+    try {
+      setRefreshing(true)
+      await loadOrders(user.id)
+    } finally {
+      setRefreshing(false)
+    }
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
         return (
-          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
-            <Clock className="h-3 w-3 mr-1" />
+          <Badge className="bg-gray-100 hover:bg-gray-100 text-gray-700 border border-gray-300 font-semibold text-xs rounded-full">
+            <HugeiconsIcon icon={Clock01Icon} size={12} className="mr-1" />
             Pending
           </Badge>
         )
       case "processing":
         return (
-          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
-            <Package className="h-3 w-3 mr-1" />
+          <Badge className="bg-gray-100 hover:bg-gray-100 text-gray-700 border border-gray-300 font-semibold text-xs rounded-full">
+            <HugeiconsIcon icon={PackageIcon} size={12} className="mr-1" />
             Processing
           </Badge>
         )
       case "in_transit":
         return (
-          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
-            <Truck className="h-3 w-3 mr-1" />
+          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs rounded-full">
+            <HugeiconsIcon icon={DeliveryTruck01Icon} size={12} className="mr-1" />
             In Transit
           </Badge>
         )
       case "delivered":
         return (
-          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
-            <CheckCircle className="h-3 w-3 mr-1" />
+          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-xs rounded-full">
+            <HugeiconsIcon icon={CheckmarkCircle02Icon} size={12} className="mr-1" />
             Delivered
           </Badge>
         )
       case "cancelled":
         return (
-          <Badge className="bg-rose-50 hover:bg-rose-50 text-rose-700 hover:text-rose-700 border border-rose-200/70 hover:border-rose-200/70 font-bold rounded-full">
-            <XCircle className="h-3 w-3 mr-1" />
+          <Badge className="bg-gray-900 hover:bg-gray-900 text-white border-0 font-semibold text-xs rounded-full">
+            <HugeiconsIcon icon={CancelCircleIcon} size={12} className="mr-1" />
             Cancelled
           </Badge>
         )
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline" className="text-xs">{status}</Badge>
     }
   }
 
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-KE", {
+      style: "currency",
+      currency: "KES",
+      minimumFractionDigits: 0,
+    }).format(amount)
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading orders...</p>
+      <div className="space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-44" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-10 w-28 rounded-md" />
         </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Skeleton className="h-20 rounded-xl" />
+          <Skeleton className="h-20 rounded-xl" />
+          <Skeleton className="h-20 rounded-xl" />
+          <Skeleton className="h-20 rounded-xl" />
+        </div>
+        <Card className="border border-gray-200">
+          <CardHeader className="py-3 px-5 border-b border-gray-100">
+            <Skeleton className="h-4 w-28" />
+          </CardHeader>
+          <CardContent className="p-5 space-y-3">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -146,149 +182,120 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-gray-900">Order History</h1>
-          <p className="text-gray-600 mt-1">View and track all your orders</p>
+          <h1 className="text-2xl font-extrabold tracking-tighter text-gray-900">Order History</h1>
+          <p className="text-gray-500 text-sm mt-0.5">View and track all your orders</p>
         </div>
-        <Button 
-          onClick={handleRefresh} 
+        <Button
+          onClick={handleRefresh}
           disabled={refreshing}
-          className="bg-emerald-600 hover:bg-emerald-700"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
         >
-          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+          <HugeiconsIcon icon={RefreshIcon} size={15} className={`mr-2 ${refreshing ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border border-emerald-200/60">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
-                <Package className="h-4 w-4 text-emerald-700" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: "Total Orders", value: orders.length, icon: PackageIcon, accent: true },
+          { label: "Pending", value: orders.filter(o => o.status === "pending").length, icon: Clock01Icon, accent: false },
+          { label: "In Transit", value: orders.filter(o => o.status === "in_transit").length, icon: DeliveryTruck01Icon, accent: true },
+          { label: "Delivered", value: orders.filter(o => o.status === "delivered").length, icon: CheckmarkCircle02Icon, accent: true },
+        ].map(({ label, value, icon, accent }) => (
+          <Card key={label} className="border border-gray-200">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${accent ? "bg-emerald-50" : "bg-gray-100"}`}>
+                  <HugeiconsIcon icon={icon} size={16} className={accent ? "text-emerald-600" : "text-gray-600"} />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">{label}</p>
+                  <p className="text-xl font-bold text-gray-900">{value}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-600 font-semibold">Total Orders</p>
-                <p className="text-xl font-bold text-gray-900">{orders.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-emerald-200/60">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
-                <Clock className="h-4 w-4 text-emerald-700" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 font-semibold">Pending</p>
-                <p className="text-xl font-bold text-gray-900">
-                  {orders.filter(o => o.status === "pending").length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-emerald-200/60">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
-                <Truck className="h-4 w-4 text-emerald-700" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 font-semibold">In Transit</p>
-                <p className="text-xl font-bold text-gray-900">
-                  {orders.filter(o => o.status === "in_transit").length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-emerald-200/60">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-4 w-4 text-emerald-700" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 font-semibold">Delivered</p>
-                <p className="text-xl font-bold text-gray-900">
-                  {orders.filter(o => o.status === "delivered").length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Orders List */}
+      {/* Orders Table */}
       {orders.length === 0 ? (
-        <Card className="border border-emerald-200/60">
+        <Card className="border border-gray-200">
           <CardContent className="text-center py-16">
-            <div className="w-20 h-20 bg-emerald-50 rounded-full border border-emerald-200/60 flex items-center justify-center mx-auto mb-4">
-              <Package className="h-8 w-8 text-emerald-600" />
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HugeiconsIcon icon={PackageIcon} size={28} className="text-gray-400" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No orders yet</h3>
-            <p className="text-gray-600 mb-4">Start shopping to see your orders here</p>
-            <Button 
-              onClick={() => router.push("/products")}
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
+            <h3 className="text-lg font-bold text-gray-900 mb-1">No orders yet</h3>
+            <p className="text-gray-500 text-sm mb-4">Start shopping to see your orders here</p>
+            <Button onClick={() => router.push("/products")} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
               Browse Products
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
-          {orders.map((order) => (
-            <Card key={order.id} className="border border-emerald-200/60 transition-all duration-300">
-              <CardHeader className="bg-emerald-50/40 border-b border-emerald-200/60">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg font-bold text-gray-900">
-                      Order {order.order_number}
-                    </CardTitle>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Placed on {new Date(order.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  {getStatusBadge(order.status)}
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                      {new Intl.NumberFormat('en-KE', {
-                        style: 'currency',
-                        currency: 'KES',
-                        minimumFractionDigits: 0,
-                      }).format(order.total_amount)}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-1">Total amount</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300">
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Details
-                    </Button>
-                    <Button variant="outline" size="sm" className="border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300">
-                      <Download className="h-4 w-4 mr-1" />
-                      Invoice
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card className="border border-gray-200">
+          <CardHeader className="py-3 px-5 border-b border-gray-100">
+            <CardTitle className="text-sm font-bold text-gray-900">Recent Orders</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent border-b border-gray-100">
+                  <TableHead>Order</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Items</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {orders.map((order) => (
+                  <TableRow key={order.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                    <TableCell className="font-semibold text-gray-900 whitespace-nowrap">
+                      {order.order_number}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-500 whitespace-nowrap">
+                      {new Date(order.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(order.status)}</TableCell>
+                    <TableCell className="text-right font-semibold text-gray-900 whitespace-nowrap">
+                      {formatCurrency(Number(order.total_amount))}
+                    </TableCell>
+                    <TableCell className="text-right text-sm text-gray-500">
+                      {order.items.length}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs"
+                        >
+                          <HugeiconsIcon icon={EyeIcon} size={13} className="mr-1" />
+                          <span className="hidden sm:inline">View</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs"
+                        >
+                          <HugeiconsIcon icon={Download01Icon} size={13} className="mr-1" />
+                          <span className="hidden sm:inline">Invoice</span>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
     </div>
   )

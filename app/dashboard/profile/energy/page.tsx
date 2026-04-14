@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { getProgramProfile, upsertProgramProfile } from "@/app/actions/customer-program-profile"
 import { toast } from "@/hooks/use-toast"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type ProgramProfile = {
   nationalIdOrReg?: string
@@ -71,8 +72,21 @@ export default function EnergyProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+      <div className="w-full px-4 py-8 space-y-4">
+        <Skeleton className="h-5 w-36" />
+        <Card>
+          <CardHeader className="space-y-2">
+            <Skeleton className="h-6 w-52" />
+            <Skeleton className="h-4 w-full" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-32" />
+          </CardContent>
+        </Card>
       </div>
     )
   }

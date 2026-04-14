@@ -92,17 +92,16 @@ export function ActiveDeliveryLocations() {
 
   if (loading) {
     return (
-      <Card className="border border-purple-200/80 shadow-sm">
-        <div className="h-1 bg-purple-500"></div>
-        <CardHeader className="bg-purple-50/40">
+      <Card className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <CardHeader className="border-b border-gray-100">
           <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-purple-600" />
+            <MapPin className="h-5 w-5 text-gray-700" />
             Active Delivery Locations
           </CardTitle>
         </CardHeader>
         <CardContent className="p-8">
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-transparent rounded-full animate-spin mb-4"></div>
             <p className="text-gray-600 font-medium">Loading active locations...</p>
           </div>
         </CardContent>
@@ -114,16 +113,18 @@ export function ActiveDeliveryLocations() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Activity className="w-6 h-6 text-purple-600" />
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Activity className="w-6 h-6 text-gray-700" />
             Active Delivery Locations
           </h2>
-          <p className="text-gray-600 mt-1">Real-time tracking of delivery partners</p>
+          <p className="text-sm text-gray-500 mt-1">Real-time tracking of delivery partners</p>
         </div>
         <Button 
           onClick={handleRefresh} 
           disabled={refreshing}
-          className="bg-purple-600 hover:bg-purple-700"
+          variant="outline"
+          size="sm"
+          className="h-8 rounded-xl border-gray-200 text-xs"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
           Refresh
@@ -131,12 +132,12 @@ export function ActiveDeliveryLocations() {
       </div>
 
       {locations.length === 0 ? (
-        <Card className="border border-gray-200">
+        <Card className="rounded-2xl border border-gray-100 bg-white">
           <CardContent className="text-center py-16">
-            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Truck className="h-10 w-10 text-purple-600" />
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Truck className="h-10 w-10 text-gray-700" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Delivery Partners Online</h3>
+            <h3 className="text-base font-semibold text-gray-900 mb-2">No Delivery Partners Online</h3>
             <p className="text-gray-600 mb-2">No active delivery partners at the moment</p>
             <p className="text-sm text-gray-500">
               Delivery partners will appear here when they start location tracking
@@ -146,18 +147,17 @@ export function ActiveDeliveryLocations() {
       ) : (
         <div className="grid gap-6">
           {locations.map((location) => (
-            <Card key={location.id} className="border border-purple-200/80 shadow-sm transition-shadow hover:shadow-md">
-              <div className="h-1 bg-purple-500"></div>
+            <Card key={location.id} className="rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-semibold text-lg">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 font-semibold text-lg">
                         {location.delivery_applications?.first_name?.charAt(0) || "D"}
                         {location.delivery_applications?.last_name?.charAt(0) || "P"}
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900">
+                        <h3 className="text-base font-semibold text-gray-900">
                           {location.delivery_applications?.first_name || "Unknown"} {location.delivery_applications?.last_name || "Driver"}
                         </h3>
                         <div className="flex items-center gap-2 mt-1">
@@ -165,7 +165,7 @@ export function ActiveDeliveryLocations() {
                             className={`${
                               location.is_available 
                                 ? "bg-green-100 text-green-700 border border-green-300" 
-                                : "bg-amber-100 text-amber-700 border border-amber-300"
+                                : "bg-gray-100 text-gray-700 border border-gray-200"
                             } font-semibold hover:bg-inherit`}
                           >
                             {location.is_available ? "✓ Available" : "⏱ Busy"}
@@ -182,12 +182,12 @@ export function ActiveDeliveryLocations() {
                     <div className="grid md:grid-cols-2 gap-6 mb-4">
                       <div className="space-y-3">
                         <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Vehicle Info</h4>
-                        <div className="p-3 bg-purple-50/60 rounded-lg border border-purple-200">
-                          <p className="text-xs text-purple-700 font-semibold mb-1">Vehicle Type</p>
+                        <div className="p-3 bg-gray-100 rounded-lg border border-gray-200">
+                          <p className="text-xs text-gray-700 font-semibold mb-1">Vehicle Type</p>
                           <p className="text-sm font-bold text-gray-900">{location.delivery_applications?.vehicle_type || "Unknown"}</p>
                         </div>
-                        <div className="p-3 bg-purple-50/60 rounded-lg border border-purple-200">
-                          <p className="text-xs text-purple-700 font-semibold mb-1">License Plate</p>
+                        <div className="p-3 bg-gray-100 rounded-lg border border-gray-200">
+                          <p className="text-xs text-gray-700 font-semibold mb-1">License Plate</p>
                           <p className="text-sm font-bold text-gray-900">{location.delivery_applications?.vehicle_registration || "N/A"}</p>
                         </div>
                       </div>
@@ -196,14 +196,14 @@ export function ActiveDeliveryLocations() {
                         <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Contact & Status</h4>
                         <div className="p-3 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-2 mb-1">
-                            <Phone className="w-4 h-4 text-purple-600" />
+                            <Phone className="w-4 h-4 text-gray-700" />
                             <p className="text-xs text-gray-500 font-semibold">Phone Number</p>
                           </div>
                           <p className="text-sm font-semibold text-gray-900">{location.delivery_applications?.phone || "N/A"}</p>
                         </div>
                         <div className="p-3 bg-gray-50 rounded-lg">
                           <div className="flex items-center gap-2 mb-1">
-                            <Clock className="w-4 h-4 text-purple-600" />
+                            <Clock className="w-4 h-4 text-gray-700" />
                             <p className="text-xs text-gray-500 font-semibold">Last Update</p>
                           </div>
                           <p className="text-sm font-semibold text-gray-900">{formatLastUpdate(location.last_updated)}</p>
@@ -213,7 +213,7 @@ export function ActiveDeliveryLocations() {
 
                     <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                       <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-purple-600" />
+                        <MapPin className="w-4 h-4 text-gray-700" />
                         <span className="text-xs font-semibold text-gray-700">
                           {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
                         </span>
@@ -224,7 +224,7 @@ export function ActiveDeliveryLocations() {
                         </Badge>
                       )}
                       {location.speed && (
-                        <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-xs font-semibold hover:bg-blue-100">
+                        <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold hover:bg-emerald-50">
                           <Zap className="w-3 h-3 mr-1" />
                           {Math.round(location.speed)} km/h
                         </Badge>
@@ -255,7 +255,8 @@ export function ActiveDeliveryLocations() {
                     <Button
                       onClick={() => window.open(`tel:${location.delivery_applications?.phone || ""}`, "_self")}
                       disabled={!location.delivery_applications?.phone}
-                      className="bg-blue-600 hover:bg-blue-700 flex-1 md:flex-none"
+                      variant="outline"
+                      className="flex-1 md:flex-none"
                     >
                       <Phone className="h-4 w-4 mr-2" />
                       Call Driver

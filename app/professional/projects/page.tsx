@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { AppShellSkeleton } from "@/components/loaders/page-skeletons"
+import { ProfessionalPageShell } from "@/components/professional/professional-page-shell"
 import { 
   FileText, 
   Plus, 
@@ -77,7 +79,7 @@ export default function ProjectsPage() {
       case "Planning":
         return <Badge variant="secondary">Planning</Badge>
       case "In Progress":
-        return <Badge className="bg-blue-600">In Progress</Badge>
+        return <Badge className="bg-emerald-600">In Progress</Badge>
       case "Completed":
         return <Badge className="bg-green-600">Completed</Badge>
       case "On Hold":
@@ -114,16 +116,12 @@ export default function ProjectsPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
-      </div>
-    )
+    return <AppShellSkeleton />
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
+    <ProfessionalPageShell title="Projects">
+      <div className="mx-auto max-w-7xl">
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -369,7 +367,7 @@ export default function ProjectsPage() {
                             variant="ghost" 
                             size="sm"
                             onClick={() => handleDeleteProject(project.id)}
-                            className="text-red-600 hover:text-red-700"
+                            className="text-gray-700 hover:text-gray-700"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -383,6 +381,6 @@ export default function ProjectsPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </ProfessionalPageShell>
   )
 }

@@ -7,6 +7,7 @@ import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
+import { toFriendlyErrorMessage } from "@/lib/friendly-errors"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -144,6 +145,15 @@ type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
   const id = genId()
+  const normalizedProps = { ...props }
+
+  // Normalize technical destructive errors into user-friendly messages globally.
+  if (
+    normalizedProps.variant === "destructive" &&
+    typeof normalizedProps.description === "string"
+  ) {
+    normalizedProps.description = toFriendlyErrorMessage(normalizedProps.description)
+  }
 
   const update = (props: ToasterToast) =>
     dispatch({
@@ -155,7 +165,7 @@ function toast({ ...props }: Toast) {
   dispatch({
     type: "ADD_TOAST",
     toast: {
-      ...props,
+      ...normalizedProps,
       id,
       open: true,
       onOpenChange: (open) => {

@@ -20,27 +20,21 @@ export default function CustomerOrdersPage() {
   }, [])
 
   const loadOrders = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (user) {
-      const result = await getCustomerOrders(user.id)
-      if (result.success) {
-        setOrders(result.data || [])
-      }
+    const result = await getCustomerOrders()
+    if (result.success) {
+      setOrders(result.data || [])
     }
     setLoading(false)
   }
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { color: "bg-yellow-100 text-yellow-800", icon: Clock },
-      confirmed: { color: "bg-blue-100 text-blue-800", icon: CheckCircle },
-      processing: { color: "bg-purple-100 text-purple-800", icon: Package },
+      pending: { color: "bg-gray-100 text-gray-700", icon: Clock },
+      confirmed: { color: "bg-emerald-600 text-emerald-700", icon: CheckCircle },
+      processing: { color: "bg-gray-100 text-gray-700", icon: Package },
       shipped: { color: "bg-green-100 text-green-800", icon: Truck },
       delivered: { color: "bg-green-600 text-white", icon: CheckCircle },
-      cancelled: { color: "bg-red-100 text-red-800", icon: AlertCircle },
+      cancelled: { color: "bg-gray-900 text-gray-700", icon: AlertCircle },
       refunded: { color: "bg-gray-100 text-gray-800", icon: AlertCircle },
     }
 
@@ -189,9 +183,9 @@ export default function CustomerOrdersPage() {
 
                     {/* Tracking Info */}
                     {order.tracking_number && (
-                      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                        <h4 className="font-medium text-blue-900 mb-2">Tracking Information</h4>
-                        <p className="text-sm text-blue-800">
+                      <div className="mt-4 p-4 bg-emerald-600 rounded-lg">
+                        <h4 className="font-medium text-emerald-700 mb-2">Tracking Information</h4>
+                        <p className="text-sm text-emerald-700">
                           Tracking Number: <span className="font-mono">{order.tracking_number}</span>
                         </p>
                         {order.tracking_url && (

@@ -1,17 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin, createServerClient } from '@/lib/supabase-server'
+import { cookies } from 'next/headers'
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, amount, orderId, metadata } = await req.json()
+    // Verify session — never trust client-supplied identity or amount.
+    const cookieStore = cookies()
+    const supabase = createServerClient(cookieStore)
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ success: false, error: 'Authentication required' }, { status: 401 })
+    }
 
-    if (!email || !amount || !orderId) {
+    const { orderId, metadata } = await req.json()
+
+    if (!orderId) {
       return NextResponse.json(
-        { success: false, error: 'Email, amount, and orderId are required' },
+        { success: false, error: 'orderId is required' },
         { status: 400 }
       )
     }
 
-    console.log('[PAYSTACK] Initializing payment:', { email, amount, orderId })
+    // Look up the order from the database — do not trust client-supplied amount or email.
+    const { data: order, error: orderError } = await supabaseAdmin
+      .from('orders')
+      .select('id, customer_id, total_amount, customer_email, payment_status')
+      .eq('id', orderId)
+      .single()
+
+    if (orderError || !order) {
+      return NextResponse.json({ success: false, error: 'Order not found' }, { status: 404 })
+    }
+
+    // Verify the authenticated user owns this order.
+    if (order.customer_id !== user.id) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 })
+    }
+
+    // Reject if the order is already paid.
+    if (order.payment_status === 'paid') {
+      return NextResponse.json({ success: false, error: 'Order is already paid' }, { status: 400 })
+    }
+
+    const email = order.customer_email || user.email
+    const amount = order.total_amount // use authoritative DB value
+
+    console.log('[PAYSTACK] Initializing payment for order:', orderId, 'amount:', amount)
 
     // Initialize Paystack transaction
     const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
@@ -22,7 +56,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         email,
-        amount: Math.round(amount * 100), // Paystack expects amount in kobo (cents)
+        amount: Math.round(amount * 100), // Paystack expects amount in kobo/cents
         reference: `order_${orderId}_${Date.now()}`,
         callback_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/paystack/callback`,
         metadata: {

@@ -28,7 +28,7 @@ export function CustomerList() {
   const getCustomerTypeBadge = (type: string) => {
     const typeConfig: Record<string, { color: string; icon: any; label: string }> = {
       individual: { 
-        color: "bg-blue-100 text-blue-700 border-blue-300", 
+        color: "bg-emerald-50 text-emerald-700 border-emerald-200", 
         icon: Home,
         label: "Individual"
       },
@@ -38,22 +38,22 @@ export function CustomerList() {
         label: "Business"
       },
       school: { 
-        color: "bg-purple-100 text-purple-700 border-purple-300", 
+        color: "bg-gray-100 text-gray-700 border-gray-200", 
         icon: School,
         label: "School"
       },
       institution: { 
-        color: "bg-orange-100 text-orange-700 border-orange-300", 
+        color: "bg-gray-100 text-gray-700 border-gray-200", 
         icon: Building,
         label: "Institution"
       },
       hotel: { 
-        color: "bg-pink-100 text-pink-700 border-pink-300", 
+        color: "bg-gray-100 text-gray-700 border-gray-200", 
         icon: Hotel,
         label: "Hotel"
       },
       developer: { 
-        color: "bg-indigo-100 text-indigo-700 border-indigo-300", 
+        color: "bg-emerald-50 text-emerald-700 border-emerald-200", 
         icon: Globe,
         label: "Developer"
       },
@@ -73,7 +73,7 @@ export function CustomerList() {
   if (loading) {
     return (
       <div className="text-center py-16">
-        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <div className="w-16 h-16 border-4 border-gray-200 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <p className="text-gray-600 font-medium">Loading customer profiles...</p>
       </div>
     )
@@ -83,46 +83,45 @@ export function CustomerList() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Users className="w-6 h-6 text-blue-600" />
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Users className="w-6 h-6 text-emerald-700" />
             Customer Profiles
           </h2>
-          <p className="text-gray-600 mt-1">View all registered customers</p>
+          <p className="text-sm text-gray-500 mt-1">View all registered customers</p>
         </div>
-        <Button onClick={loadCustomers} className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={loadCustomers} variant="outline" size="sm" className="h-8 rounded-xl border-gray-200 text-xs">
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
       </div>
 
       {customers.length === 0 ? (
-        <Card className="border border-gray-200">
+        <Card className="rounded-2xl border border-gray-100 bg-white">
           <CardContent className="text-center py-16">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="h-10 w-10 text-blue-600" />
+            <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="h-10 w-10 text-emerald-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No customers yet</h3>
+            <h3 className="text-base font-semibold text-gray-900 mb-2">No customers yet</h3>
             <p className="text-gray-600">Customer profiles will appear here</p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-6">
           {customers.map((customer) => (
-            <Card key={customer.id} className="border border-blue-200/80 shadow-sm transition-shadow hover:shadow-md">
-              <div className="h-1 bg-blue-500"></div>
-              <CardHeader className="bg-blue-50/40">
+            <Card key={customer.id} className="rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
+              <CardHeader className="border-b border-gray-100">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold text-lg">
+                      <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-700 font-semibold text-lg">
                         {customer.first_name.charAt(0)}{customer.last_name.charAt(0)}
                       </div>
                       <div>
-                        <CardTitle className="text-xl font-semibold text-gray-900">
+                        <CardTitle className="text-base font-semibold text-gray-900">
                           {customer.first_name} {customer.last_name}
                         </CardTitle>
                         {customer.organization_name && (
-                          <CardDescription className="text-base font-semibold text-blue-700">
+                          <CardDescription className="text-sm font-medium text-gray-600">
                             {customer.organization_name}
                           </CardDescription>
                         )}
@@ -142,8 +141,8 @@ export function CustomerList() {
                   <div className="space-y-3">
                     <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide mb-3">Contact Information</h4>
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Mail className="h-5 w-5 text-blue-600" />
+                      <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
+                        <Mail className="h-5 w-5 text-emerald-600" />
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">Email</p>
@@ -151,8 +150,8 @@ export function CustomerList() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Phone className="h-5 w-5 text-blue-600" />
+                      <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
+                        <Phone className="h-5 w-5 text-emerald-600" />
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">Phone</p>
@@ -160,8 +159,8 @@ export function CustomerList() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <MapPin className="h-5 w-5 text-blue-600" />
+                      <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
+                        <MapPin className="h-5 w-5 text-emerald-600" />
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">Location</p>
@@ -173,17 +172,17 @@ export function CustomerList() {
                   <div className="space-y-3">
                     <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide mb-3">Customer Details</h4>
                     {customer.organization_name && (
-                      <div className="p-3 bg-blue-50/60 rounded-lg border border-blue-200">
+                      <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                         <div className="flex items-center gap-2 mb-2">
-                          <Building className="w-4 h-4 text-blue-600" />
-                          <p className="text-xs text-blue-700 font-semibold">Organization</p>
+                          <Building className="w-4 h-4 text-emerald-600" />
+                          <p className="text-xs text-emerald-700 font-semibold">Organization</p>
                         </div>
                         <p className="text-sm font-bold text-gray-900">{customer.organization_name}</p>
                       </div>
                     )}
                     <div className="p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="w-4 h-4 text-blue-600" />
+                        <Sparkles className="w-4 h-4 text-emerald-700" />
                         <p className="text-xs text-gray-500 font-semibold">Marketing Preferences</p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -214,20 +213,10 @@ export function CustomerList() {
                   </div>
                 </div>
 
-                {/* Quick Stats */}
-                <div className="mt-6 pt-6 border-t grid grid-cols-3 gap-4">
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">{Math.floor(Math.random() * 50)}</div>
-                    <div className="text-xs text-gray-600 font-medium">Total Orders</div>
-                  </div>
-                  <div className="text-center p-3 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">KES {(Math.floor(Math.random() * 500000)).toLocaleString()}</div>
-                    <div className="text-xs text-gray-600 font-medium">Total Spent</div>
-                  </div>
-                  <div className="text-center p-3 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">{Math.floor(Math.random() * 365)} days</div>
-                    <div className="text-xs text-gray-600 font-medium">Customer Since</div>
-                  </div>
+                <div className="mt-6 pt-6 border-t">
+                  <p className="text-xs text-gray-500">
+                    Joined {new Date(customer.created_at || "").toLocaleDateString()}
+                  </p>
                 </div>
               </CardContent>
             </Card>

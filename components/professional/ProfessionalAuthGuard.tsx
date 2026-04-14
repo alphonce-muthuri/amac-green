@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { CenteredPanelSkeleton } from "@/components/loaders/page-skeletons"
 import { AlertCircle, LogOut } from "lucide-react"
 
 interface ProfessionalAuthGuardProps {
@@ -106,11 +107,7 @@ export default function ProfessionalAuthGuard({ children }: ProfessionalAuthGuar
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
-      </div>
-    )
+    return <CenteredPanelSkeleton />
   }
 
   if (!user || !isProfessional) {
@@ -124,26 +121,26 @@ export default function ProfessionalAuthGuard({ children }: ProfessionalAuthGuar
         <Card className="max-w-md w-full">
           <CardHeader>
             <div className="flex items-center">
-              <AlertCircle className="h-5 w-5 text-orange-600 mr-2" />
-              <CardTitle className="text-orange-800">Application Pending</CardTitle>
+              <AlertCircle className="h-5 w-5 text-gray-700 mr-2" />
+              <CardTitle className="text-gray-700">Application Pending</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-orange-700">
+            <p className="text-gray-700">
               Your professional application is currently <strong>{applicationStatus.status}</strong>.
             </p>
             {applicationStatus.status === "pending" && (
-              <p className="text-sm text-orange-600">
+              <p className="text-sm text-gray-700">
                 Our team is reviewing your professional credentials. This typically takes 1-3 business days.
                 Once approved, you'll have access to all professional features.
               </p>
             )}
             {applicationStatus.status === "rejected" && (
-              <p className="text-sm text-orange-600">
+              <p className="text-sm text-gray-700">
                 Your application was not approved. Please contact support for more information or to resubmit.
               </p>
             )}
-            <div className="text-sm text-orange-600">
+            <div className="text-sm text-gray-700">
               <p>
                 <strong>Company:</strong> {applicationStatus.company_name || "N/A"}
               </p>

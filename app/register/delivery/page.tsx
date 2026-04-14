@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { ArrowLeft, Truck, User, Car, MapPin, Phone, CreditCard, File } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -14,16 +13,15 @@ import { Textarea } from "@/components/ui/textarea"
 import { FileUpload } from "@/components/ui/file-upload"
 import { SiteHeader } from "@/components/site-header"
 import { registerDelivery } from "@/app/actions/auth"
+import { toast } from "@/hooks/use-toast"
+import { getFriendlyRegistrationError } from "@/lib/registration-errors"
 
 export default function DeliveryRegistrationPage() {
-  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
 
   async function handleSubmit(formData: FormData) {
     setIsSubmitting(true)
-    setMessage(null)
 
     try {
       const result = await registerDelivery(formData)
@@ -31,7 +29,7 @@ export default function DeliveryRegistrationPage() {
       if (result.success) {
         // Upload documents if any
         if (uploadedFiles.length > 0 && result.applicationId) {
-          setMessage({ type: "success", text: "Application submitted! Uploading documents..." })
+          toast({ title: "Application submitted", description: "Uploading documents..." })
           
           const uploadPromises = uploadedFiles.map(async (file, index) => {
             const documentFormData = new FormData()
@@ -70,18 +68,16 @@ export default function DeliveryRegistrationPage() {
           }
           
           if (failedUploads.length > 0) {
-            setMessage({ 
-              type: "error", 
-              text: `Application submitted but ${failedUploads.length} document(s) failed to upload. Please contact support.` 
+            toast({
+              title: "Some documents failed to upload",
+              description: `Your application was submitted, but ${failedUploads.length} document(s) failed. Please try again or contact support.`,
+              variant: "destructive",
             })
           } else {
-            setMessage({ 
-              type: "success", 
-              text: `${result.message} All documents uploaded successfully!` 
-            })
+            toast({ title: "Success", description: `${result.message} All documents uploaded successfully!` })
           }
         } else {
-          setMessage({ type: "success", text: result.message })
+          toast({ title: "Success", description: result.message })
         }
         
         // Reset form
@@ -89,10 +85,18 @@ export default function DeliveryRegistrationPage() {
         form?.reset()
         setUploadedFiles([])
       } else {
-        setMessage({ type: "error", text: result.error })
+        toast({
+          title: "Couldn't submit application",
+          description: getFriendlyRegistrationError(result.error),
+          variant: "destructive",
+        })
       }
     } catch (error) {
-      setMessage({ type: "error", text: "An unexpected error occurred. Please try again." })
+      toast({
+        title: "Something went wrong",
+        description: getFriendlyRegistrationError(error instanceof Error ? error.message : ""),
+        variant: "destructive",
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -123,18 +127,6 @@ export default function DeliveryRegistrationPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              {message && (
-                <div
-                  className={`mb-6 p-4 rounded-xl border ${
-                    message.type === "success"
-                      ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
-                      : "bg-red-50 text-red-800 border-red-200/80"
-                  }`}
-                >
-                  {message.text}
-                </div>
-              )}
-
               <form id="delivery-form" action={handleSubmit} className="space-y-6">
                 {/* Personal Information */}
                 <div className="space-y-4">
@@ -174,6 +166,11 @@ export default function DeliveryRegistrationPage() {
                     <Label htmlFor="password">Password *</Label>
                     <Input id="password" name="password" type="password" required />
                   </div>
+
+                <div>
+                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                  <Input id="confirmPassword" name="confirmPassword" type="password" required />
+                </div>
                 </div>
 
                 {/* Vehicle Information */}
@@ -312,17 +309,19 @@ export default function DeliveryRegistrationPage() {
                     maxSize={10}
                   />
                   
-                  <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200/60">
-                    <h4 className="font-semibold text-emerald-800 mb-2">Required Documents:</h4>
-                    <ul className="text-sm text-emerald-700 space-y-1">
-                      <li>• Copy of National ID</li>
-                      <li>• Copy of Driver&apos;s License</li>
-                      <li>• Certificate of Good Conduct</li>
-                      <li>• Vehicle Registration Certificate</li>
-                      <li>• Insurance Certificate (optional)</li>
+                  <div className="rounded-lg border border-emerald-200/60 bg-emerald-50/70 p-3">
+                    <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-800 mb-2">
+                      Required Documents
+                    </h4>
+                    <ul className="space-y-1 text-xs text-emerald-700 leading-relaxed">
+                      <li>Copy of National ID</li>
+                      <li>Copy of Driver&apos;s License</li>
+                      <li>Certificate of Good Conduct</li>
+                      <li>Vehicle Registration Certificate</li>
+                      <li>Insurance Certificate (optional)</li>
                     </ul>
-                    <p className="text-xs text-emerald-600 mt-2">
-                      Accepted formats: PDF, DOC, DOCX, JPG, PNG (Max 10MB each)
+                    <p className="mt-2 text-[11px] text-emerald-700/90">
+                      PDF, DOC, DOCX, JPG, PNG - max 10MB each
                     </p>
                   </div>
                 </div>
@@ -342,18 +341,6 @@ export default function DeliveryRegistrationPage() {
                   {isSubmitting ? "Submitting Application..." : "Submit Application"}
                 </Button>
 
-                {message?.type === "success" && (
-                  <div className="mt-4 text-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full rounded-full border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-                      onClick={() => router.push("/login")}
-                    >
-                      Go to Login Page
-                    </Button>
-                  </div>
-                )}
               </form>
             </CardContent>
           </Card>

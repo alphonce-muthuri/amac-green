@@ -17,15 +17,12 @@ import {
   CheckCircle2,
   PlayCircle,
   Mail,
-  Sparkles,
-  TrendingUp,
   Briefcase,
-  Star,
-  Target,
-  Zap,
   AlertCircle
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { AppShellSkeleton } from "@/components/loaders/page-skeletons"
+import { ProfessionalPageShell } from "@/components/professional/professional-page-shell"
 
 export default function AssignedJobsPage() {
   const [assignedJobs, setAssignedJobs] = useState<any[]>([])
@@ -116,13 +113,13 @@ export default function AssignedJobsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "assigned":
-        return "bg-blue-600 text-white"
-      case "in_progress":
-        return "bg-orange-600 text-white "
-      case "completed":
         return "bg-emerald-600 text-white"
+      case "in_progress":
+        return "bg-gray-100 text-gray-700 border border-gray-200"
+      case "completed":
+        return "bg-emerald-100 text-emerald-700 border border-emerald-200"
       default:
-        return "bg-gray-500 text-white"
+        return "bg-gray-100 text-gray-700 border border-gray-200"
     }
   }
 
@@ -155,140 +152,39 @@ export default function AssignedJobsPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-20 h-20 relative mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-green-200 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
-            <Award className="absolute inset-0 m-auto h-8 w-8 text-green-600" />
-          </div>
-          <p className="text-lg font-bold text-gray-900">Loading Assigned Jobs</p>
-          <p className="text-sm text-gray-600 mt-1">Fetching your projects...</p>
-        </div>
-      </div>
-    )
+    return <AppShellSkeleton />
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Hero Header */}
-          <div className="relative overflow-hidden">
-            <Card className="border border-green-300 shadow-sm">
-              <div className="h-2 bg-teal-500/30" />
-              <CardContent className="relative p-6 sm:p-8">
-                <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
-                  <div className="flex items-center gap-6">
-                    <div className="relative">
-                      <div className="w-24 h-24 bg-teal-700 border border-teal-800 rounded-2xl flex items-center justify-center shadow-sm">
-                        <Award className="h-12 w-12 text-white" />
-                      </div>
-                      <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-amber-600 border border-amber-700 rounded-full flex items-center justify-center border-4 border-white shadow-sm">
-                        <Star className="h-5 w-5 text-white" />
-                      </div>
-                    </div>
-
-                    <div>
-                      <h1 className="text-xl font-bold tracking-tight text-gray-900 mb-2">
-                        Assigned Jobs
-                      </h1>
-                      <p className="text-lg text-gray-600">
-                        Manage your <span className="font-bold text-green-700">{stats.total}</span> won projects
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        <Badge className="bg-blue-50 text-blue-800 border border-blue-300">
-                          <Award className="h-3 w-3 mr-1" />
-                          {stats.assigned} New
-                        </Badge>
-                        <Badge className="bg-orange-50 text-orange-800 border border-orange-200">
-                          <PlayCircle className="h-3 w-3 mr-1" />
-                          {stats.inProgress} In Progress
-                        </Badge>
-                        <Badge className="bg-emerald-50 text-green-800 border border-green-300">
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                          {stats.completed} Completed
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="w-20 h-20 bg-emerald-600 border border-emerald-700 rounded-full flex items-center justify-center shadow-sm shadow-green-500/50">
-                      <span className="text-xl font-bold tracking-tight text-white">{stats.total}</span>
-                    </div>
-                    <Badge className="bg-green-600 text-white">Active Projects</Badge>
-                  </div>
+    <>
+      <ProfessionalPageShell title="Assigned Jobs">
+        <div className="space-y-4">
+          <Card className="border border-gray-100 shadow-sm">
+            <CardContent className="p-5 sm:p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-emerald-600 mb-2">Assigned Pipeline</p>
+                  <h2 className="text-2xl font-semibold tracking-tight text-gray-900">Active delivery queue</h2>
+                  <p className="text-sm text-gray-500 mt-1">Track accepted jobs and close them faster.</p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Stats Dashboard */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border border-blue-200 hover:shadow-sm transition-shadow">
-              <div className="h-2 bg-blue-500/30" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center">
-                    <Award className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <Badge className="bg-blue-600 text-white">New</Badge>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200">{stats.total} total</Badge>
+                  <Badge className="bg-gray-100 text-gray-700 border border-gray-200">{stats.inProgress} in progress</Badge>
                 </div>
-                <p className="text-xl font-bold tracking-tight text-blue-700 mb-1">{stats.assigned}</p>
-                <p className="text-sm text-gray-600">Newly Assigned</p>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            <Card className="border border-orange-200 hover:shadow-sm transition-shadow">
-              <div className="h-2 bg-orange-500/30" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center">
-                    <PlayCircle className="h-6 w-6 text-orange-600" />
-                  </div>
-                  <Badge className="bg-orange-600 text-white ">Active</Badge>
-                </div>
-                <p className="text-xl font-bold tracking-tight text-orange-700 mb-1">{stats.inProgress}</p>
-                <p className="text-sm text-gray-600">In Progress</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-green-200 hover:shadow-sm transition-shadow">
-              <div className="h-2 bg-emerald-500/30" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center">
-                    <CheckCircle2 className="h-6 w-6 text-green-600" />
-                  </div>
-                  <Badge className="bg-green-600 text-white">Done</Badge>
-                </div>
-                <p className="text-xl font-bold tracking-tight text-green-700 mb-1">{stats.completed}</p>
-                <p className="text-sm text-gray-600">Completed</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border border-emerald-200 hover:shadow-sm transition-shadow">
-              <div className="h-2 bg-teal-500/30" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 bg-teal-50 border border-teal-200 rounded-xl flex items-center justify-center">
-                    <DollarSign className="h-6 w-6 text-emerald-600" />
-                  </div>
-                  <Badge className="bg-emerald-600 text-white">Total</Badge>
-                </div>
-                <p className="text-xl font-bold tracking-tight text-emerald-700 mb-1">
-                  {(stats.totalEarnings / 1000).toFixed(0)}K
-                </p>
-                <p className="text-sm text-gray-600">Total Earnings (KSH)</p>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+            <Card className="border border-gray-100"><CardContent className="p-4"><p className="text-xs text-gray-500">New</p><p className="text-xl font-semibold text-gray-900">{stats.assigned}</p></CardContent></Card>
+            <Card className="border border-gray-100"><CardContent className="p-4"><p className="text-xs text-gray-500">In Progress</p><p className="text-xl font-semibold text-gray-900">{stats.inProgress}</p></CardContent></Card>
+            <Card className="border border-gray-100"><CardContent className="p-4"><p className="text-xs text-gray-500">Completed</p><p className="text-xl font-semibold text-gray-900">{stats.completed}</p></CardContent></Card>
+            <Card className="border border-gray-100"><CardContent className="p-4"><p className="text-xs text-gray-500">Earnings</p><p className="text-xl font-semibold text-gray-900">KSH {stats.totalEarnings.toLocaleString()}</p></CardContent></Card>
           </div>
 
           {/* Jobs List */}
           {assignedJobs.length === 0 ? (
-            <Card className="border border-gray-300">
+            <Card className="border border-gray-100">
               <CardContent className="text-center py-16">
                 <div className="w-24 h-24 bg-gray-50 border border-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Award className="h-12 w-12 text-gray-400" />
@@ -297,7 +193,7 @@ export default function AssignedJobsPage() {
                 <p className="text-gray-600 mb-4">Win bids on installation jobs to see them here</p>
                 <Button 
                   asChild
-                  className="bg-teal-600 hover:bg-teal-700"
+                  className="bg-emerald-600 hover:bg-emerald-700"
                 >
                   <a href="/professional/jobs">Browse Available Jobs</a>
                 </Button>
@@ -306,19 +202,18 @@ export default function AssignedJobsPage() {
           ) : (
             <div className="space-y-4">
               {assignedJobs.map((job) => (
-                <Card 
+                <Card
                   key={job.id} 
-                  className="group border border-green-200 hover:shadow-sm  transition-all duration-300"
+                  className="group border border-gray-100 hover:bg-gray-50/70 transition-colors"
                 >
-                  <div className="h-2 bg-emerald-500/30" />
-            <CardHeader className="pb-3 bg-white border-b border-emerald-200">
+            <CardHeader className="pb-3 bg-white border-b border-gray-100">
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                       <div className="flex items-start gap-3 flex-1">
-                        <div className="w-12 h-12 bg-emerald-700 border border-emerald-800 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <div className="w-10 h-10 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center flex-shrink-0 text-emerald-700">
                           {getStatusIcon(job.status)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-xl font-bold text-gray-900 mb-1 line-clamp-1">
+                          <CardTitle className="text-base font-semibold text-gray-900 mb-1 line-clamp-1">
                             {job.title}
                           </CardTitle>
                           <CardDescription className="text-sm line-clamp-2">
@@ -335,27 +230,27 @@ export default function AssignedJobsPage() {
                   <CardContent className="space-y-4">
                     {/* Info Grid */}
                     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                      <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                      <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
                         <div className="flex items-center gap-2 mb-1">
-                          <MapPin className="h-4 w-4 text-blue-600" />
+                          <MapPin className="h-4 w-4 text-gray-500" />
                           <span className="text-xs font-semibold text-gray-600">Location</span>
                         </div>
                         <p className="text-sm font-bold text-gray-900">{job.location_city}</p>
                       </div>
 
-                      <div className="bg-emerald-50 p-3 rounded-xl border border-green-200">
+                      <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
                         <div className="flex items-center gap-2 mb-1">
                           <DollarSign className="h-4 w-4 text-green-600" />
                           <span className="text-xs font-semibold text-gray-600">Your Earnings</span>
                         </div>
-                        <p className="text-sm font-bold text-green-700">
+                        <p className="text-sm font-semibold text-emerald-700">
                           KSH {job.winning_bid?.total_bid_amount?.toLocaleString()}
                         </p>
                       </div>
 
-                      <div className="bg-purple-50 p-3 rounded-xl border border-emerald-200">
+                      <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
                         <div className="flex items-center gap-2 mb-1">
-                          <Calendar className="h-4 w-4 text-teal-600" />
+                          <Calendar className="h-4 w-4 text-emerald-700" />
                           <span className="text-xs font-semibold text-gray-600">Assigned Date</span>
                         </div>
                         <p className="text-sm font-bold text-gray-900">
@@ -364,9 +259,9 @@ export default function AssignedJobsPage() {
                       </div>
 
                       {job.preferred_date && (
-                        <div className="bg-orange-50 p-3 rounded-xl border border-orange-200">
+                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
                           <div className="flex items-center gap-2 mb-1">
-                            <Clock className="h-4 w-4 text-orange-600" />
+                            <Clock className="h-4 w-4 text-gray-700" />
                             <span className="text-xs font-semibold text-gray-600">Due Date</span>
                           </div>
                           <p className="text-sm font-bold text-gray-900">
@@ -378,9 +273,9 @@ export default function AssignedJobsPage() {
 
                     {/* Customer Info */}
                     {job.customer_profiles && (
-                      <div className="bg-indigo-50 p-4 rounded-xl border border-teal-200">
+                      <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
                         <div className="flex items-center gap-2 mb-3">
-                          <User className="h-5 w-5 text-indigo-600" />
+                          <User className="h-5 w-5 text-gray-500" />
                           <p className="text-sm font-bold text-gray-900">Customer Contact</p>
                         </div>
                         <div className="grid sm:grid-cols-2 gap-3 text-sm">
@@ -392,7 +287,7 @@ export default function AssignedJobsPage() {
                           </div>
                           <div>
                             <p className="text-gray-600 mb-1">Phone</p>
-                            <p className="font-bold text-indigo-600">
+                            <p className="font-semibold text-emerald-700">
                               {job.customer_profiles.phone || 'Not provided'}
                             </p>
                           </div>
@@ -406,7 +301,7 @@ export default function AssignedJobsPage() {
                         size="sm" 
                         variant="outline"
                         onClick={() => setSelectedJob(job)}
-                        className="flex-1 border  transition-transform"
+                        className="flex-1 border-gray-200"
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         View Details
@@ -415,7 +310,7 @@ export default function AssignedJobsPage() {
                       {job.status === "assigned" && (
                         <Button 
                           size="sm" 
-                          className="flex-1 bg-orange-600 hover:bg-orange-700 hover:bg-amber-700"
+                          className="flex-1 bg-gray-900 hover:bg-gray-800 text-white"
                           onClick={() => updateJobStatus(job.id, "in_progress")}
                         >
                           <PlayCircle className="h-4 w-4 mr-1" />
@@ -450,29 +345,28 @@ export default function AssignedJobsPage() {
               ))}
             </div>
           )}
-        </div>
       </div>
+      </ProfessionalPageShell>
 
       {/* Job Details Modal */}
       {selectedJob && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-green-300 shadow-sm">
-            <div className="h-2 bg-teal-500/30" />
-            <CardHeader className="border-b border-emerald-200 bg-white">
+          <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-100 shadow-sm">
+            <CardHeader className="border-b border-gray-100 bg-white">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-emerald-700 border border-emerald-800 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center text-emerald-700">
                     {getStatusIcon(selectedJob.status)}
                   </div>
                   <div>
-                    <CardTitle className="text-2xl">Job Details</CardTitle>
+                    <CardTitle className="text-xl">Job Details</CardTitle>
                     <CardDescription>{selectedJob.title}</CardDescription>
                   </div>
                 </div>
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="text-2xl h-10 w-10 p-0 hover:bg-red-100 hover:text-red-600"
+                  className="text-2xl h-10 w-10 p-0 hover:bg-gray-900 hover:text-gray-700"
                   onClick={() => setSelectedJob(null)}
                 >
                   ×
@@ -492,10 +386,10 @@ export default function AssignedJobsPage() {
 
               {/* Customer Information */}
               {selectedJob.customer_profiles && (
-                <div className="bg-indigo-50 p-6 rounded-2xl border border-teal-200">
+                <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-indigo-700 border border-indigo-800 rounded-lg flex items-center justify-center">
-                      <User className="h-5 w-5 text-white" />
+                    <div className="w-10 h-10 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center">
+                      <User className="h-5 w-5 text-emerald-700" />
                     </div>
                     <h4 className="font-bold text-lg text-gray-900">Customer Information</h4>
                   </div>
@@ -508,7 +402,7 @@ export default function AssignedJobsPage() {
                     </div>
                     <div className="bg-white p-4 rounded-xl">
                       <p className="text-sm text-gray-600 mb-1">Phone Number</p>
-                      <p className="font-bold text-indigo-600">
+                      <p className="font-bold text-emerald-700">
                         {selectedJob.customer_profiles.phone || 'Not provided'}
                       </p>
                     </div>
@@ -521,10 +415,10 @@ export default function AssignedJobsPage() {
               )}
 
               {/* Installation Details */}
-              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+              <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gray-700 border border-gray-800 rounded-lg flex items-center justify-center">
-                    <Briefcase className="h-5 w-5 text-white" />
+                    <div className="w-10 h-10 bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center">
+                      <Briefcase className="h-5 w-5 text-gray-700" />
                   </div>
                   <h4 className="font-bold text-lg text-gray-900">Installation Details</h4>
                 </div>
@@ -533,7 +427,7 @@ export default function AssignedJobsPage() {
                   <div className="bg-white p-4 rounded-xl">
                     <p className="text-sm text-gray-600 mb-1">Location</p>
                     <p className="text-sm text-gray-900">{selectedJob.location_address}</p>
-                    <p className="text-sm font-bold text-blue-600">{selectedJob.location_city}</p>
+                    <p className="text-sm font-bold text-emerald-700">{selectedJob.location_city}</p>
                   </div>
                   <div className="bg-white p-4 rounded-xl">
                     <p className="text-sm text-gray-600 mb-1">Urgency</p>
@@ -542,7 +436,7 @@ export default function AssignedJobsPage() {
                   {selectedJob.preferred_date && (
                     <div className="bg-white p-4 rounded-xl sm:col-span-2">
                       <p className="text-sm text-gray-600 mb-1">Preferred Installation Date</p>
-                      <p className="text-lg font-bold text-teal-600">
+                      <p className="text-lg font-bold text-emerald-700">
                         {new Date(selectedJob.preferred_date).toLocaleDateString('en-US', {
                           weekday: 'long',
                           year: 'numeric',
@@ -562,16 +456,16 @@ export default function AssignedJobsPage() {
 
               {/* Products */}
               {selectedJob.installation_job_items && selectedJob.installation_job_items.length > 0 && (
-                <div className="bg-emerald-50/60 p-6 rounded-2xl border border-emerald-200">
+                <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-teal-700 border border-teal-800 rounded-lg flex items-center justify-center">
-                      <Package className="h-5 w-5 text-white" />
+                    <div className="w-10 h-10 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center">
+                      <Package className="h-5 w-5 text-emerald-700" />
                     </div>
                     <h4 className="font-bold text-lg text-gray-900">Products to Install</h4>
                   </div>
                   <div className="space-y-2">
                     {selectedJob.installation_job_items.map((item: any) => (
-                      <div key={item.id} className="flex justify-between items-center p-4 bg-white rounded-xl border border-emerald-200">
+                      <div key={item.id} className="flex justify-between items-center p-4 bg-white rounded-lg border border-gray-100">
                         <span className="text-sm font-semibold text-gray-900">
                           <span className="text-emerald-600">{item.quantity}x</span> {item.product_name}
                         </span>
@@ -585,10 +479,10 @@ export default function AssignedJobsPage() {
               )}
 
               {/* Earnings Breakdown */}
-              <div className="bg-emerald-50 p-6 rounded-2xl border border-green-300 shadow-sm">
+              <div className="bg-emerald-50/40 p-6 rounded-xl border border-emerald-100">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-emerald-700 border border-emerald-800 rounded-lg flex items-center justify-center">
-                    <DollarSign className="h-5 w-5 text-white" />
+                    <div className="w-10 h-10 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center">
+                      <DollarSign className="h-5 w-5 text-emerald-700" />
                   </div>
                   <h4 className="font-bold text-lg text-gray-900">Your Earnings</h4>
                 </div>
@@ -612,8 +506,8 @@ export default function AssignedJobsPage() {
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
                 {selectedJob.status === "assigned" && (
-                  <Button 
-                    className="flex-1 h-14 bg-orange-600 hover:bg-orange-700 hover:bg-amber-700 text-base font-bold"
+                  <Button
+                    className="flex-1 h-12 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold"
                     onClick={() => {
                       updateJobStatus(selectedJob.id, "in_progress")
                       setSelectedJob(null)
@@ -621,13 +515,12 @@ export default function AssignedJobsPage() {
                   >
                     <PlayCircle className="h-5 w-5 mr-2" />
                     Start Work
-                    <Zap className="h-5 w-5 ml-2" />
                   </Button>
                 )}
                 
                 {selectedJob.status === "in_progress" && (
-                  <Button 
-                    className="flex-1 h-14 bg-emerald-600 hover:bg-emerald-700 hover:bg-emerald-700 text-base font-bold"
+                  <Button
+                    className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 text-sm font-semibold"
                     onClick={() => {
                       updateJobStatus(selectedJob.id, "completed")
                       setSelectedJob(null)
@@ -635,7 +528,6 @@ export default function AssignedJobsPage() {
                   >
                     <CheckCircle2 className="h-5 w-5 mr-2" />
                     Mark as Complete
-                    <Star className="h-5 w-5 ml-2" />
                   </Button>
                 )}
 
@@ -665,6 +557,6 @@ export default function AssignedJobsPage() {
           </Card>
         </div>
       )}
-    </div>
+    </>
   )
 }

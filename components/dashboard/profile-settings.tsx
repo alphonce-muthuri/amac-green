@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase"
 import { User, Save, Eye, EyeOff } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface ProfileData {
   first_name: string
@@ -202,10 +203,11 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             Profile Settings
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-          </div>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-40" />
         </CardContent>
       </Card>
     )

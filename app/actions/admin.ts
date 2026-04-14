@@ -1,8 +1,12 @@
 "use server"
 
 import { supabaseAdmin } from "@/lib/supabase-server"
+import { requireAdmin, ADMIN_EMAILS } from "@/lib/require-admin"
 
 export async function getVendorApplications() {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const { data, error } = await supabaseAdmin
       .from("vendor_applications")
@@ -20,6 +24,9 @@ export async function getVendorApplications() {
 }
 
 export async function getProfessionalApplications() {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const { data, error } = await supabaseAdmin
       .from("professional_applications")
@@ -37,6 +44,9 @@ export async function getProfessionalApplications() {
 }
 
 export async function getCustomerProfiles() {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const { data, error } = await supabaseAdmin
       .from("customer_profiles")
@@ -54,6 +64,9 @@ export async function getCustomerProfiles() {
 }
 
 export async function updateVendorStatus(applicationId: string, status: "approved" | "rejected") {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     // First get the application details for email
     const { data: application, error: fetchError } = await supabaseAdmin
@@ -104,6 +117,9 @@ export async function updateVendorStatus(applicationId: string, status: "approve
 }
 
 export async function updateProfessionalStatus(applicationId: string, status: "approved" | "rejected") {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     // First get the application details for email
     const { data: application, error: fetchError } = await supabaseAdmin
@@ -154,6 +170,9 @@ export async function updateProfessionalStatus(applicationId: string, status: "a
 }
 
 export async function getDeliveryApplications() {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const { data, error } = await supabaseAdmin
       .from("delivery_applications")
@@ -171,6 +190,9 @@ export async function getDeliveryApplications() {
 }
 
 export async function updateDeliveryStatus(applicationId: string, status: "approved" | "rejected") {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     // First get the application details for email
     const { data: application, error: fetchError } = await supabaseAdmin
@@ -221,6 +243,9 @@ export async function updateDeliveryStatus(applicationId: string, status: "appro
 }
 
 export async function getDashboardStats() {
+  if (!await requireAdmin()) {
+    return { success: false, error: "Unauthorized" }
+  }
   try {
     const [vendorResult, professionalResult, deliveryResult, customerResult] = await Promise.all([
       supabaseAdmin.from("vendor_applications").select("status", { count: "exact" }),
@@ -283,7 +308,5 @@ export async function getDashboardStats() {
 }
 
 export async function checkAdminAccess(email: string) {
-  const adminEmails = ["admin@amacgreen.energy", "lunique604@gmail.com"]
-
-  return adminEmails.includes(email.toLowerCase())
+  return ADMIN_EMAILS.includes(email.toLowerCase())
 }

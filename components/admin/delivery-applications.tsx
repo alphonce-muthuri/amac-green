@@ -70,7 +70,7 @@ export function DeliveryApplications() {
     switch (status) {
       case "pending":
         return (
-          <Badge className="bg-purple-100 text-purple-700 border border-purple-300 font-semibold hover:bg-purple-100">
+          <Badge className="bg-gray-100 text-gray-700 border border-gray-200 font-semibold hover:bg-gray-100">
             <Clock className="h-4 w-4 mr-1" />
             Pending Review
           </Badge>
@@ -84,7 +84,7 @@ export function DeliveryApplications() {
         )
       case "rejected":
         return (
-          <Badge className="bg-red-100 text-red-700 border border-red-300 font-semibold hover:bg-red-100">
+          <Badge className="bg-red-50 text-red-600 border border-red-200 font-semibold hover:bg-red-50">
             <XCircle className="h-4 w-4 mr-1" />
             Rejected
           </Badge>
@@ -110,7 +110,7 @@ export function DeliveryApplications() {
   if (loading) {
     return (
       <div className="text-center py-16">
-        <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <div className="w-16 h-16 border-4 border-gray-200 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <p className="text-gray-600 font-medium">Loading delivery applications...</p>
       </div>
     )
@@ -120,25 +120,25 @@ export function DeliveryApplications() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Truck className="w-6 h-6 text-purple-600" />
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <Truck className="w-6 h-6 text-gray-700" />
             Delivery Partner Applications
           </h2>
-          <p className="text-gray-600 mt-1">Review and manage delivery partner applications</p>
+          <p className="text-sm text-gray-500 mt-1">Review and manage delivery partner applications</p>
         </div>
-        <Button onClick={loadApplications} className="bg-purple-600 hover:bg-purple-700">
+        <Button onClick={loadApplications} variant="outline" size="sm" className="h-8 rounded-xl border-gray-200 text-xs">
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
       </div>
 
       {applications.length === 0 ? (
-        <Card className="border border-gray-200">
+        <Card className="rounded-2xl border border-gray-100 bg-white">
           <CardContent className="text-center py-16">
-            <div className="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Truck className="h-10 w-10 text-purple-600" />
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Truck className="h-10 w-10 text-gray-700" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No delivery applications yet</h3>
+            <h3 className="text-base font-semibold text-gray-900 mb-2">No delivery applications yet</h3>
             <p className="text-gray-600">New applications will appear here for review</p>
           </CardContent>
         </Card>
@@ -148,25 +148,24 @@ export function DeliveryApplications() {
             const VehicleIcon = getVehicleIcon(app.vehicle_type)
             
             return (
-              <Card key={app.id} className="border border-purple-200/80 shadow-sm transition-shadow hover:shadow-md">
-                <div className="h-1 bg-purple-500"></div>
-                <CardHeader className="bg-purple-50/40">
+              <Card key={app.id} className="rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
+                <CardHeader className="border-b border-gray-100">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-semibold text-lg">
+                        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 font-semibold text-lg">
                           {app.first_name.charAt(0)}{app.last_name.charAt(0)}
                         </div>
                         <div>
-                          <CardTitle className="text-xl font-semibold text-gray-900">
+                          <CardTitle className="text-base font-semibold text-gray-900">
                             {app.first_name} {app.last_name}
                           </CardTitle>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge className="bg-purple-100 text-purple-700 border border-purple-300 font-semibold hover:bg-purple-100">
+                            <Badge className="bg-gray-100 text-gray-700 border border-gray-200 font-semibold hover:bg-gray-100">
                               <VehicleIcon className="h-3 w-3 mr-1" />
                               {app.vehicle_type}
                             </Badge>
-                            <Badge className="bg-purple-100 text-purple-700 border border-purple-300 font-semibold text-xs hover:bg-purple-100">
+                            <Badge className="bg-gray-100 text-gray-700 border border-gray-200 font-semibold text-xs hover:bg-gray-100">
                               {app.vehicle_registration}
                             </Badge>
                           </div>
@@ -181,8 +180,8 @@ export function DeliveryApplications() {
                     <div className="space-y-3">
                       <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide mb-3">Contact Information</h4>
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                          <Mail className="h-5 w-5 text-purple-600" />
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Mail className="h-5 w-5 text-gray-700" />
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Email</p>
@@ -190,8 +189,8 @@ export function DeliveryApplications() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                          <Phone className="h-5 w-5 text-purple-600" />
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Phone className="h-5 w-5 text-gray-700" />
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Phone</p>
@@ -199,8 +198,8 @@ export function DeliveryApplications() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                          <MapPin className="h-5 w-5 text-purple-600" />
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <MapPin className="h-5 w-5 text-gray-700" />
                         </div>
                         <div>
                           <p className="text-xs text-gray-500">Location</p>
@@ -211,17 +210,17 @@ export function DeliveryApplications() {
 
                     <div className="space-y-3">
                       <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide mb-3">Vehicle & License Details</h4>
-                      <div className="p-3 bg-purple-50/60 rounded-lg border border-purple-200">
+                      <div className="p-3 bg-gray-100 rounded-lg border border-gray-200">
                         <div className="flex items-center gap-2 mb-2">
-                          <Shield className="w-4 h-4 text-purple-600" />
-                          <p className="text-xs text-purple-700 font-semibold">Driver's License</p>
+                          <Shield className="w-4 h-4 text-gray-700" />
+                          <p className="text-xs text-gray-700 font-semibold">Driver's License</p>
                         </div>
                         <p className="text-sm font-bold text-gray-900">{app.driver_license}</p>
                       </div>
-                      <div className="p-3 bg-purple-50/60 rounded-lg border border-purple-200">
+                      <div className="p-3 bg-gray-100 rounded-lg border border-gray-200">
                         <div className="flex items-center gap-2 mb-2">
-                          <Car className="w-4 h-4 text-purple-600" />
-                          <p className="text-xs text-purple-700 font-semibold">National ID</p>
+                          <Car className="w-4 h-4 text-gray-700" />
+                          <p className="text-xs text-gray-700 font-semibold">National ID</p>
                         </div>
                         <p className="text-sm font-bold text-gray-900">{app.national_id}</p>
                       </div>
@@ -237,7 +236,7 @@ export function DeliveryApplications() {
                   {app.documents && app.documents.length > 0 && (
                     <div className="mb-6">
                       <h4 className="font-bold text-gray-900 text-sm uppercase tracking-wide mb-3 flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-purple-600" />
+                        <FileText className="w-4 h-4 text-gray-700" />
                         Documents ({app.documents.length})
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -246,9 +245,9 @@ export function DeliveryApplications() {
                             key={index}
                             variant="outline"
                             onClick={() => window.open(doc.url, '_blank')}
-                            className="h-auto py-3 border hover:border-purple-300 hover:bg-purple-50"
+                            className="h-auto py-3 border hover:border-gray-200 hover:bg-gray-100"
                           >
-                            <FileText className="h-4 w-4 mr-2 text-purple-600" />
+                            <FileText className="h-4 w-4 mr-2 text-gray-700" />
                             <span className="text-xs font-medium truncate">{doc.name}</span>
                             <ExternalLink className="h-3 w-3 ml-auto text-gray-400" />
                           </Button>
@@ -270,7 +269,7 @@ export function DeliveryApplications() {
                     {app.status === "pending" && (
                       <>
                         <Button
-                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white flex-1"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1"
                           onClick={() => handleStatusUpdate(app.id!, "approved")}
                         >
                           <CheckCircle className="h-4 w-4 mr-2" />
@@ -279,7 +278,6 @@ export function DeliveryApplications() {
                         <Button 
                           variant="destructive" 
                           onClick={() => handleStatusUpdate(app.id!, "rejected")}
-                          className="bg-gradient-to-r from-red-600 to-rose-600"
                         >
                           <XCircle className="h-4 w-4 mr-2" />
                           Reject
@@ -297,12 +295,11 @@ export function DeliveryApplications() {
       {/* Detail Modal */}
       {selectedApp && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-purple-300 shadow-lg">
-            <div className="h-1 bg-purple-500"></div>
-            <CardHeader className="bg-purple-50/40 border-b">
+          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-100 shadow-lg">
+            <CardHeader className="border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-2xl font-bold text-gray-900">
+                  <CardTitle className="text-lg font-semibold text-gray-900">
                     {selectedApp.first_name} {selectedApp.last_name}
                   </CardTitle>
                   <CardDescription>Complete Application Details</CardDescription>
@@ -316,7 +313,7 @@ export function DeliveryApplications() {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                    <Truck className="w-5 h-5 text-purple-600" />
+                    <Truck className="w-5 h-5 text-gray-700" />
                     Personal & Vehicle Information
                   </h4>
                   <div className="space-y-2 text-sm bg-gray-50 p-4 rounded-lg">
@@ -329,7 +326,7 @@ export function DeliveryApplications() {
                 </div>
                 <div className="space-y-4">
                   <h4 className="font-bold text-gray-900 flex items-center gap-2">
-                    <Phone className="w-5 h-5 text-purple-600" />
+                    <Phone className="w-5 h-5 text-gray-700" />
                     Contact & Emergency
                   </h4>
                   <div className="space-y-2 text-sm bg-gray-50 p-4 rounded-lg">
@@ -358,14 +355,14 @@ export function DeliveryApplications() {
               {selectedApp.documents && selectedApp.documents.length > 0 && (
                 <div>
                   <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-purple-600" />
+                    <FileText className="w-5 h-5 text-gray-700" />
                     Uploaded Documents
                   </h4>
                   <div className="grid gap-3">
                     {selectedApp.documents.map((doc, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-purple-50/60 rounded-lg border border-purple-200">
+                      <div key={index} className="flex items-center justify-between p-4 bg-gray-100 rounded-lg border border-gray-200">
                         <div className="flex items-center space-x-3">
-                          <FileText className="h-5 w-5 text-purple-600" />
+                          <FileText className="h-5 w-5 text-gray-700" />
                           <div>
                             <p className="text-sm font-semibold text-gray-900">{doc.name}</p>
                             <p className="text-xs text-gray-500">
@@ -376,7 +373,7 @@ export function DeliveryApplications() {
                         <Button
                           size="sm"
                           onClick={() => window.open(doc.url, '_blank')}
-                          className="bg-purple-600 hover:bg-purple-700"
+                          variant="outline"
                         >
                           <Download className="h-3 w-3 mr-1" />
                           View
@@ -390,7 +387,7 @@ export function DeliveryApplications() {
               {selectedApp.status === "pending" && (
                 <div className="flex gap-3 pt-6 border-t">
                   <Button
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white flex-1"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1"
                     onClick={() => {
                       handleStatusUpdate(selectedApp.id!, "approved")
                       setSelectedApp(null)
@@ -401,7 +398,6 @@ export function DeliveryApplications() {
                   </Button>
                   <Button
                     variant="destructive"
-                    className="bg-gradient-to-r from-red-600 to-rose-600"
                     onClick={() => {
                       handleStatusUpdate(selectedApp.id!, "rejected")
                       setSelectedApp(null)

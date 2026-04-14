@@ -375,22 +375,25 @@ export const KENYA_COUNTIES: County[] = [
 
 // Helper function to get all county names
 export function getCountyNames(): string[] {
-  return KENYA_COUNTIES.map(county => county.name).sort()
+  return [...KENYA_COUNTIES.map((county) => county.name)].sort()
 }
 
 // Helper function to get sub-counties for a specific county
 export function getSubCounties(countyName: string): string[] {
-  const county = KENYA_COUNTIES.find(c => c.name === countyName)
-  return county ? county.subCounties.map(sc => sc.name).sort() : []
+  const normalizedCounty = countyName.trim().toLowerCase()
+  const county = KENYA_COUNTIES.find((c) => c.name.trim().toLowerCase() === normalizedCounty)
+  return county ? [...county.subCounties.map((sc) => sc.name)].sort() : []
 }
 
 // Helper function to get wards for a specific sub-county
 export function getWards(countyName: string, subCountyName: string): string[] {
-  const county = KENYA_COUNTIES.find(c => c.name === countyName)
+  const normalizedCounty = countyName.trim().toLowerCase()
+  const normalizedSubCounty = subCountyName.trim().toLowerCase()
+  const county = KENYA_COUNTIES.find((c) => c.name.trim().toLowerCase() === normalizedCounty)
   if (!county) return []
   
-  const subCounty = county.subCounties.find(sc => sc.name === subCountyName)
-  return subCounty ? subCounty.wards.sort() : []
+  const subCounty = county.subCounties.find((sc) => sc.name.trim().toLowerCase() === normalizedSubCounty)
+  return subCounty ? [...subCounty.wards].sort() : []
 }
 
 // All 47 counties for quick reference

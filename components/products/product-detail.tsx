@@ -1,17 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, ShoppingCart, Star, Share2, Truck, Shield, ArrowLeft } from "lucide-react"
+import { Minus, Plus, ShoppingCart, ChevronLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useCart } from "@/lib/cart-context"
-import { SiteHeader } from "@/components/site-header"
-import { ReviewForm } from "./review-form"
-import { ReviewsList } from "./reviews-list"
+import { useAuth } from "@/lib/auth-context"
+
+interface ProductImage {
+  id: string
+  image_url: string
+  alt_text?: string
+  is_primary?: boolean
+}
 
 interface ProductDetailProps {
   product: any
@@ -19,352 +21,169 @@ interface ProductDetailProps {
 }
 
 export function ProductDetail({ product, relatedProducts }: ProductDetailProps) {
-  const [selectedImage, setSelectedImage] = useState(0)
-  const [quantity, setQuantity] = useState(1)
-  const [isFavorite, setIsFavorite] = useState(false)
-  const { addToCart } = useCart()
-  const [added, setAdded] = useState(false)
-  const [reviewsRefreshTrigger, setReviewsRefreshTrigger] = useState(0)
+  const images: ProductImage[] = useMemo(() => {
+    if (!product?.product_images?.length) {
+      return [{ id: "placeholder", image_url: "/placeholder.svg?height=900&width=900", alt_text: product?.name }]
+    }
+    return product.product_images
+  }, [product])
 
-  const images = product.product_images || []
-  const primaryImage = images.find((img: any) => img.is_primary) || images[0]
+  const [selectedImage, setSelectedImage] = useState(
+    Math.max(
+      0,
+      images.findIndex((img) => img.is_primary),
+    ),
+  )
+  const [quantity, setQuantity] = useState(1)
+  const [added, setAdded] = useState(false)
+  const { addToCart } = useCart()
+  const { user } = useAuth()
+
+  const inStock = (product.inventory_quantity ?? 0) > 0
 
   const addToCartHandler = () => {
     addToCart({
       productId: product.id,
       name: product.name,
       price: product.price,
-      image: product.product_images?.[0]?.image_url,
+      image: images[selectedImage]?.image_url || images[0]?.image_url,
       quantity,
       stock: product.inventory_quantity,
     })
     setAdded(true)
-    setTimeout(() => setAdded(false), 1500)
-  }
-
-  const shareProduct = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: product.name,
-        text: product.short_description,
-        url: window.location.href,
-      })
-    } else {
-      navigator.clipboard.writeText(window.location.href)
-      alert("Product link copied to clipboard!")
-    }
+    setTimeout(() => setAdded(false), 1200)
   }
 
   return (
-    <div className="space-y-8">
-      <SiteHeader />
-      {/* Breadcrumb */}
-      <nav className="flex items-center space-x-2 text-sm text-gray-600">
-        <Link href="/products" className="hover:text-green-600 flex items-center">
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Products
-        </Link>
-        <span>/</span>
-        <span>{product.product_categories?.name || "Uncategorized"}</span>
-        <span>/</span>
-        <span className="text-gray-900">{product.name}</span>
-      </nav>
+    <div className="space-y-10">
+      <Link href="/products" className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-800">
+        <ChevronLeft className="h-4 w-4" />
+        Shop everything
+      </Link>
 
-      {/* Main Product Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Product Images */}
-        <div className="space-y-4">
-          {/* Main Image */}
-          <div className="aspect-square relative overflow-hidden rounded-lg bg-gray-100">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div className="space-y-3">
+          <div className="relative w-full max-w-[560px] h-[220px] sm:h-[260px] md:h-[300px] lg:h-[320px] bg-neutral-100 rounded-2xl overflow-hidden">
             <Image
-              src={
-                images[selectedImage]?.image_url || primaryImage?.image_url || "/placeholder.svg?height=600&width=600"
-              }
+              src={images[selectedImage]?.image_url || images[0]?.image_url}
               alt={images[selectedImage]?.alt_text || product.name}
               fill
-              className="object-cover"
+              className="object-contain"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 42vw"
+              priority
             />
           </div>
 
-          {/* Thumbnail Images */}
           {images.length > 1 && (
-            <div className="flex space-x-2 overflow-x-auto">
-              {images.map((image: any, index: number) => (
+            <div className="grid grid-cols-4 gap-2 max-w-[360px]">
+              {images.slice(0, 4).map((image, index) => (
                 <button
-                  key={image.id}
+                  key={image.id ?? `${image.image_url}-${index}`}
+                  className={[
+                    "relative h-16 sm:h-20 rounded-xl overflow-hidden bg-neutral-100 border transition-colors",
+                    selectedImage === index ? "border-neutral-900" : "border-neutral-200",
+                  ].join(" ")}
                   onClick={() => setSelectedImage(index)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                    selectedImage === index ? "border-green-500" : "border-gray-200"
-                  }`}
                 >
-                  <Image
-                    src={image.image_url || "/placeholder.svg"}
-                    alt={image.alt_text || `${product.name} - Image ${index + 1}`}
-                    width={80}
-                    height={80}
-                    className="object-cover w-full h-full"
-                  />
+                  <Image src={image.image_url} alt={image.alt_text || product.name} fill className="object-contain" sizes="80px" />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Product Info */}
         <div className="space-y-6">
-          {/* Title and Category */}
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <Badge variant="secondary">{product.product_categories?.name || "Uncategorized"}</Badge>
-              <Button variant="ghost" size="sm" onClick={shareProduct}>
-                <Share2 className="h-4 w-4" />
-              </Button>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-            <p className="text-gray-600 mt-2">by {product.vendor_name}</p>
+            <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">
+              {product.product_categories?.name || "Product"}
+            </p>
+            <h1 className="text-3xl font-medium text-neutral-900 tracking-tight">{product.name}</h1>
+            <p className="text-sm text-neutral-500 mt-2">by {product.vendor_name || "AMAC Green"}</p>
           </div>
 
-          {/* Rating */}
-          <div className="flex items-center space-x-2">
-            <div className="flex">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-5 w-5 text-gray-300" />
-              ))}
-            </div>
-            <span className="text-sm text-gray-600">(No reviews yet)</span>
-          </div>
+          <p className="text-2xl font-medium text-emerald-700">Ksh {Number(product.price || 0).toLocaleString("en-KE")}</p>
 
-          {/* Price */}
           <div className="space-y-2">
-            <div className="flex items-center space-x-3">
-              <span className="text-3xl font-bold text-gray-900">Ksh{product.price.toLocaleString("en-KE", { minimumFractionDigits: 2 })}</span>
-              {product.compare_price && product.compare_price > product.price && (
-                <>
-                  <span className="text-xl text-gray-500 line-through">Ksh{product.compare_price.toLocaleString("en-KE", { minimumFractionDigits: 2 })}</span>
-                  <Badge className="bg-red-500">
-                    {Math.round(((product.compare_price - product.price) / product.compare_price) * 100)}% OFF
-                  </Badge>
-                </>
-              )}
-            </div>
-            {product.short_description && <p className="text-gray-600">{product.short_description}</p>}
+            <p className="text-sm font-medium text-neutral-900">Why you'll love this</p>
+            <p className="text-sm text-neutral-600 leading-relaxed">
+              {product.short_description || product.description || "A high-quality product built for reliable performance and long-term value."}
+            </p>
           </div>
 
-          {/* Stock Status */}
-          <div className="flex items-center space-x-2">
-            {product.inventory_quantity > 0 ? (
-              <>
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-green-600 font-medium">In Stock ({product.inventory_quantity} available)</span>
-              </>
-            ) : (
-              <>
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span className="text-red-600 font-medium">Out of Stock</span>
-              </>
-            )}
-          </div>
-
-          {/* Quantity and Add to Cart */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <label className="font-medium">Quantity:</label>
-              <div className="flex items-center border rounded-lg">
+          <div className="pt-1">
+            <p className="text-sm text-neutral-500 mb-2">{inStock ? `${product.inventory_quantity} in stock` : "Out of stock"}</p>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="inline-flex items-center rounded-lg bg-neutral-100">
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-2 hover:bg-gray-100"
+                  className="h-9 w-9 flex items-center justify-center text-neutral-700 disabled:opacity-40"
+                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
                   disabled={quantity <= 1}
                 >
-                  -
+                  <Minus className="h-3.5 w-3.5" />
                 </button>
-                <span className="px-4 py-2 border-x">{quantity}</span>
+                <span className="w-9 text-center text-sm text-neutral-900 tabular-nums">{quantity}</span>
                 <button
-                  onClick={() => setQuantity(Math.min(product.inventory_quantity, quantity + 1))}
-                  className="px-3 py-2 hover:bg-gray-100"
-                  disabled={quantity >= product.inventory_quantity}
+                  className="h-9 w-9 flex items-center justify-center text-neutral-700 disabled:opacity-40"
+                  onClick={() => setQuantity((prev) => Math.min(product.inventory_quantity || prev + 1, prev + 1))}
+                  disabled={!inStock || quantity >= (product.inventory_quantity || 1)}
                 >
-                  +
+                  <Plus className="h-3.5 w-3.5" />
                 </button>
               </div>
-            </div>
 
-            <div className="flex space-x-4">
               <Button
                 onClick={addToCartHandler}
-                disabled={product.inventory_quantity === 0}
-                className="flex-1 bg-green-600 hover:bg-green-700"
+                disabled={!inStock}
+                className="h-9 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white px-5 text-sm"
               >
                 <ShoppingCart className="h-4 w-4 mr-2" />
-                {added ? "Added!" : "Add to Cart"}
+                {added ? "Added" : "Add to bag"}
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsFavorite(!isFavorite)}
-                className={isFavorite ? "text-red-500 border-red-500" : ""}
-              >
-                <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
+
+              <Button asChild className="h-9 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-5 text-sm">
+                <Link href={user ? "/checkout" : "/login?redirect=/checkout"}>
+                  Proceed to checkout
+                </Link>
               </Button>
             </div>
           </div>
 
-          {/* Features */}
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-            <div className="flex items-center space-x-2">
-              <Truck className="h-5 w-5 text-green-600" />
-              <span className="text-sm">Free Shipping</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Shield className="h-5 w-5 text-green-600" />
-              <span className="text-sm">Warranty Included</span>
-            </div>
+          <div className="pt-4 border-t border-neutral-200 space-y-1.5 text-xs text-neutral-500">
+            <p>Free delivery over KES 2,000</p>
+            <p>M-Pesa accepted</p>
+            <p>Easy returns</p>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Product Details Tabs */}
-      <Card>
-        <CardContent className="p-6">
-          <Tabs defaultValue="description" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="specifications">Specifications</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="description" className="mt-6">
-              <div className="prose max-w-none">
-                <p className="text-gray-700 leading-relaxed">{product.description || "No description available."}</p>
-
-                {product.warranty_info && (
-                  <div className="mt-6">
-                    <h4 className="font-semibold mb-2">Warranty Information</h4>
-                    <p className="text-gray-700">{product.warranty_info}</p>
-                  </div>
-                )}
-
-                {product.shipping_info && (
-                  <div className="mt-6">
-                    <h4 className="font-semibold mb-2">Shipping Information</h4>
-                    <p className="text-gray-700">{product.shipping_info}</p>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="specifications" className="mt-6">
-              <div className="space-y-4">
-                {product.specifications ? (
-                  Object.entries(product.specifications).map(([key, value]) => (
-                    <div key={key} className="flex justify-between py-2 border-b">
-                      <span className="font-medium capitalize">{key.replace(/_/g, " ")}</span>
-                      <span className="text-gray-700">{String(value)}</span>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-gray-600">No specifications available.</p>
-                )}
-
-                {/* Basic product specs */}
-                <div className="space-y-2 mt-6">
-                  <div className="flex justify-between py-2 border-b">
-                    <span className="font-medium">SKU</span>
-                    <span className="text-gray-700">{product.sku || "N/A"}</span>
-                  </div>
-                  {product.weight && (
-                    <div className="flex justify-between py-2 border-b">
-                      <span className="font-medium">Weight</span>
-                      <span className="text-gray-700">{product.weight} kg</span>
-                    </div>
-                  )}
-                  {(product.dimensions_length || product.dimensions_width || product.dimensions_height) && (
-                    <div className="flex justify-between py-2 border-b">
-                      <span className="font-medium">Dimensions</span>
-                      <span className="text-gray-700">
-                        {product.dimensions_length || 0} × {product.dimensions_width || 0} ×{" "}
-                        {product.dimensions_height || 0} cm
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="reviews" className="mt-6">
-              <div className="space-y-6">
-                <ReviewForm 
-                  productId={product.id} 
-                  onReviewSubmitted={() => setReviewsRefreshTrigger(prev => prev + 1)} 
-                />
-                <ReviewsList 
-                  productId={product.id} 
-                  refreshTrigger={reviewsRefreshTrigger} 
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-
-      {/* Vendor Information */}
-      <Card>
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Vendor Information</h3>
-          <div className="flex items-start space-x-4">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <span className="text-green-600 font-semibold text-xl">{product.vendor_name?.charAt(0) || "V"}</span>
-            </div>
-            <div className="flex-1">
-              <h4 className="font-medium text-gray-900">{product.vendor_name}</h4>
-              <p className="text-gray-600 text-sm mt-1">Verified Renewable Energy Vendor</p>
-              <div className="flex items-center space-x-4 mt-3">
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/products">View All Products</Link>
-                </Button>
-                <Button variant="outline" size="sm">
-                  Contact Customer Support
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Related Products */}
       {relatedProducts.length > 0 && (
-        <div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-6">Related Products</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {relatedProducts.map((relatedProduct) => (
-              <Card key={relatedProduct.id} className="group hover:shadow-lg transition-shadow">
-                <CardContent className="p-0">
-                  <Link href={`/products/${relatedProduct.id}`}>
-                    <div className="aspect-square relative overflow-hidden rounded-t-lg">
-                      <Image
-                        src={
-                          relatedProduct.product_images?.find(img => img.is_primary)?.image_url ||
-                          relatedProduct.product_images?.[0]?.image_url ||
-                          relatedProduct.image ||
-                          "/placeholder.svg?height=200&width=200"
-                        }
-                        alt={
-                          relatedProduct.product_images?.find(img => img.is_primary)?.alt_text ||
-                          relatedProduct.product_images?.[0]?.alt_text ||
-                          relatedProduct.name
-                        }
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                    <div className="p-4">
-                      <h4 className="font-medium text-gray-900 line-clamp-2 mb-2">{relatedProduct.name}</h4>
-                      <p className="text-lg font-bold text-gray-900">${relatedProduct.price}</p>
-                    </div>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
+        <section className="space-y-4">
+          <h2 className="text-lg font-medium text-neutral-900">Related products</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {relatedProducts.map((relatedProduct) => {
+              const relatedImage =
+                relatedProduct.product_images?.find((img: any) => img.is_primary)?.image_url ||
+                relatedProduct.product_images?.[0]?.image_url ||
+                "/placeholder.svg?height=400&width=400"
+
+              return (
+                <Link
+                  key={relatedProduct.id}
+                  href={`/products/${relatedProduct.id}`}
+                  className="group bg-white rounded-xl overflow-hidden shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_2px_10px_rgba(0,0,0,0.05)]"
+                >
+                  <div className="relative aspect-square bg-neutral-100">
+                    <Image src={relatedImage} alt={relatedProduct.name} fill className="object-cover group-hover:scale-[1.02] transition-transform" />
+                  </div>
+                  <div className="p-3">
+                    <p className="text-sm text-neutral-900 line-clamp-1">{relatedProduct.name}</p>
+                    <p className="text-sm text-emerald-700 mt-1">Ksh {Number(relatedProduct.price || 0).toLocaleString("en-KE")}</p>
+                  </div>
+                </Link>
+              )
+            })}
           </div>
-        </div>
+        </section>
       )}
     </div>
   )

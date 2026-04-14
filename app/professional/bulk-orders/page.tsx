@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { AppShellSkeleton } from "@/components/loaders/page-skeletons"
+import { ProfessionalPageShell } from "@/components/professional/professional-page-shell"
 import { 
   ShoppingCart, 
   Plus, 
@@ -101,16 +103,12 @@ export default function BulkOrdersPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
-      </div>
-    )
+    return <AppShellSkeleton />
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
+    <ProfessionalPageShell title="Bulk Orders">
+      <div className="mx-auto max-w-7xl">
         <div className="mb-8">
           <h1 className="text-2xl md:text-xl font-bold tracking-tight tracking-tight text-gray-900">Bulk Orders</h1>
           <p className="text-gray-600 mt-2">
@@ -267,6 +265,6 @@ export default function BulkOrdersPage() {
           </div>
         </div>
       </div>
-    </div>
+    </ProfessionalPageShell>
   )
 }

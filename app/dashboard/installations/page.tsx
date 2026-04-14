@@ -1,27 +1,26 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Plus, 
-  MapPin, 
-  Calendar, 
-  Users, 
-  Eye, 
-  Hammer, 
-  RefreshCw, 
+import {
+  Plus,
+  MapPin,
+  Calendar,
+  Users,
+  Eye,
+  Hammer,
+  RefreshCw,
   Clock,
   CheckCircle,
   XCircle,
   Package,
-  TrendingUp,
-  DollarSign,
   Zap
 } from "lucide-react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function CustomerInstallationsPage() {
   const [jobs, setJobs] = useState<any[]>([])
@@ -37,7 +36,7 @@ export default function CustomerInstallationsPage() {
   const fetchJobs = async () => {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
-      
+
       if (userError || !user) {
         console.error("User not authenticated")
         setLoading(false)
@@ -104,7 +103,7 @@ export default function CustomerInstallationsPage() {
       if (action === 'accept') {
         const { error: jobError } = await supabase
           .from("installation_jobs")
-          .update({ 
+          .update({
             status: 'assigned',
             selected_bid_id: bidId
           })
@@ -138,48 +137,48 @@ export default function CustomerInstallationsPage() {
     switch (status) {
       case "open":
         return (
-          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
+          <Badge className="bg-slate-100 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold rounded-full text-xs py-0.5 px-2">
             <Clock className="h-3 w-3 mr-1" />
-            Open for Bids
+            Open
           </Badge>
         )
       case "bidding":
         return (
-          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
+          <Badge className="bg-slate-100 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold rounded-full text-xs py-0.5 px-2">
             <Users className="h-3 w-3 mr-1" />
-            Receiving Bids
+            Bidding
           </Badge>
         )
       case "assigned":
         return (
-          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
+          <Badge className="bg-blue-50 hover:bg-blue-50 text-blue-700 border border-blue-200/70 font-semibold rounded-full text-xs py-0.5 px-2">
             <CheckCircle className="h-3 w-3 mr-1" />
             Assigned
           </Badge>
         )
       case "in_progress":
         return (
-          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
+          <Badge className="bg-amber-50 hover:bg-amber-50 text-amber-700 border border-amber-200/80 font-semibold rounded-full text-xs py-0.5 px-2">
             <Zap className="h-3 w-3 mr-1" />
             In Progress
           </Badge>
         )
       case "completed":
         return (
-          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 hover:text-emerald-700 border border-emerald-200/60 hover:border-emerald-200/60 font-bold rounded-full">
+          <Badge className="bg-emerald-50 hover:bg-emerald-50 text-emerald-700 border border-emerald-200/70 font-semibold rounded-full text-xs py-0.5 px-2">
             <CheckCircle className="h-3 w-3 mr-1" />
             Completed
           </Badge>
         )
       case "cancelled":
         return (
-          <Badge className="bg-rose-50 hover:bg-rose-50 text-rose-700 hover:text-rose-700 border border-rose-200/70 hover:border-rose-200/70 font-bold rounded-full">
+          <Badge className="bg-slate-100 hover:bg-slate-100 text-slate-600 border border-slate-200 font-semibold rounded-full text-xs py-0.5 px-2">
             <XCircle className="h-3 w-3 mr-1" />
             Cancelled
           </Badge>
         )
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline" className="text-xs">{status}</Badge>
     }
   }
 
@@ -192,177 +191,154 @@ export default function CustomerInstallationsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading installation requests...</p>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-56" />
+            <Skeleton className="h-4 w-80" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-24 rounded-md" />
+            <Skeleton className="h-8 w-36 rounded-md" />
+          </div>
         </div>
+        <div className="grid grid-cols-4 gap-2">
+          <Skeleton className="h-16 rounded-xl" />
+          <Skeleton className="h-16 rounded-xl" />
+          <Skeleton className="h-16 rounded-xl" />
+          <Skeleton className="h-16 rounded-xl" />
+        </div>
+        <Skeleton className="h-24 rounded-xl" />
+        <Skeleton className="h-24 rounded-xl" />
+        <Skeleton className="h-24 rounded-xl" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-gray-900">Installation Services</h1>
-          <p className="text-gray-600 mt-1">Request professional installation for your renewable energy products</p>
+          <h1 className="text-xl font-extrabold tracking-tight text-gray-900">Installation Services</h1>
+          <p className="text-xs text-gray-500 mt-0.5">Request professional installation for your renewable energy products</p>
         </div>
-        <div className="flex gap-2">
-          <Button 
+        <div className="flex gap-2 shrink-0">
+          <Button
             onClick={handleRefresh}
             disabled={refreshing}
             variant="outline"
-            className="border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300"
+            size="sm"
+            className="border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 h-8 px-3"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">Refresh</span>
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline ml-1.5 text-xs">Refresh</span>
           </Button>
-          <Link href="/dashboard/installations/new" className="flex-1 sm:flex-none">
-            <Button className="bg-emerald-600 hover:bg-emerald-700 w-full">
-              <Plus className="h-4 w-4 mr-2" />
+          <Link href="/dashboard/installations/new">
+            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 h-8 px-3 text-xs">
+              <Plus className="h-3.5 w-3.5 mr-1" />
               <span className="hidden sm:inline">Request Installation</span>
-              <span className="sm:hidden">New Request</span>
+              <span className="sm:hidden">New</span>
             </Button>
           </Link>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="border border-emerald-200/60">
-          <CardContent className="p-4">
-            <div className="flex flex-col gap-2">
-              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
-                <Package className="h-4 w-4 text-emerald-700" />
+      {/* Stats Row */}
+      <div className="grid grid-cols-4 gap-2">
+        {[
+          { icon: Package, label: "Total", value: stats.total },
+          { icon: Clock, label: "Open", value: stats.open },
+          { icon: Zap, label: "Active", value: stats.assigned },
+          { icon: CheckCircle, label: "Done", value: stats.completed },
+        ].map(({ icon: Icon, label, value }) => (
+          <Card key={label} className="border border-emerald-200/60">
+            <CardContent className="p-3 flex items-center gap-2.5">
+              <div className="w-7 h-7 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center shrink-0">
+                <Icon className="h-3.5 w-3.5 text-emerald-700" />
               </div>
-              <div>
-                <p className="text-xs text-gray-600 font-semibold">Total Jobs</p>
-                <p className="text-xl font-bold text-gray-900">{stats.total}</p>
+              <div className="min-w-0">
+                <p className="text-lg font-bold text-gray-900 leading-none">{value}</p>
+                <p className="text-[11px] text-gray-500 font-medium mt-0.5">{label}</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-emerald-200/60">
-          <CardContent className="p-4">
-            <div className="flex flex-col gap-2">
-              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
-                <Clock className="h-4 w-4 text-emerald-700" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 font-semibold">Open</p>
-                <p className="text-xl font-bold text-gray-900">{stats.open}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-emerald-200/60">
-          <CardContent className="p-4">
-            <div className="flex flex-col gap-2">
-              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
-                <Zap className="h-4 w-4 text-emerald-700" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 font-semibold">Active</p>
-                <p className="text-xl font-bold text-gray-900">{stats.assigned}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-emerald-200/60">
-          <CardContent className="p-4">
-            <div className="flex flex-col gap-2">
-              <div className="w-10 h-10 bg-emerald-50 border border-emerald-200/60 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-4 w-4 text-emerald-700" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 font-semibold">Completed</p>
-                <p className="text-xl font-bold text-gray-900">{stats.completed}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Jobs List */}
       {jobs.length === 0 ? (
         <Card className="border border-emerald-200/60">
-          <CardContent className="text-center py-16">
-            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Hammer className="h-10 w-10 text-emerald-600" />
+          <CardContent className="text-center py-12">
+            <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Hammer className="h-7 w-7 text-emerald-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Installation Requests Yet</h3>
-            <p className="text-gray-600 mb-4 px-4">
-              Start by requesting professional installation services for your renewable energy products.
+            <h3 className="text-base font-bold text-gray-900 mb-1">No Installation Requests Yet</h3>
+            <p className="text-sm text-gray-500 mb-4 px-4">
+              Start by requesting professional installation for your renewable energy products.
             </p>
             <Link href="/dashboard/installations/new">
-              <Button className="bg-emerald-600 hover:bg-emerald-700">
-                <Plus className="h-4 w-4 mr-2" />
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                <Plus className="h-3.5 w-3.5 mr-1.5" />
                 Request Your First Installation
               </Button>
             </Link>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="space-y-2">
           {jobs.map((job) => (
-            <Card key={job.id} className="border border-emerald-200/60 overflow-hidden transition-all duration-300">
-              <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-              <CardHeader className="bg-emerald-50/40 border-b border-emerald-200/60">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg font-bold text-gray-900">{job.title}</CardTitle>
-                    <CardDescription className="mt-1">{job.description}</CardDescription>
+            <Card key={job.id} className="border border-emerald-200/60">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  {/* Title + meta */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-bold text-gray-900 truncate">{job.title}</span>
+                      {getStatusBadge(job.status)}
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 flex-wrap">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3 text-emerald-600" />
+                        {job.location_city}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3 text-emerald-600" />
+                        {new Date(job.created_at).toLocaleDateString()}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Users className="h-3 w-3 text-emerald-600" />
+                        {job.installation_bids?.length || 0} bid{job.installation_bids?.length !== 1 ? "s" : ""}
+                      </span>
+                    </div>
                   </div>
-                  {getStatusBadge(job.status)}
-                </div>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                    <MapPin className="h-4 w-4 text-emerald-600 flex-shrink-0" />
-                    <span className="truncate">{job.location_city}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                    <Calendar className="h-4 w-4 text-emerald-600 flex-shrink-0" />
-                    <span>{new Date(job.created_at).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                    <Users className="h-4 w-4 text-emerald-600 flex-shrink-0" />
-                    <span>{job.installation_bids?.length || 0} Bid{job.installation_bids?.length !== 1 ? 's' : ''}</span>
-                  </div>
-                </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div>
-                    <span className="text-sm text-gray-500">Product cost</span>
-                    <p className="text-2xl font-bold text-gray-900">
-                      KES {job.total_product_cost.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => setSelectedJob(job)}
-                      className="w-full sm:w-auto border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300"
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Details
-                    </Button>
-                    {job.installation_bids && job.installation_bids.length > 0 && (
-                      <Button 
-                        size="sm" 
-                        className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto"
-                        onClick={() => setSelectedJobForBids(job)}
+                  {/* Cost + actions */}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-right">
+                      <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Product cost</p>
+                      <p className="text-sm font-bold text-gray-900">KES {job.total_product_cost.toLocaleString()}</p>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setSelectedJob(job)}
+                        className="h-7 px-2 text-xs border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300"
                       >
-                        Review Bids ({job.installation_bids.length})
+                        <Eye className="h-3.5 w-3.5 sm:mr-1" />
+                        <span className="hidden sm:inline">Details</span>
                       </Button>
-                    )}
+                      {job.installation_bids && job.installation_bids.length > 0 && (
+                        <Button
+                          size="sm"
+                          className="h-7 px-2 text-xs bg-emerald-600 hover:bg-emerald-700"
+                          onClick={() => setSelectedJobForBids(job)}
+                        >
+                          Bids ({job.installation_bids.length})
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -373,235 +349,202 @@ export default function CustomerInstallationsPage() {
 
       {/* Job Details Modal */}
       {selectedJob && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-emerald-200/60 overflow-hidden">
-            <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-            <CardHeader className="bg-white border-b border-emerald-200/60 sticky top-0 z-10">
+        <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm p-4 sm:p-6">
+          <Card className="mx-auto mt-4 sm:mt-10 flex max-h-[86vh] w-full max-w-xl flex-col overflow-hidden border border-slate-200 shadow-2xl">
+            <CardHeader className="shrink-0 border-b border-slate-200 bg-white py-3 px-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-xl">{selectedJob.title}</CardTitle>
-                <Button variant="ghost" size="lg" onClick={() => setSelectedJob(null)} className="text-2xl">
+                <CardTitle className="text-base font-semibold text-slate-900">{selectedJob.title}</CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedJob(null)} className="h-7 w-7 rounded-full p-0 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-700">
                   ×
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6 space-y-6">
+            <CardContent className="flex-1 overflow-y-auto bg-slate-50/70 p-4 sm:p-5 space-y-4">
               <div>
-                <h4 className="font-bold text-gray-900 mb-2">Job Description</h4>
-                <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">{selectedJob.description}</p>
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Description</h4>
+                <p className="text-sm text-slate-700 bg-white border border-slate-200 p-3 rounded-lg">
+                  {selectedJob.description || "No additional description provided."}
+                </p>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-bold text-gray-900 mb-2">Location</h4>
-                  <p className="text-sm text-gray-700">{selectedJob.location_city}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white border border-slate-200 p-3 rounded-lg">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Location</h4>
+                  <p className="text-sm text-slate-800 font-medium">{selectedJob.location_city}</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-bold text-gray-900 mb-2">Status</h4>
+                <div className="bg-white border border-slate-200 p-3 rounded-lg">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Status</h4>
                   {getStatusBadge(selectedJob.status)}
                 </div>
               </div>
 
               {selectedJob.installation_job_items && selectedJob.installation_job_items.length > 0 && (
                 <div>
-                  <h4 className="font-bold text-gray-900 mb-3">Products to Install</h4>
-                  <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Products to Install</h4>
+                  <div className="space-y-1.5">
                     {selectedJob.installation_job_items.map((item: any) => (
-                      <div key={item.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 p-4 bg-emerald-50/40 rounded-lg border border-emerald-200/60">
+                      <div key={item.id} className="flex justify-between items-center p-2.5 bg-white rounded-lg border border-slate-200">
                         <div>
-                          <p className="font-semibold text-gray-900">{item.product_name}</p>
-                          <p className="text-sm text-gray-600">KES {item.product_price.toLocaleString()} each</p>
+                          <p className="text-sm font-semibold text-slate-900">{item.product_name}</p>
+                          <p className="text-xs text-slate-500">KES {item.product_price.toLocaleString()} × {item.quantity}</p>
                         </div>
-                        <div className="text-left sm:text-right">
-                          <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                          <p className="font-bold text-emerald-700">KES {(item.product_price * item.quantity).toLocaleString()}</p>
-                        </div>
+                        <p className="text-sm font-bold text-slate-900">KES {(item.product_price * item.quantity).toLocaleString()}</p>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-200/60">
-                <h4 className="font-bold text-gray-900 mb-2">Total Product Cost</h4>
-                <p className="text-3xl font-extrabold text-emerald-700">
-                  KES {selectedJob.total_product_cost?.toLocaleString() || 0}
-                </p>
+              <div className="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-600">Total Product Cost</span>
+                <span className="text-lg font-bold text-slate-900">KES {selectedJob.total_product_cost?.toLocaleString() || 0}</span>
               </div>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Bids Review Modal - continues in next part due to length */}
+      {/* Bids Review Modal */}
       {selectedJobForBids && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <Card className="max-w-4xl w-full my-8 border border-emerald-200/60 overflow-hidden">
-            <div className="h-2 bg-emerald-500/30 rounded-t-lg"></div>
-            <CardHeader className="bg-white border-b border-emerald-200/60 sticky top-0 z-10">
+        <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm p-4 sm:p-6">
+          <Card className="mx-auto mt-4 sm:mt-8 flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden border border-slate-200 shadow-2xl">
+            <CardHeader className="shrink-0 border-b border-slate-200 bg-white/95 py-3 px-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg sm:text-xl">Review Bids - {selectedJobForBids.title}</CardTitle>
-                <Button variant="ghost" size="lg" onClick={() => setSelectedJobForBids(null)} className="text-2xl">
+                <CardTitle className="text-base font-semibold text-slate-900">Review Bids - {selectedJobForBids.title}</CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedJobForBids(null)} className="h-7 w-7 rounded-full p-0 text-lg leading-none text-slate-500 hover:bg-slate-100 hover:text-slate-700">
                   ×
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6 space-y-6">
+            <CardContent className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-slate-50/70">
               {/* Job Summary */}
-              <div className="bg-gray-50 p-4 rounded-xl border border-emerald-200/60">
-                <h4 className="font-bold text-gray-900 mb-3">Job Summary</h4>
-                <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                  <div className="bg-white p-3 rounded-lg">
-                    <p className="text-gray-600 mb-1">Location</p>
-                    <p className="font-semibold text-gray-900">{selectedJobForBids.location_city}</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                {[
+                  { label: "Location", value: selectedJobForBids.location_city },
+                  { label: "Posted", value: new Date(selectedJobForBids.created_at).toLocaleDateString() },
+                  { label: "Product Cost", value: `KES ${selectedJobForBids.total_product_cost?.toLocaleString()}` },
+                  { label: "Status", value: null, badge: getStatusBadge(selectedJobForBids.status) },
+                ].map(({ label, value, badge }) => (
+                  <div key={label} className="bg-white p-2.5 rounded-lg border border-slate-200/80">
+                    <p className="text-slate-400 font-medium mb-0.5">{label}</p>
+                    {badge ?? <p className="font-semibold text-slate-800">{value}</p>}
                   </div>
-                  <div className="bg-white p-3 rounded-lg">
-                    <p className="text-gray-600 mb-1">Status</p>
-                    {getStatusBadge(selectedJobForBids.status)}
-                  </div>
-                  <div className="bg-white p-3 rounded-lg">
-                    <p className="text-gray-600 mb-1">Product Cost</p>
-                    <p className="font-semibold text-emerald-700">KES {selectedJobForBids.total_product_cost?.toLocaleString()}</p>
-                  </div>
-                  <div className="bg-white p-3 rounded-lg">
-                    <p className="text-gray-600 mb-1">Posted</p>
-                    <p className="font-semibold text-gray-900">{new Date(selectedJobForBids.created_at).toLocaleDateString()}</p>
-                  </div>
-                </div>
+                ))}
               </div>
 
-              {/* Bids List */}
+              {/* Bids */}
               <div>
-                <h4 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-emerald-600" />
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-slate-600" />
                   Professional Bids ({selectedJobForBids.installation_bids?.length || 0})
                 </h4>
-                
+
                 {selectedJobForBids.installation_bids && selectedJobForBids.installation_bids.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {selectedJobForBids.installation_bids.map((bid: any, index: number) => (
-                      <div key={bid.id} className="border rounded-xl p-4 border-emerald-200/60 transition-shadow">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                      <div key={bid.id} className="border rounded-xl p-3 border-slate-200 bg-white">
+                        <div className="flex items-start justify-between gap-3 mb-3">
                           <div>
-                            <h5 className="font-bold text-gray-900">Professional Bid #{index + 1}</h5>
-                            <p className="text-sm text-gray-600">ID: {bid.professional_id.slice(0, 8)}</p>
+                            <p className="text-sm font-bold text-gray-900">Professional Bid #{index + 1}</p>
+                            <p className="text-xs text-gray-400">ID: {bid.professional_id.slice(0, 8)}</p>
                             <Badge variant={
-                              bid.status === 'pending' ? 'secondary' : 
+                              bid.status === 'pending' ? 'secondary' :
                               bid.status === 'accepted' ? 'default' : 'destructive'
-                            } className="mt-2">
+                            } className="mt-1 text-[10px]">
                               {bid.status}
                             </Badge>
                           </div>
-                          <div className="text-left sm:text-right bg-emerald-50 p-4 rounded-xl border border-emerald-200/60">
-                            <p className="text-2xl sm:text-3xl font-extrabold text-emerald-700">
-                              KES {bid.total_bid_amount?.toLocaleString() || 0}
-                            </p>
-                            <p className="text-sm text-emerald-600 font-semibold">Installation Cost</p>
+                          <div className="text-right bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 shrink-0">
+                            <p className="text-xl font-extrabold text-slate-900">KES {bid.total_bid_amount?.toLocaleString() || 0}</p>
+                            <p className="text-[10px] text-slate-500 font-semibold">Installation Cost</p>
                           </div>
                         </div>
 
-                        {/* Bid Details */}
-                        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
-                          <div className="bg-gray-50 p-3 rounded-lg">
-                            <p className="text-xs text-gray-600">Labor</p>
-                            <p className="font-semibold text-sm">KES {bid.labor_cost?.toLocaleString() || 0}</p>
-                          </div>
-                          <div className="bg-gray-50 p-3 rounded-lg">
-                            <p className="text-xs text-gray-600">Materials</p>
-                            <p className="font-semibold text-sm">KES {bid.material_cost?.toLocaleString() || 0}</p>
-                          </div>
-                          <div className="bg-gray-50 p-3 rounded-lg">
-                            <p className="text-xs text-gray-600">Additional</p>
-                            <p className="font-semibold text-sm">KES {bid.additional_costs?.toLocaleString() || 0}</p>
-                          </div>
+                        <div className="grid grid-cols-3 gap-1.5 mb-3">
+                          {[
+                            { label: "Labor", value: bid.labor_cost },
+                            { label: "Materials", value: bid.material_cost },
+                            { label: "Additional", value: bid.additional_costs },
+                          ].map(({ label, value }) => (
+                            <div key={label} className="bg-slate-50 p-2 rounded-lg text-center border border-slate-200/80">
+                              <p className="text-[10px] text-slate-500">{label}</p>
+                              <p className="text-xs font-semibold text-slate-800">KES {value?.toLocaleString() || 0}</p>
+                            </div>
+                          ))}
                         </div>
 
                         {bid.estimated_duration_hours && (
-                          <div className="mb-4 bg-emerald-50 p-3 rounded-lg border border-emerald-200/60">
-                            <p className="text-sm text-emerald-700 font-semibold">
-                              ⏱️ Estimated Duration: {bid.estimated_duration_hours} hours
-                            </p>
-                          </div>
+                          <p className="text-xs text-slate-700 font-semibold bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200 mb-2">
+                            ⏱ Est. {bid.estimated_duration_hours} hours
+                          </p>
                         )}
 
                         {bid.proposal_notes && (
-                          <div className="mb-4">
-                            <p className="text-sm text-gray-600 font-semibold mb-2">Proposal Notes:</p>
-                            <p className="text-sm bg-gray-50 p-4 rounded-lg border">{bid.proposal_notes}</p>
-                          </div>
+                          <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-200 mb-2">{bid.proposal_notes}</p>
                         )}
 
-                        {/* Action Buttons */}
                         {bid.status === 'pending' && selectedJobForBids.status !== 'assigned' && (
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <Button 
-                              size="sm" 
-                              className="bg-emerald-600 hover:bg-emerald-700 flex-1"
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              className="bg-emerald-600 hover:bg-emerald-700 flex-1 h-8 text-xs"
                               onClick={() => handleBidAction(bid.id, 'accept')}
                             >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Accept Bid
+                              <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                              Accept
                             </Button>
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="destructive"
-                              className="bg-red-600 hover:bg-red-700"
+                              className="bg-slate-900 hover:bg-slate-800 h-8 text-xs"
                               onClick={() => handleBidAction(bid.id, 'reject')}
                             >
-                              <XCircle className="h-4 w-4 mr-2" />
+                              <XCircle className="h-3.5 w-3.5 mr-1" />
                               Reject
                             </Button>
                           </div>
                         )}
 
                         {bid.status === 'accepted' && (
-                          <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-200/60">
-                            <p className="text-green-800 font-bold flex items-center gap-2">
-                              <CheckCircle className="w-5 h-5" />
-                              This bid has been accepted
-                            </p>
-                            <p className="text-green-700 text-sm mt-1">The professional has been assigned to your job</p>
+                          <div className="bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-200/60 flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-emerald-700 shrink-0" />
+                            <div>
+                              <p className="text-xs font-bold text-emerald-800">Bid accepted</p>
+                              <p className="text-xs text-emerald-700">Professional assigned to your job</p>
+                            </div>
                           </div>
                         )}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <Users className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                    <p className="font-semibold">No bids received yet</p>
-                    <p className="text-sm mt-1">Professionals will submit bids for your installation job</p>
+                  <div className="text-center py-8 text-slate-400 border border-dashed border-slate-200 rounded-xl bg-white">
+                    <Users className="h-10 w-10 mx-auto mb-2 text-slate-300" />
+                    <p className="text-sm font-semibold text-slate-600">No bids received yet</p>
+                    <p className="text-xs mt-0.5">Professionals will submit bids for your installation job</p>
                   </div>
                 )}
               </div>
 
               {/* Cost Summary */}
               {selectedJobForBids.installation_bids && selectedJobForBids.installation_bids.length > 0 && (
-                <div className="bg-emerald-50 p-6 rounded-xl border border-emerald-200/60">
-                  <h4 className="font-bold text-gray-900 mb-4">Cost Comparison</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center bg-white p-3 rounded-lg">
-                      <span className="text-sm font-semibold text-gray-700">Product Cost:</span>
-                      <span className="font-bold text-gray-900">KES {selectedJobForBids.total_product_cost?.toLocaleString()}</span>
+                <div className="bg-white p-3 rounded-xl border border-slate-200 space-y-1.5">
+                  <h4 className="text-xs font-bold text-slate-700 mb-2">Cost Comparison</h4>
+                  {[
+                    { label: "Product Cost", value: selectedJobForBids.total_product_cost, color: "text-gray-900" },
+                    { label: "Lowest Bid", value: Math.min(...selectedJobForBids.installation_bids.map((b: any) => b.total_bid_amount || 0)), color: "text-emerald-700" },
+                    { label: "Highest Bid", value: Math.max(...selectedJobForBids.installation_bids.map((b: any) => b.total_bid_amount || 0)), color: "text-gray-700" },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} className="flex justify-between items-center bg-slate-50 px-3 py-2 rounded-lg text-sm border border-slate-200/70">
+                      <span className="text-slate-600 font-medium">{label}</span>
+                      <span className={`font-bold ${color}`}>KES {value?.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-white p-3 rounded-lg">
-                      <span className="text-sm font-semibold text-gray-700">Lowest Bid:</span>
-                      <span className="font-bold text-emerald-600">
-                        KES {Math.min(...selectedJobForBids.installation_bids.map((bid: any) => bid.total_bid_amount || 0)).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center bg-white p-3 rounded-lg">
-                      <span className="text-sm font-semibold text-gray-700">Highest Bid:</span>
-                      <span className="font-bold text-red-600">
-                        KES {Math.max(...selectedJobForBids.installation_bids.map((bid: any) => bid.total_bid_amount || 0)).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="h-px bg-emerald-300 my-2"></div>
-                    <div className="flex justify-between items-center bg-emerald-700 p-4 rounded-lg text-white">
-                      <span className="font-bold">Total (with lowest bid):</span>
-                      <span className="text-2xl font-extrabold">
-                        KES {(selectedJobForBids.total_product_cost + Math.min(...selectedJobForBids.installation_bids.map((bid: any) => bid.total_bid_amount || 0))).toLocaleString()}
-                      </span>
-                    </div>
+                  ))}
+                  <div className="flex justify-between items-center bg-emerald-700 px-3 py-2.5 rounded-lg text-white mt-1">
+                    <span className="text-sm font-bold">Total (lowest bid)</span>
+                    <span className="text-base font-extrabold">
+                      KES {(selectedJobForBids.total_product_cost + Math.min(...selectedJobForBids.installation_bids.map((b: any) => b.total_bid_amount || 0))).toLocaleString()}
+                    </span>
                   </div>
                 </div>
               )}

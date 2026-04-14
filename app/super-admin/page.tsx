@@ -40,11 +40,16 @@ import { getAllCategories, getCategoryPerformance, type CategoryListItem, type C
 import { SimpleLineChart } from "@/components/charts/SimpleLineChart"
 import { SimpleBarChart } from "@/components/charts/SimpleBarChart"
 import { toast } from "@/hooks/use-toast"
+import { checkAdminAccess } from "@/app/actions/admin"
+import { supabase } from "@/lib/supabase"
+import { useRouter } from "next/navigation"
 
 export default function SuperAdminDashboard() {
+  const router = useRouter()
   const [analytics, setAnalytics] = useState<PlatformAnalytics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [authorized, setAuthorized] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   
   const [filters, setFilters] = useState<AnalyticsFilters>({
@@ -67,11 +72,18 @@ export default function SuperAdminDashboard() {
   const [loadingCategory, setLoadingCategory] = useState(false)
   const [showCategoryPerformance, setShowCategoryPerformance] = useState(false)
 
+  // Verify admin identity before loading any data.
   useEffect(() => {
-    loadAnalytics()
-    loadVendors()
-    loadCategories()
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only bootstrap; loadAnalytics reads filters via closure when invoked from applyFilters
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) { router.replace("/login"); return }
+      const isAdmin = await checkAdminAccess(user.email || "")
+      if (!isAdmin) { router.replace("/"); return }
+      setAuthorized(true)
+      loadAnalytics()
+      loadVendors()
+      loadCategories()
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadAnalytics = async (customFilters?: AnalyticsFilters) => {
@@ -121,7 +133,7 @@ export default function SuperAdminDashboard() {
 
   const getGrowthColor = (growth: number) => {
     if (growth > 0) return "text-green-600"
-    if (growth < 0) return "text-red-600"
+    if (growth < 0) return "text-gray-700"
     return "text-gray-600"
   }
 
@@ -199,14 +211,14 @@ export default function SuperAdminDashboard() {
     }
   }
 
-  if (loading) {
+  if (!authorized || loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-24 h-24 relative mx-auto mb-6">
-            <div className="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <Activity className="absolute inset-0 m-auto h-10 w-10 text-blue-600" />
+            <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-gray-200 border-t-transparent rounded-full animate-spin"></div>
+            <Activity className="absolute inset-0 m-auto h-10 w-10 text-emerald-700" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading Analytics</h2>
           <p className="text-gray-600">Preparing executive dashboard...</p>
@@ -219,14 +231,14 @@ export default function SuperAdminDashboard() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center max-w-md">
-          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <BarChart3 className="h-10 w-10 text-red-600" />
+          <div className="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6">
+            <BarChart3 className="h-10 w-10 text-gray-700" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-3">Analytics Error</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <Button 
             onClick={() => loadAnalytics()}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-emerald-600 hover:bg-emerald-600"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Retry Loading
@@ -250,8 +262,8 @@ export default function SuperAdminDashboard() {
                 <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
                   {/* Executive Badge */}
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-xl border border-blue-200 bg-blue-50 flex items-center justify-center">
-                      <Sparkles className="h-10 w-10 text-blue-600" />
+                    <div className="w-20 h-20 rounded-xl border border-gray-200 bg-emerald-600 flex items-center justify-center">
+                      <Sparkles className="h-10 w-10 text-emerald-700" />
                     </div>
                     <div className="absolute -bottom-2 -right-2 w-9 h-9 rounded-lg border border-emerald-200 bg-emerald-50 flex items-center justify-center">
                       <Activity className="h-4 w-4 text-emerald-600" />
@@ -261,10 +273,10 @@ export default function SuperAdminDashboard() {
                   {/* Platform Overview */}
                   <div className="flex-1 text-center lg:text-left">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-3 mb-4">
-                      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tighter bg-gradient-to-r from-slate-700 via-blue-800 to-slate-900 bg-clip-text text-transparent">
+                      <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tighter bg-gradient-to-r from-slate-700 via-emerald-700 to-slate-900 bg-clip-text text-transparent">
                         Executive Dashboard
                       </h1>
-                      <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-xs px-3 py-1 font-medium hover:bg-blue-50">
+                      <Badge className="bg-emerald-600 text-emerald-700 border border-gray-200 text-xs px-3 py-1 font-medium hover:bg-emerald-600">
                         <Globe className="h-3 w-3 mr-1" />
                         Platform Overview
                       </Badge>
@@ -282,15 +294,15 @@ export default function SuperAdminDashboard() {
                           {analytics.revenueGrowth.toFixed(1)}% Revenue Growth
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-full border border-blue-200">
+                      <div className="flex items-center gap-2 bg-emerald-600 px-4 py-2 rounded-full border border-gray-200">
                         {getGrowthIcon(analytics.orderGrowth)}
-                        <span className="text-sm font-bold text-blue-900">
+                        <span className="text-sm font-bold text-emerald-700">
                           {analytics.orderGrowth.toFixed(1)}% Order Growth
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 bg-violet-50 px-4 py-2 rounded-full border border-violet-200">
-                        <Target className="h-4 w-4 text-purple-700" />
-                        <span className="text-sm font-bold text-purple-900">
+                      <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full border border-gray-200">
+                        <Target className="h-4 w-4 text-gray-700" />
+                        <span className="text-sm font-bold text-gray-700">
                           {analytics.conversionRate.toFixed(1)}% Conversion
                         </span>
                       </div>
@@ -301,7 +313,7 @@ export default function SuperAdminDashboard() {
                   <div className="flex flex-col gap-2">
                     <Button
                       onClick={() => setShowFilters(!showFilters)}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-emerald-600 hover:bg-emerald-600"
                     >
                       <Filter className="h-4 w-4 mr-2" />
                       {showFilters ? 'Hide' : 'Show'} Filters
@@ -325,7 +337,7 @@ export default function SuperAdminDashboard() {
             <Card className="border border-slate-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Filter className="h-5 w-5 text-indigo-600" />
+                  <Filter className="h-5 w-5 text-emerald-700" />
                   Advanced Filters
                 </CardTitle>
                 <CardDescription>Customize your analytics view</CardDescription>
@@ -397,7 +409,7 @@ export default function SuperAdminDashboard() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 mt-6">
-                  <Button onClick={applyFilters} className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={applyFilters} className="bg-emerald-600 hover:bg-emerald-600">
                     <Zap className="h-4 w-4 mr-2" />
                     Apply Filters
                   </Button>
@@ -414,11 +426,11 @@ export default function SuperAdminDashboard() {
             {/* Vendor Performance */}
             <Card className="border border-slate-200">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-indigo-900">
-                  <Building2 className="h-6 w-6 text-indigo-600" />
+                <CardTitle className="flex items-center gap-2 text-emerald-700">
+                  <Building2 className="h-6 w-6 text-emerald-700" />
                   Supplier Performance
                 </CardTitle>
-                <CardDescription className="text-indigo-700">Detailed supplier analytics</CardDescription>
+                <CardDescription className="text-emerald-700">Detailed supplier analytics</CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
                 <div className="space-y-4">
@@ -508,7 +520,7 @@ export default function SuperAdminDashboard() {
                 </div>
                 <div className="flex items-center gap-3">
                   {vendorPerformance.rating > 0 && (
-                    <Badge className="bg-yellow-50 text-yellow-800 border border-yellow-200 hover:bg-yellow-50">
+                    <Badge className="bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-100">
                       <Star className="h-3 w-3 mr-1 fill-current" />
                       {vendorPerformance.rating.toFixed(1)} ({vendorPerformance.totalReviews})
                     </Badge>
@@ -555,35 +567,35 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border border-violet-200">
-                  <CardContent className="p-6 bg-violet-50/50">
+                <Card className="border border-gray-200">
+                  <CardContent className="p-6 bg-gray-100">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="w-10 h-10 rounded-xl border border-violet-200 bg-violet-100 flex items-center justify-center">
-                        <Package className="h-5 w-5 text-violet-700" />
+                      <div className="w-10 h-10 rounded-xl border border-gray-200 bg-gray-100 flex items-center justify-center">
+                        <Package className="h-5 w-5 text-gray-700" />
                       </div>
                     </div>
-                    <p className="text-sm font-semibold text-violet-800 uppercase tracking-normal">Products</p>
-                    <p className="text-2xl font-semibold text-violet-900 mt-1">
+                    <p className="text-sm font-semibold text-gray-700 uppercase tracking-normal">Products</p>
+                    <p className="text-2xl font-semibold text-gray-700 mt-1">
                       {vendorPerformance.totalProducts}
                     </p>
-                    <p className="text-xs text-violet-700 mt-2">
+                    <p className="text-xs text-gray-700 mt-2">
                       {vendorPerformance.conversionRate.toFixed(1)}% with sales
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="border border-amber-200">
-                  <CardContent className="p-6 bg-amber-50/50">
+                <Card className="border border-gray-200">
+                  <CardContent className="p-6 bg-gray-100">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="w-10 h-10 rounded-xl border border-amber-200 bg-amber-100 flex items-center justify-center">
-                        <Percent className="h-5 w-5 text-amber-700" />
+                      <div className="w-10 h-10 rounded-xl border border-gray-200 bg-gray-100 flex items-center justify-center">
+                        <Percent className="h-5 w-5 text-gray-700" />
                       </div>
                     </div>
-                    <p className="text-sm font-semibold text-amber-800 uppercase tracking-normal">Conversion</p>
-                    <p className="text-2xl font-semibold text-amber-900 mt-1">
+                    <p className="text-sm font-semibold text-gray-700 uppercase tracking-normal">Conversion</p>
+                    <p className="text-2xl font-semibold text-gray-700 mt-1">
                       {vendorPerformance.conversionRate.toFixed(1)}%
                     </p>
-                    <p className="text-xs text-amber-700 mt-2">
+                    <p className="text-xs text-gray-700 mt-2">
                       Product performance
                     </p>
                   </CardContent>
@@ -594,7 +606,7 @@ export default function SuperAdminDashboard() {
                 <Card className="border border-slate-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <LineChart className="h-5 w-5 text-blue-600" />
+                      <LineChart className="h-5 w-5 text-emerald-700" />
                       Revenue Trend
                     </CardTitle>
                     <CardDescription>Last 12 months</CardDescription>
@@ -649,7 +661,7 @@ export default function SuperAdminDashboard() {
                   <Badge className="bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-50">
                     {categoryPerformance.totalProducts} Products
                   </Badge>
-                  <Badge className="bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-50">
+                  <Badge className="bg-emerald-600 text-emerald-700 border border-gray-200 hover:bg-emerald-600">
                     {categoryPerformance.supplierCount} Suppliers
                   </Badge>
                   <Badge className={`${getGrowthColor(categoryPerformance.revenueGrowth)} border border-current hover:bg-transparent`}>
@@ -690,31 +702,31 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="border border-purple-200">
-                  <CardContent className="p-6 bg-purple-50/50">
+                <Card className="border border-gray-200">
+                  <CardContent className="p-6 bg-gray-100">
                     <div className="flex items-center justify-between mb-3">
-                      <Package className="h-10 w-10 text-purple-600" />
+                      <Package className="h-10 w-10 text-gray-700" />
                     </div>
-                    <p className="text-sm font-semibold text-purple-800 uppercase tracking-normal">Products</p>
-                    <p className="text-2xl font-semibold text-purple-900 mt-1">
+                    <p className="text-sm font-semibold text-gray-700 uppercase tracking-normal">Products</p>
+                    <p className="text-2xl font-semibold text-gray-700 mt-1">
                       {categoryPerformance.totalProducts}
                     </p>
-                    <p className="text-xs text-purple-700 mt-2">
+                    <p className="text-xs text-gray-700 mt-2">
                       {categoryPerformance.supplierCount} suppliers
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="border border-orange-200">
-                  <CardContent className="p-6 bg-orange-50/50">
+                <Card className="border border-gray-200">
+                  <CardContent className="p-6 bg-gray-100">
                     <div className="flex items-center justify-between mb-3">
-                      <TrendingUp className="h-10 w-10 text-orange-600" />
+                      <TrendingUp className="h-10 w-10 text-gray-700" />
                     </div>
-                    <p className="text-sm font-semibold text-orange-800 uppercase tracking-normal">Growth</p>
-                    <p className="text-2xl font-semibold text-orange-900 mt-1">
+                    <p className="text-sm font-semibold text-gray-700 uppercase tracking-normal">Growth</p>
+                    <p className="text-2xl font-semibold text-gray-700 mt-1">
                       {categoryPerformance.orderGrowth.toFixed(1)}%
                     </p>
-                    <p className="text-xs text-orange-700 mt-2">
+                    <p className="text-xs text-gray-700 mt-2">
                       Last 30 days
                     </p>
                   </CardContent>
@@ -725,7 +737,7 @@ export default function SuperAdminDashboard() {
                 <Card className="border border-slate-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <LineChart className="h-5 w-5 text-blue-600" />
+                      <LineChart className="h-5 w-5 text-emerald-700" />
                       Revenue Trend
                     </CardTitle>
                   </CardHeader>
@@ -809,52 +821,52 @@ export default function SuperAdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="border border-blue-200">
-              <CardContent className="p-6 bg-blue-50/50">
+            <Card className="border border-gray-200">
+              <CardContent className="p-6 bg-emerald-600">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-11 h-11 rounded-xl border border-blue-200 bg-blue-100 flex items-center justify-center">
-                    <ShoppingCart className="h-6 w-6 text-blue-700" />
+                  <div className="w-11 h-11 rounded-xl border border-gray-200 bg-emerald-600 flex items-center justify-center">
+                    <ShoppingCart className="h-6 w-6 text-emerald-700" />
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-blue-800 uppercase tracking-normal">Total Orders</p>
-                <p className="text-3xl font-semibold text-blue-900 mt-2">
+                <p className="text-sm font-semibold text-emerald-700 uppercase tracking-normal">Total Orders</p>
+                <p className="text-3xl font-semibold text-emerald-700 mt-2">
                   {analytics.totalOrders.toLocaleString()}
                 </p>
-                <p className="text-xs text-blue-700 mt-2">
+                <p className="text-xs text-emerald-700 mt-2">
                   Avg: KES {analytics.averageOrderValue.toLocaleString()}
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border border-purple-200">
-              <CardContent className="p-6 bg-purple-50/50">
+            <Card className="border border-gray-200">
+              <CardContent className="p-6 bg-gray-100">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-11 h-11 rounded-xl border border-purple-200 bg-purple-100 flex items-center justify-center">
-                    <Target className="h-6 w-6 text-purple-700" />
+                  <div className="w-11 h-11 rounded-xl border border-gray-200 bg-gray-100 flex items-center justify-center">
+                    <Target className="h-6 w-6 text-gray-700" />
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-purple-800 uppercase tracking-normal">Conversion</p>
-                <p className="text-3xl font-semibold text-purple-900 mt-2">
+                <p className="text-sm font-semibold text-gray-700 uppercase tracking-normal">Conversion</p>
+                <p className="text-3xl font-semibold text-gray-700 mt-2">
                   {analytics.conversionRate.toFixed(1)}%
                 </p>
-                <p className="text-xs text-purple-700 mt-2">
+                <p className="text-xs text-gray-700 mt-2">
                   Orders to payments
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border border-orange-200">
-              <CardContent className="p-6 bg-orange-50/50">
+            <Card className="border border-gray-200">
+              <CardContent className="p-6 bg-gray-100">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="w-11 h-11 rounded-xl border border-orange-200 bg-orange-100 flex items-center justify-center">
-                    <Truck className="h-6 w-6 text-orange-700" />
+                  <div className="w-11 h-11 rounded-xl border border-gray-200 bg-gray-100 flex items-center justify-center">
+                    <Truck className="h-6 w-6 text-gray-700" />
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-orange-800 uppercase tracking-normal">Delivery</p>
-                <p className="text-3xl font-semibold text-orange-900 mt-2">
+                <p className="text-sm font-semibold text-gray-700 uppercase tracking-normal">Delivery</p>
+                <p className="text-3xl font-semibold text-gray-700 mt-2">
                   KES {analytics.deliveryRevenue.toLocaleString()}
                 </p>
-                <p className="text-xs text-orange-700 mt-2">
+                <p className="text-xs text-gray-700 mt-2">
                   Revenue from fees
                 </p>
               </CardContent>
@@ -863,11 +875,11 @@ export default function SuperAdminDashboard() {
 
           {/* Platform Users */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="border border-blue-200">
-              <CardContent className="p-6 bg-blue-50/40">
-                <Users className="h-10 w-10 text-blue-600 mb-3" />
-                <p className="text-sm font-semibold text-blue-800">Customers</p>
-                <p className="text-2xl font-semibold text-blue-900 mt-2">
+            <Card className="border border-gray-200">
+              <CardContent className="p-6 bg-emerald-600">
+                <Users className="h-10 w-10 text-emerald-700 mb-3" />
+                <p className="text-sm font-semibold text-emerald-700">Customers</p>
+                <p className="text-2xl font-semibold text-emerald-700 mt-2">
                   {analytics.totalCustomers.toLocaleString()}
                 </p>
               </CardContent>
@@ -883,21 +895,21 @@ export default function SuperAdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="border border-purple-200">
-              <CardContent className="p-6 bg-purple-50/40">
-                <UserCheck className="h-10 w-10 text-purple-600 mb-3" />
-                <p className="text-sm font-semibold text-purple-800">Professionals</p>
-                <p className="text-2xl font-semibold text-purple-900 mt-2">
+            <Card className="border border-gray-200">
+              <CardContent className="p-6 bg-gray-100">
+                <UserCheck className="h-10 w-10 text-gray-700 mb-3" />
+                <p className="text-sm font-semibold text-gray-700">Professionals</p>
+                <p className="text-2xl font-semibold text-gray-700 mt-2">
                   {analytics.totalProfessionals.toLocaleString()}
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border border-orange-200">
-              <CardContent className="p-6 bg-orange-50/40">
-                <Truck className="h-10 w-10 text-orange-600 mb-3" />
-                <p className="text-sm font-semibold text-orange-800">Delivery Partners</p>
-                <p className="text-2xl font-semibold text-orange-900 mt-2">
+            <Card className="border border-gray-200">
+              <CardContent className="p-6 bg-gray-100">
+                <Truck className="h-10 w-10 text-gray-700 mb-3" />
+                <p className="text-sm font-semibold text-gray-700">Delivery Partners</p>
+                <p className="text-2xl font-semibold text-gray-700 mt-2">
                   {analytics.totalDeliveryPartners.toLocaleString()}
                 </p>
               </CardContent>
@@ -909,7 +921,7 @@ export default function SuperAdminDashboard() {
             <Card className="border border-slate-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <LineChart className="h-5 w-5 text-blue-600" />
+                  <LineChart className="h-5 w-5 text-emerald-700" />
                   Revenue Trend
                 </CardTitle>
                 <CardDescription>{filters.period.charAt(0).toUpperCase() + filters.period.slice(1)} overview</CardDescription>
@@ -943,7 +955,7 @@ export default function SuperAdminDashboard() {
             <Card className="border border-slate-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <PieChart className="h-5 w-5 text-purple-600" />
+                  <PieChart className="h-5 w-5 text-gray-700" />
                   Payment Methods
                 </CardTitle>
               </CardHeader>
@@ -964,7 +976,7 @@ export default function SuperAdminDashboard() {
             <Card className="border border-slate-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-amber-600" />
+                  <BarChart3 className="h-5 w-5 text-gray-700" />
                   Order Status
                 </CardTitle>
               </CardHeader>
@@ -985,7 +997,7 @@ export default function SuperAdminDashboard() {
               <Card className="border border-slate-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Percent className="h-5 w-5 text-teal-600" />
+                    <Percent className="h-5 w-5 text-emerald-700" />
                     Financing status
                   </CardTitle>
                   <CardDescription>KCB financing pipeline (all orders in range)</CardDescription>
@@ -1008,7 +1020,7 @@ export default function SuperAdminDashboard() {
               <Card className="border border-slate-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Package className="h-5 w-5 text-cyan-600" />
+                    <Package className="h-5 w-5 text-gray-700" />
                     Fulfilment stage
                   </CardTitle>
                   <CardDescription>Deployments (spec §4.5)</CardDescription>
@@ -1031,7 +1043,7 @@ export default function SuperAdminDashboard() {
               <Card className="border border-slate-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Globe className="h-5 w-5 text-indigo-600" />
+                    <Globe className="h-5 w-5 text-emerald-700" />
                     Orders by city (shipping)
                   </CardTitle>
                   <CardDescription>From order shipping_city</CardDescription>

@@ -54,7 +54,7 @@ export function ProfessionalApplications() {
         )
       case "rejected":
         return (
-          <Badge className="bg-red-100 text-red-700 border border-red-300 font-semibold hover:bg-red-100">
+          <Badge className="bg-red-50 text-red-600 border border-red-200 font-semibold hover:bg-red-50">
             <XCircle className="h-4 w-4 mr-1" />
             Rejected
           </Badge>
@@ -66,9 +66,9 @@ export function ProfessionalApplications() {
 
   const getProfessionalTypeBadge = (type: string) => {
     const colors: Record<string, string> = {
-      installer: "bg-blue-100 text-blue-700 border-blue-300",
-      distributor: "bg-purple-100 text-purple-700 border-purple-300",
-      wholesaler: "bg-indigo-100 text-indigo-700 border-indigo-300",
+      installer: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      distributor: "bg-gray-100 text-gray-700 border-gray-200",
+      wholesaler: "bg-emerald-50 text-emerald-700 border-emerald-200",
     }
 
     return (
@@ -92,38 +92,37 @@ export function ProfessionalApplications() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
             <UserCheck className="w-6 h-6 text-emerald-600" />
             Professional Applications
           </h2>
-          <p className="text-gray-600 mt-1">Review installers, distributors & wholesalers</p>
+          <p className="text-sm text-gray-500 mt-1">Review installers, distributors & wholesalers</p>
         </div>
-        <Button onClick={loadApplications} className="bg-emerald-600 hover:bg-emerald-700">
+        <Button onClick={loadApplications} variant="outline" size="sm" className="h-8 rounded-xl border-gray-200 text-xs">
           <RefreshCw className="w-4 h-4 mr-2" />
           Refresh
         </Button>
       </div>
 
       {applications.length === 0 ? (
-        <Card className="border border-gray-200">
+        <Card className="rounded-2xl border border-gray-100 bg-white">
           <CardContent className="text-center py-16">
             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <UserCheck className="h-10 w-10 text-emerald-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No professional applications yet</h3>
+            <h3 className="text-base font-semibold text-gray-900 mb-2">No professional applications yet</h3>
             <p className="text-gray-600">New applications will appear here for review</p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-6">
           {applications.map((app) => (
-            <Card key={app.id} className="border border-emerald-200/80 shadow-sm transition-shadow hover:shadow-md">
-              <div className="h-1 bg-emerald-500"></div>
-              <CardHeader className="bg-emerald-50/40">
+            <Card key={app.id} className="rounded-2xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md">
+              <CardHeader className="border-b border-gray-100">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <CardTitle className="text-xl font-semibold text-gray-900">{app.company_name}</CardTitle>
+                      <CardTitle className="text-base font-semibold text-gray-900">{app.company_name}</CardTitle>
                       {getProfessionalTypeBadge(app.professional_type)}
                     </div>
                     <CardDescription className="text-sm">
@@ -226,7 +225,7 @@ export function ProfessionalApplications() {
                   {app.status === "pending" && (
                     <>
                       <Button
-                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white flex-1"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1"
                         onClick={() => handleStatusUpdate(app.id!, "approved")}
                       >
                         <CheckCircle className="h-4 w-4 mr-2" />
@@ -235,7 +234,6 @@ export function ProfessionalApplications() {
                       <Button 
                         variant="destructive" 
                         onClick={() => handleStatusUpdate(app.id!, "rejected")}
-                        className="bg-gradient-to-r from-red-600 to-rose-600"
                       >
                         <XCircle className="h-4 w-4 mr-2" />
                         Reject
@@ -252,12 +250,11 @@ export function ProfessionalApplications() {
       {/* Detail Modal */}
       {selectedApp && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-emerald-300 shadow-lg">
-            <div className="h-1 bg-emerald-500"></div>
-            <CardHeader className="bg-emerald-50/40 border-b">
+          <Card className="max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-100 shadow-lg">
+            <CardHeader className="border-b border-gray-100">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-2xl font-bold text-gray-900">{selectedApp.company_name}</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-gray-900">{selectedApp.company_name}</CardTitle>
                   <CardDescription>Complete Application Details</CardDescription>
                 </div>
                 <Button variant="ghost" size="lg" onClick={() => setSelectedApp(null)} className="text-2xl">
@@ -330,7 +327,7 @@ export function ProfessionalApplications() {
               {selectedApp.status === "pending" && (
                 <div className="flex gap-3 pt-6 border-t">
                   <Button
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white flex-1"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white flex-1"
                     onClick={() => {
                       handleStatusUpdate(selectedApp.id!, "approved")
                       setSelectedApp(null)
@@ -341,7 +338,6 @@ export function ProfessionalApplications() {
                   </Button>
                   <Button
                     variant="destructive"
-                    className="bg-gradient-to-r from-red-600 to-rose-600"
                     onClick={() => {
                       handleStatusUpdate(selectedApp.id!, "rejected")
                       setSelectedApp(null)
