@@ -36,6 +36,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         router.push("/login")
         return
       }
+      const role = user.user_metadata?.role
+      if (role === "vendor") { router.push("/vendor"); return }
+      if (role === "professional") { router.push("/professional"); return }
+      if (role === "admin") { router.push("/admin"); return }
+      if (role === "delivery") { router.push("/delivery"); return }
       setUser(user)
       setLoading(false)
     }

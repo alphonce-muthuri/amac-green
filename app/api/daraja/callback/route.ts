@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/supabase-server"
+import { restoreInventory } from "@/app/actions/inventory"
 
 interface DarajaCallbackBody {
     Body: {
@@ -104,6 +105,11 @@ export async function POST(request: NextRequest) {
         if (updateError) {
             console.error('[DARAJA_CALLBACK] Failed to update order:', updateError)
             return NextResponse.json({ success: false, error: 'Failed to update order' }, { status: 500 })
+        }
+
+        // If payment failed, restore inventory so stock is not permanently lost
+        if (ResultCode !== 0) {
+            await restoreInventory(order.id)
         }
 
         // If payment was successful, try to assign delivery

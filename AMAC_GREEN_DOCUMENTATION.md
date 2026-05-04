@@ -78,7 +78,7 @@ AMAC Green eliminates the fragmentation in Kenya's clean energy supply chain. Hi
 | **Forms** | React Hook Form + Zod | Client and server-side form validation |
 | **Data Visualization** | Recharts | Analytics dashboards and charts |
 | **Maps** | Leaflet | Live delivery GPS tracking maps |
-| **Email** | Nodemailer (SMTP) | Transactional email notifications |
+| **Email** | Resend | Transactional email notifications |
 | **Analytics** | PostHog | Product analytics and user behaviour tracking |
 | **Package Manager** | Bun 1.3.5 | Fast JavaScript runtime and package manager |
 
@@ -212,7 +212,7 @@ amac-green/
 │   ├── cart-context.tsx    # Shopping cart state (localStorage)
 │   ├── supabase/           # Supabase client and server helpers
 │   ├── daraja.ts           # M-Pesa Daraja integration
-│   └── email-service.ts    # Nodemailer SMTP integration
+│   └── email-service.ts    # Resend email integration
 ├── scripts/                # SQL migration files for Supabase
 └── public/                 # Static assets
 ```
@@ -620,7 +620,7 @@ Run behind a reverse proxy (e.g., Nginx) with HTTPS for M-Pesa callback compatib
 - [ ] All SQL migration files applied to production Supabase project
 - [ ] Supabase RLS policies verified
 - [ ] Admin and super-admin accounts created in Supabase
-- [ ] Email SMTP credentials configured in `lib/email-service.ts`
+- [ ] Resend credentials configured for `lib/email-service.ts`
 
 ---
 

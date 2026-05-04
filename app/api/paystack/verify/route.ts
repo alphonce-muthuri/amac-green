@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin, createServerClient } from '@/lib/supabase-server'
 import { cookies } from 'next/headers'
-import { ADMIN_EMAILS } from '@/lib/require-admin'
+import { restoreInventory } from '@/app/actions/inventory'
 
 export async function POST(req: NextRequest) {
   try {
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Order not found' }, { status: 404 })
     }
 
-    const isAdmin = ADMIN_EMAILS.includes((user.email ?? '').toLowerCase())
+    const isAdmin = user.user_metadata?.role === 'admin'
     if (!isAdmin && dbOrder.customer_id !== user.id) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 })
     }
@@ -127,6 +127,8 @@ export async function POST(req: NextRequest) {
 
     if (paymentStatus === 'paid') {
       console.log('[PAYSTACK] 🚚 Payment successful - delivery assignment will be triggered by database trigger')
+    } else if (paymentStatus === 'failed') {
+      await restoreInventory(orderId)
     }
 
     return NextResponse.json({

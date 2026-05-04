@@ -137,7 +137,7 @@ The platform currently supports six user portals: Customer, Vendor, Professional
 - The platform operates under Kenyan law, using KES as the sole currency
 - Clients have access to a smartphone or web browser and a mobile money account (M-Pesa)
 - GPS coordinates are captured from device location services during client onboarding
-- Email delivery is handled via Nodemailer / SMTP (admin notifications)
+- Email delivery is handled via Resend (admin notifications)
 - Supabase (PostgreSQL) is the authoritative data store for all platform entities
 - Simulation/test modes are available for M-Pesa, KCB Financing, and order creation during development
 
@@ -678,7 +678,7 @@ Super-Admin monitors at /super-admin:
 | System | Purpose |
 |---|---|
 | **Supabase** | PostgreSQL database, Supabase Auth (JWT), File Storage |
-| **Nodemailer / SMTP** | Transactional email delivery (approvals, rejections, order events) |
+| **Resend** | Transactional email delivery (approvals, rejections, order events) |
 | **Leaflet.js** | Client-side GPS mapping for delivery tracking and location capture |
 
 ### 12.3 Future Integrations (Planned)

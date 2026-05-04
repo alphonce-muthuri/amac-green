@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
-import { FieldErrors, useForm } from "react-hook-form"
+import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
@@ -45,6 +46,7 @@ const professionalSchema = z
 type ProfessionalFormValues = z.infer<typeof professionalSchema>
 
 export default function ProfessionalRegistration() {
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [showPassword, setShowPassword] = useState(false)
@@ -111,85 +113,21 @@ export default function ProfessionalRegistration() {
       }
       submissionData.append(key, String(value ?? ""))
     })
+    uploadedFiles.forEach((file) => submissionData.append("documents", file))
 
     setIsSubmitting(true)
 
     const result = await registerProfessional(submissionData)
 
     if (result.success) {
-      // Upload documents if any
-      if (uploadedFiles.length > 0 && result.applicationId) {
-        toast({ title: "Application submitted", description: "Uploading documents..." })
-        
-        const uploadPromises = uploadedFiles.map(async (file, index) => {
-          const documentFormData = new FormData()
-          documentFormData.append("file", file)
-          documentFormData.append("applicationType", "professional")
-          documentFormData.append("applicationId", result.applicationId)
-          documentFormData.append("documentType", `document-${index + 1}`)
-
-          const response = await fetch("/api/upload/documents", {
-            method: "POST",
-            body: documentFormData,
-          })
-
-          const uploadResult = await response.json()
-          
-          if (uploadResult.success) {
-            return {
-              url: uploadResult.url,
-              type: `document-${index + 1}`,
-              name: file.name,
-              uploadedAt: new Date().toISOString()
-            }
-          }
-          
-          return null
-        })
-
-        const uploadResults = await Promise.all(uploadPromises)
-        const successfulUploads = uploadResults.filter(r => r !== null)
-        const failedUploads = uploadResults.filter(r => r === null)
-        
-        // Save document URLs to database
-        if (successfulUploads.length > 0) {
-          const { saveApplicationDocuments } = await import("@/app/actions/documents")
-          await saveApplicationDocuments(result.applicationId, "professional", successfulUploads)
-        }
-        
-        if (failedUploads.length > 0) {
-          toast({
-            title: "Some documents failed to upload",
-            description: `Your application was submitted, but ${failedUploads.length} document(s) failed. Please try again or contact support.`,
-            variant: "destructive",
-          })
-        } else {
-          toast({ title: "Success", description: `${result.message} All documents uploaded successfully!` })
-        }
-      } else {
-        toast({ title: "Success", description: result.message })
-      }
       sessionStorage.removeItem(draftStorageKey)
-      
-      // Don't auto-redirect, let user read the verification message
+      router.push("/register/success?role=professional")
+      return
     } else {
-      toast({
-        title: "Couldn't submit application",
-        description: getFriendlyRegistrationError(result.error),
-        variant: "destructive",
-      })
+      toast({ description: getFriendlyRegistrationError(result.error), variant: "destructive" })
     }
 
     setIsSubmitting(false)
-  }
-
-  const onInvalid = (formErrors: FieldErrors<ProfessionalFormValues>) => {
-    const firstError = Object.values(formErrors)[0]
-    const message =
-      firstError && typeof firstError === "object" && "message" in firstError
-        ? String(firstError.message)
-        : "Please fix the highlighted fields and try again."
-    toast({ title: "Please check your details", description: message, variant: "destructive" })
   }
 
   return (
@@ -214,7 +152,7 @@ export default function ProfessionalRegistration() {
               <CardDescription>Provide your professional credentials for verification</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="companyName">Company/Organization Name *</Label>

@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { z } from "zod"
-import { FieldErrors, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 import { Button } from "@/components/ui/button"
@@ -50,6 +51,7 @@ const vendorSchema = z
 type VendorFormValues = z.infer<typeof vendorSchema>
 
 export default function VendorRegistration() {
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [showPassword, setShowPassword] = useState(false)
@@ -120,85 +122,21 @@ export default function VendorRegistration() {
       }
       submissionData.append(key, String(value ?? ""))
     })
+    uploadedFiles.forEach((file) => submissionData.append("documents", file))
 
     setIsSubmitting(true)
 
     const result = await registerVendor(submissionData)
 
     if (result.success) {
-      // Upload documents if any
-      if (uploadedFiles.length > 0 && result.applicationId) {
-        toast({ title: "Application submitted", description: "Uploading documents..." })
-        
-        const uploadPromises = uploadedFiles.map(async (file, index) => {
-          const documentFormData = new FormData()
-          documentFormData.append("file", file)
-          documentFormData.append("applicationType", "vendor")
-          documentFormData.append("applicationId", result.applicationId)
-          documentFormData.append("documentType", `document-${index + 1}`)
-
-          const response = await fetch("/api/upload/documents", {
-            method: "POST",
-            body: documentFormData,
-          })
-
-          const uploadResult = await response.json()
-          
-          if (uploadResult.success) {
-            return {
-              url: uploadResult.url,
-              type: `document-${index + 1}`,
-              name: file.name,
-              uploadedAt: new Date().toISOString()
-            }
-          }
-          
-          return null
-        })
-
-        const uploadResults = await Promise.all(uploadPromises)
-        const successfulUploads = uploadResults.filter(r => r !== null)
-        const failedUploads = uploadResults.filter(r => r === null)
-        
-        // Save document URLs to database
-        if (successfulUploads.length > 0) {
-          const { saveApplicationDocuments } = await import("@/app/actions/documents")
-          await saveApplicationDocuments(result.applicationId, "vendor", successfulUploads)
-        }
-        
-        if (failedUploads.length > 0) {
-          toast({
-            title: "Some documents failed to upload",
-            description: `Your application was submitted, but ${failedUploads.length} document(s) failed. Please try again or contact support.`,
-            variant: "destructive",
-          })
-        } else {
-          toast({ title: "Success", description: `${result.message} All documents uploaded successfully!` })
-        }
-      } else {
-        toast({ title: "Success", description: result.message })
-      }
-
       sessionStorage.removeItem(draftStorageKey)
-      
+      router.push("/register/success?role=vendor")
+      return
     } else {
-      toast({
-        title: "Couldn't submit application",
-        description: getFriendlyRegistrationError(result.error),
-        variant: "destructive",
-      })
+      toast({ description: getFriendlyRegistrationError(result.error), variant: "destructive" })
     }
 
     setIsSubmitting(false)
-  }
-
-  const onInvalid = (formErrors: FieldErrors<VendorFormValues>) => {
-    const firstError = Object.values(formErrors)[0]
-    const message =
-      firstError && typeof firstError === "object" && "message" in firstError
-        ? String(firstError.message)
-        : "Please fix the highlighted fields and try again."
-    toast({ title: "Please check your details", description: message, variant: "destructive" })
   }
 
   return (
@@ -228,7 +166,7 @@ export default function VendorRegistration() {
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="companyName">Company Name *</Label>

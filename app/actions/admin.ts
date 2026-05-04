@@ -1,7 +1,9 @@
 "use server"
 
 import { supabaseAdmin } from "@/lib/supabase-server"
-import { requireAdmin, ADMIN_EMAILS } from "@/lib/require-admin"
+import { requireAdmin } from "@/lib/require-admin"
+import { createServerClient } from "@/lib/supabase-server"
+import { cookies } from "next/headers"
 
 export async function getVendorApplications() {
   if (!await requireAdmin()) {
@@ -307,6 +309,9 @@ export async function getDashboardStats() {
   }
 }
 
-export async function checkAdminAccess(email: string) {
-  return ADMIN_EMAILS.includes(email.toLowerCase())
+export async function checkAdminAccess(_email: string) {
+  const cookieStore = await cookies()
+  const supabase = createServerClient(cookieStore)
+  const { data: { user } } = await supabase.auth.getUser()
+  return user?.user_metadata?.role === "admin"
 }

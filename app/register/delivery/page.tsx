@@ -1,14 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Truck, User, Car, MapPin, Phone, CreditCard, File } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { ArrowLeft, Eye, EyeOff, Truck, User, Car, MapPin, Phone, CreditCard, File } from "lucide-react"
+import { z } from "zod"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import { FileUpload } from "@/components/ui/file-upload"
 import { SiteHeader } from "@/components/site-header"
@@ -16,90 +21,125 @@ import { registerDelivery } from "@/app/actions/auth"
 import { toast } from "@/hooks/use-toast"
 import { getFriendlyRegistrationError } from "@/lib/registration-errors"
 
+const draftStorageKey = "delivery-registration-draft"
+
+const deliverySchema = z
+  .object({
+    firstName: z.string().min(2, "First name is required"),
+    lastName: z.string().min(2, "Last name is required"),
+    email: z.string().email("Enter a valid email address"),
+    phone: z.string().min(7, "Phone number is required"),
+    nationalId: z.string().min(4, "National ID number is required"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+    driverLicense: z.string().min(4, "Driver's license number is required"),
+    vehicleType: z.string().min(1, "Vehicle type is required"),
+    vehicleRegistration: z.string().min(3, "Vehicle registration number is required"),
+    address: z.string().min(5, "Street address is required"),
+    city: z.string().min(2, "City is required"),
+    country: z.string().min(2, "Country is required"),
+    emergencyContactName: z.string().min(2, "Emergency contact name is required"),
+    emergencyContactPhone: z.string().min(7, "Emergency contact phone is required"),
+    bankName: z.string().min(1, "Bank name is required"),
+    accountNumber: z.string().min(4, "Account number is required"),
+    acceptTerms: z.literal(true, { errorMap: () => ({ message: "Please accept the terms and conditions" }) }),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+
+type DeliveryFormValues = z.infer<typeof deliverySchema>
+
 export default function DeliveryRegistrationPage() {
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  async function handleSubmit(formData: FormData) {
-    setIsSubmitting(true)
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<DeliveryFormValues>({
+    resolver: zodResolver(deliverySchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      nationalId: "",
+      password: "",
+      confirmPassword: "",
+      driverLicense: "",
+      vehicleType: "",
+      vehicleRegistration: "",
+      address: "",
+      city: "",
+      country: "Kenya",
+      emergencyContactName: "",
+      emergencyContactPhone: "",
+      bankName: "",
+      accountNumber: "",
+      acceptTerms: false,
+    },
+  })
 
+  const vehicleType = watch("vehicleType")
+  const country = watch("country")
+  const bankName = watch("bankName")
+  const acceptTerms = watch("acceptTerms")
+  const password = watch("password")
+  const confirmPassword = watch("confirmPassword")
+  const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem(draftStorageKey)
+    if (!raw) return
     try {
-      const result = await registerDelivery(formData)
-
-      if (result.success) {
-        // Upload documents if any
-        if (uploadedFiles.length > 0 && result.applicationId) {
-          toast({ title: "Application submitted", description: "Uploading documents..." })
-          
-          const uploadPromises = uploadedFiles.map(async (file, index) => {
-            const documentFormData = new FormData()
-            documentFormData.append("file", file)
-            documentFormData.append("applicationType", "delivery")
-            documentFormData.append("applicationId", result.applicationId)
-            documentFormData.append("documentType", `document-${index + 1}`)
-
-            const response = await fetch("/api/upload/documents", {
-              method: "POST",
-              body: documentFormData,
-            })
-
-            const uploadResult = await response.json()
-            
-            if (uploadResult.success) {
-              return {
-                url: uploadResult.url,
-                type: `document-${index + 1}`,
-                name: file.name,
-                uploadedAt: new Date().toISOString()
-              }
-            }
-            
-            return null
-          })
-
-          const uploadResults = await Promise.all(uploadPromises)
-          const successfulUploads = uploadResults.filter(r => r !== null)
-          const failedUploads = uploadResults.filter(r => r === null)
-          
-          // Save document URLs to database
-          if (successfulUploads.length > 0) {
-            const { saveApplicationDocuments } = await import("@/app/actions/documents")
-            await saveApplicationDocuments(result.applicationId, "delivery", successfulUploads)
-          }
-          
-          if (failedUploads.length > 0) {
-            toast({
-              title: "Some documents failed to upload",
-              description: `Your application was submitted, but ${failedUploads.length} document(s) failed. Please try again or contact support.`,
-              variant: "destructive",
-            })
-          } else {
-            toast({ title: "Success", description: `${result.message} All documents uploaded successfully!` })
-          }
-        } else {
-          toast({ title: "Success", description: result.message })
-        }
-        
-        // Reset form
-        const form = document.getElementById("delivery-form") as HTMLFormElement
-        form?.reset()
-        setUploadedFiles([])
-      } else {
-        toast({
-          title: "Couldn't submit application",
-          description: getFriendlyRegistrationError(result.error),
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      toast({
-        title: "Something went wrong",
-        description: getFriendlyRegistrationError(error instanceof Error ? error.message : ""),
-        variant: "destructive",
-      })
-    } finally {
-      setIsSubmitting(false)
+      const parsed = JSON.parse(raw) as Partial<DeliveryFormValues>
+      reset({ ...parsed })
+    } catch {
+      sessionStorage.removeItem(draftStorageKey)
     }
+  }, [reset])
+
+  useEffect(() => {
+    const subscription = watch((values) => {
+      sessionStorage.setItem(draftStorageKey, JSON.stringify(values))
+    })
+    return () => subscription.unsubscribe()
+  }, [watch])
+
+  const onSubmit = async (values: DeliveryFormValues) => {
+    const formData = new FormData()
+    Object.entries(values).forEach(([key, value]) => {
+      if (key === "acceptTerms") {
+        if (value) formData.append(key, "on")
+        return
+      }
+      formData.append(key, String(value ?? ""))
+    })
+    uploadedFiles.forEach((file) => formData.append("documents", file))
+
+    setIsSubmitting(true)
+    const result = await registerDelivery(formData)
+
+    if (result.success) {
+      sessionStorage.removeItem(draftStorageKey)
+      router.push("/register/success?role=delivery")
+      return
+    } else {
+      toast({ description: getFriendlyRegistrationError(result.error), variant: "destructive" })
+    }
+
+    setIsSubmitting(false)
   }
 
   return (
@@ -127,7 +167,8 @@ export default function DeliveryRegistrationPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <form id="delivery-form" action={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
                 {/* Personal Information */}
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2 mb-4">
@@ -136,41 +177,76 @@ export default function DeliveryRegistrationPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="firstName">First Name *</Label>
-                      <Input id="firstName" name="firstName" required />
+                      <Input id="firstName" {...register("firstName")} />
+                      {errors.firstName && <p className="text-xs text-red-600">{errors.firstName.message}</p>}
                     </div>
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name *</Label>
-                      <Input id="lastName" name="lastName" required />
+                      <Input id="lastName" {...register("lastName")} />
+                      {errors.lastName && <p className="text-xs text-red-600">{errors.lastName.message}</p>}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="email">Email Address *</Label>
-                      <Input id="email" name="email" type="email" required />
+                      <Input id="email" type="email" {...register("email")} />
+                      {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
                     </div>
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number *</Label>
-                      <Input id="phone" name="phone" type="tel" placeholder="+254 700 123 456" required />
+                      <Input id="phone" type="tel" placeholder="+254 700 123 456" {...register("phone")} />
+                      {errors.phone && <p className="text-xs text-red-600">{errors.phone.message}</p>}
                     </div>
                   </div>
 
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="nationalId">National ID Number *</Label>
-                    <Input id="nationalId" name="nationalId" required />
+                    <Input id="nationalId" {...register("nationalId")} />
+                    {errors.nationalId && <p className="text-xs text-red-600">{errors.nationalId.message}</p>}
                   </div>
 
-                  <div>
-                    <Label htmlFor="password">Password *</Label>
-                    <Input id="password" name="password" type="password" required />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password *</Label>
+                      <div className="relative">
+                        <Input id="password" type={showPassword ? "text" : "password"} {...register("password")} />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
+                        </Button>
+                      </div>
+                      {errors.password && <p className="text-xs text-red-600">{errors.password.message}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                      <div className="relative">
+                        <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} {...register("confirmPassword")} />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4 text-gray-400" /> : <Eye className="h-4 w-4 text-gray-400" />}
+                        </Button>
+                      </div>
+                      {confirmPassword.length > 0 && !errors.confirmPassword && (
+                        <p className={`text-xs ${passwordsMatch ? "text-emerald-600" : "text-red-600"}`}>
+                          {passwordsMatch ? "Passwords match" : "Passwords do not match"}
+                        </p>
+                      )}
+                      {errors.confirmPassword && <p className="text-xs text-red-600">{errors.confirmPassword.message}</p>}
+                    </div>
                   </div>
-
-                <div>
-                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
-                  <Input id="confirmPassword" name="confirmPassword" type="password" required />
-                </div>
                 </div>
 
                 {/* Vehicle Information */}
@@ -180,15 +256,19 @@ export default function DeliveryRegistrationPage() {
                     <h3 className="text-lg font-semibold text-gray-900">Vehicle Information</h3>
                   </div>
 
-                  <div>
-                    <Label htmlFor="driverLicense">Driver's License Number *</Label>
-                    <Input id="driverLicense" name="driverLicense" required />
+                  <div className="space-y-2">
+                    <Label htmlFor="driverLicense">Driver&apos;s License Number *</Label>
+                    <Input id="driverLicense" {...register("driverLicense")} />
+                    {errors.driverLicense && <p className="text-xs text-red-600">{errors.driverLicense.message}</p>}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="vehicleType">Vehicle Type *</Label>
-                      <Select name="vehicleType" required>
+                    <div className="space-y-2">
+                      <Label>Vehicle Type *</Label>
+                      <Select
+                        value={vehicleType}
+                        onValueChange={(v) => setValue("vehicleType", v, { shouldValidate: true, shouldDirty: true })}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select vehicle type" />
                         </SelectTrigger>
@@ -200,10 +280,12 @@ export default function DeliveryRegistrationPage() {
                           <SelectItem value="truck">Truck</SelectItem>
                         </SelectContent>
                       </Select>
+                      {errors.vehicleType && <p className="text-xs text-red-600">{errors.vehicleType.message}</p>}
                     </div>
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="vehicleRegistration">Vehicle Registration Number *</Label>
-                      <Input id="vehicleRegistration" name="vehicleRegistration" placeholder="KXX 123X" required />
+                      <Input id="vehicleRegistration" placeholder="KXX 123X" {...register("vehicleRegistration")} />
+                      {errors.vehicleRegistration && <p className="text-xs text-red-600">{errors.vehicleRegistration.message}</p>}
                     </div>
                   </div>
                 </div>
@@ -215,19 +297,24 @@ export default function DeliveryRegistrationPage() {
                     <h3 className="text-lg font-semibold text-gray-900">Address Information</h3>
                   </div>
 
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="address">Street Address *</Label>
-                    <Textarea id="address" name="address" rows={2} required />
+                    <Textarea id="address" rows={2} {...register("address")} />
+                    {errors.address && <p className="text-xs text-red-600">{errors.address.message}</p>}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="city">City *</Label>
-                      <Input id="city" name="city" required />
+                      <Input id="city" {...register("city")} />
+                      {errors.city && <p className="text-xs text-red-600">{errors.city.message}</p>}
                     </div>
-                    <div>
-                      <Label htmlFor="country">Country *</Label>
-                      <Select name="country" defaultValue="Kenya" required>
+                    <div className="space-y-2">
+                      <Label>Country *</Label>
+                      <Select
+                        value={country}
+                        onValueChange={(v) => setValue("country", v, { shouldValidate: true, shouldDirty: true })}
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -237,6 +324,7 @@ export default function DeliveryRegistrationPage() {
                           <SelectItem value="Tanzania">Tanzania</SelectItem>
                         </SelectContent>
                       </Select>
+                      {errors.country && <p className="text-xs text-red-600">{errors.country.message}</p>}
                     </div>
                   </div>
                 </div>
@@ -249,13 +337,15 @@ export default function DeliveryRegistrationPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="emergencyContactName">Emergency Contact Name *</Label>
-                      <Input id="emergencyContactName" name="emergencyContactName" required />
+                    <div className="space-y-2">
+                      <Label htmlFor="emergencyContactName">Contact Name *</Label>
+                      <Input id="emergencyContactName" {...register("emergencyContactName")} />
+                      {errors.emergencyContactName && <p className="text-xs text-red-600">{errors.emergencyContactName.message}</p>}
                     </div>
-                    <div>
-                      <Label htmlFor="emergencyContactPhone">Emergency Contact Phone *</Label>
-                      <Input id="emergencyContactPhone" name="emergencyContactPhone" type="tel" required />
+                    <div className="space-y-2">
+                      <Label htmlFor="emergencyContactPhone">Contact Phone *</Label>
+                      <Input id="emergencyContactPhone" type="tel" {...register("emergencyContactPhone")} />
+                      {errors.emergencyContactPhone && <p className="text-xs text-red-600">{errors.emergencyContactPhone.message}</p>}
                     </div>
                   </div>
                 </div>
@@ -268,9 +358,12 @@ export default function DeliveryRegistrationPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="bankName">Bank Name *</Label>
-                      <Select name="bankName" required>
+                    <div className="space-y-2">
+                      <Label>Bank Name *</Label>
+                      <Select
+                        value={bankName}
+                        onValueChange={(v) => setValue("bankName", v, { shouldValidate: true, shouldDirty: true })}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select your bank" />
                         </SelectTrigger>
@@ -286,10 +379,12 @@ export default function DeliveryRegistrationPage() {
                           <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                       </Select>
+                      {errors.bankName && <p className="text-xs text-red-600">{errors.bankName.message}</p>}
                     </div>
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="accountNumber">Account Number *</Label>
-                      <Input id="accountNumber" name="accountNumber" required />
+                      <Input id="accountNumber" {...register("accountNumber")} />
+                      {errors.accountNumber && <p className="text-xs text-red-600">{errors.accountNumber.message}</p>}
                     </div>
                   </div>
                 </div>
@@ -308,7 +403,7 @@ export default function DeliveryRegistrationPage() {
                     maxFiles={5}
                     maxSize={10}
                   />
-                  
+
                   <div className="rounded-lg border border-emerald-200/60 bg-emerald-50/70 p-3">
                     <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-800 mb-2">
                       Required Documents
@@ -320,9 +415,7 @@ export default function DeliveryRegistrationPage() {
                       <li>Vehicle Registration Certificate</li>
                       <li>Insurance Certificate (optional)</li>
                     </ul>
-                    <p className="mt-2 text-[11px] text-emerald-700/90">
-                      PDF, DOC, DOCX, JPG, PNG - max 10MB each
-                    </p>
+                    <p className="mt-2 text-[11px] text-emerald-700/90">PDF, DOC, DOCX, JPG, PNG — max 10MB each</p>
                   </div>
                 </div>
 
@@ -337,7 +430,32 @@ export default function DeliveryRegistrationPage() {
                   </ul>
                 </div>
 
-                <Button type="submit" className="w-full bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all" disabled={isSubmitting}>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="acceptTerms"
+                    checked={acceptTerms}
+                    onCheckedChange={(checked) =>
+                      setValue("acceptTerms", checked === true, { shouldValidate: true, shouldDirty: true })
+                    }
+                  />
+                  <Label htmlFor="acceptTerms" className="text-sm">
+                    I agree to the{" "}
+                    <Link href="/terms" className="text-emerald-600 hover:text-emerald-700 font-medium">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" className="text-emerald-600 hover:text-emerald-700 font-medium">
+                      Privacy Policy
+                    </Link>
+                  </Label>
+                </div>
+                {errors.acceptTerms && <p className="text-xs text-red-600">{errors.acceptTerms.message}</p>}
+
+                <Button
+                  type="submit"
+                  className="w-full bg-emerald-800 hover:bg-emerald-600 text-white rounded-full font-semibold shadow-md hover:shadow-lg transition-all"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? "Submitting Application..." : "Submit Application"}
                 </Button>
 

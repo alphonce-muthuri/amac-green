@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { CheckCircle, XCircle, Mail, ArrowRight } from "lucide-react"
 import Link from "next/link"
-import { de } from "date-fns/locale"
 import { SiteHeader } from "@/components/site-header"
 
 function VerifyEmailContent() {
@@ -19,11 +18,11 @@ function VerifyEmailContent() {
   useEffect(() => {
     const handleEmailVerification = async () => {
       try {
-        // Get the token from URL parameters
-        const token = searchParams.get("token")
-        const type = searchParams.get("type")
+        const tokenHash = searchParams.get("token_hash") ?? searchParams.get("token")
+        const rawType = searchParams.get("type")
+        const verificationType = rawType === "email" || rawType === "signup" ? rawType : null
 
-        if (!token || type !== "email") {
+        if (!tokenHash || !verificationType) {
           setVerificationStatus("error")
           setMessage("Invalid verification link. Please check your email for the correct link.")
           return
@@ -31,8 +30,8 @@ function VerifyEmailContent() {
 
         // Verify the email using Supabase
         const { data, error } = await supabase.auth.verifyOtp({
-          token_hash: token,
-          type: "email",
+          token_hash: tokenHash,
+          type: verificationType,
         })
 
         if (error) {

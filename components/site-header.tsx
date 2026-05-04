@@ -36,7 +36,7 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const isDarkHeroPage = pathname === "/" || pathname === "/register"
+  const isDarkHeroPage = pathname === "/"
   const onDarkHero = isDarkHeroPage && !scrolled
   const useLightHeaderStyles = !onDarkHero
 
@@ -153,8 +153,8 @@ export function SiteHeader() {
                 </div>
               </Link>
 
-              {/* Desktop Auth Buttons */}
-              <div className="hidden lg:flex items-center space-x-3">
+              {/* Auth Buttons — avatar always visible when logged in, Login/Register only on desktop */}
+              <div className="flex items-center space-x-3">
                 {loading ? (
                   <div className="h-9 w-9 rounded-full animate-pulse bg-gray-200/60" />
                 ) : user ? (
@@ -230,23 +230,23 @@ export function SiteHeader() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <>
-                    <Button 
-                      variant="ghost" 
+                  <div className="hidden lg:flex items-center space-x-3">
+                    <Button
+                      variant="ghost"
                       size="sm"
                       className={useLightHeaderStyles ? "text-gray-700 hover:text-emerald-600 hover:bg-emerald-50" : "text-white/90 hover:text-white hover:bg-white/10"}
                       asChild
                     >
                       <Link href="/login">Login</Link>
                     </Button>
-                    <Button 
+                    <Button
                       size="sm"
                       className={useLightHeaderStyles ? "bg-emerald-800 hover:bg-emerald-600 text-white shadow-md hover:shadow-lg transition-all duration-300 rounded-full px-8 " : "bg-white text-gray-900 hover:bg-white/90 shadow-md border border-white/20 rounded-full px-8 "}
                       asChild
                     >
                       <Link href="/register">Get started</Link>
                     </Button>
-                  </>
+                  </div>
                 )}
               </div>
 

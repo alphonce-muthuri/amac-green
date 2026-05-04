@@ -6,6 +6,7 @@ import { Eye, EyeOff, ArrowLeft, Sparkles, Shield, Lock, Mail, Check } from "luc
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import { toFriendlyErrorMessage } from "@/lib/friendly-errors"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -60,12 +61,13 @@ export default function LoginPage() {
           })
         }
 
+        // getSession reads from cookies — no network request, won't hit rate limits
         const {
-          data: { user },
-        } = await supabase.auth.getUser()
+          data: { session },
+        } = await supabase.auth.getSession()
 
-        if (user) {
-          const userRole = user.user_metadata?.role || "customer"
+        if (session?.user) {
+          const userRole = session.user.user_metadata?.role || "customer"
           redirectToRoleDashboard(userRole)
         }
       } catch (error) {
@@ -123,14 +125,14 @@ export default function LoginPage() {
       if (error) {
         console.error("Login error:", error)
         
-        if (error.message.includes("Email not confirmed") || error.message.includes("email_not_confirmed")) {
-          setMessage({ 
-            type: "warning", 
-            text: "Please verify your email address before logging in. Check your inbox for the verification link." 
+        if (error.message.toLowerCase().includes("email not confirmed") || error.message.includes("email_not_confirmed")) {
+          setMessage({
+            type: "warning",
+            text: "Please verify your email before signing in. Check your inbox for the verification link.",
           })
           setShowResendVerification(true)
         } else {
-          setMessage({ type: "error", text: error.message })
+          setMessage({ type: "error", text: toFriendlyErrorMessage(error.message) })
         }
         setIsSubmitting(false)
         return

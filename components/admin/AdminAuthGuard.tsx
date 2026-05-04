@@ -15,7 +15,7 @@ export default function AdminAuthGuard({ children }: { children: React.ReactNode
         router.replace("/login");
         return;
       }
-      const isAdmin = await checkAdminAccess(user.email || "");
+      const isAdmin = await checkAdminAccess("");
       if (!isAdmin) {
         router.replace("/");
         return;

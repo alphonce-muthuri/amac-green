@@ -1,0 +1,73 @@
+TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+[PAYSTACK] Initialize error: TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+⨯ unhandledRejection:  TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+⨯ unhandledRejection:  TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+⨯ TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+⨯ unhandledRejection:  TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+⨯ unhandledRejection:  TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+[PAYSTACK] Verify error: TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+⨯ unhandledRejection:  TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+⨯ unhandledRejection:  TypeError: e.getAll is not a function
+    at Object.getAll (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:5493)
+    at r (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:1322)
+    at Object.getItem (E:\amac-green\.next\server\chunks\_0fib4a4._.js:23:2947)
+^C^C

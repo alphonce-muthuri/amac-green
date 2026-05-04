@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/supabase-server"
+import { restoreInventory } from "@/app/actions/inventory"
 
 export async function POST(req: NextRequest) {
   try {
@@ -94,6 +95,8 @@ export async function POST(req: NextRequest) {
     if (paymentStatus === "paid") {
       console.log("🚚 Payment successful - delivery assignment will be triggered by database trigger")
       // The auto_assign_delivery trigger will handle delivery assignment automatically
+    } else if (paymentStatus === "failed") {
+      await restoreInventory(order.id)
     }
 
     return NextResponse.json({

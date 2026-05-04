@@ -105,19 +105,27 @@ export default function CheckoutPage() {
   const tax = subtotal * 0.16
   const total = subtotal + shipping + tax
 
-  // ── Pre-populate from user profile ──────────────────────
+  // ── Pre-populate from customer_profiles (authoritative) with user_metadata fallback ──
   useEffect(() => {
     if (!user) return
-    const meta = (user as any).user_metadata || {}
-    setFormData((prev) => ({
-      ...prev,
-      shipping_first_name: meta.first_name  || prev.shipping_first_name,
-      shipping_last_name:  meta.last_name   || prev.shipping_last_name,
-      shipping_email:      user.email       || prev.shipping_email,
-      shipping_phone:      meta.phone       || prev.shipping_phone,
-      shipping_address:    meta.address     || prev.shipping_address,
-      shipping_city:       meta.city        || prev.shipping_city,
-    }))
+    const loadProfile = async () => {
+      const { data: profile } = await supabase
+        .from("customer_profiles")
+        .select("first_name, last_name, phone, address, city")
+        .eq("user_id", user.id)
+        .single()
+      const source = profile ?? (user as any).user_metadata ?? {}
+      setFormData((prev) => ({
+        ...prev,
+        shipping_first_name: source.first_name  || prev.shipping_first_name,
+        shipping_last_name:  source.last_name   || prev.shipping_last_name,
+        shipping_email:      user.email         || prev.shipping_email,
+        shipping_phone:      source.phone       || prev.shipping_phone,
+        shipping_address:    source.address     || prev.shipping_address,
+        shipping_city:       source.city        || prev.shipping_city,
+      }))
+    }
+    void loadProfile()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 

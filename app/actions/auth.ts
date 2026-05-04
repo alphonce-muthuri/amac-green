@@ -2,7 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js"
 import { supabaseAdmin } from "@/lib/supabase-server"
-import type { VendorApplication, ProfessionalApplication, CustomerProfile, DeliveryApplication } from "@/lib/supabase"
+import type { VendorApplication, ProfessionalApplication, CustomerProfile, DeliveryApplication, DocumentUpload } from "@/lib/supabase"
 import { z } from "zod"
 
 // Server-side auth client using implicit (OTP) flow — PKCE requires browser
@@ -46,6 +46,101 @@ function validateRegistrationAuth(formData: FormData) {
   return { success: true as const, data: result.data }
 }
 
+const APPLICATION_DOCUMENT_BUCKET = "product-images"
+const APPLICATION_DOCUMENT_FIELD = "documents"
+const APPLICATION_DOCUMENT_MAX_SIZE = 10 * 1024 * 1024
+const APPLICATION_DOCUMENT_ALLOWED_TYPES = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+])
+
+function getRegistrationFiles(formData: FormData) {
+  return formData
+    .getAll(APPLICATION_DOCUMENT_FIELD)
+    .filter((value): value is File => value instanceof File && value.size > 0)
+}
+
+function sanitizeFileName(fileName: string) {
+  return fileName.replace(/[^a-zA-Z0-9._-]/g, "-")
+}
+
+async function uploadApplicationDocuments(
+  applicationType: "vendor" | "professional" | "delivery",
+  applicationId: string,
+  files: File[],
+) {
+  const uploadedDocuments: DocumentUpload[] = []
+  let failedCount = 0
+
+  for (const [index, file] of files.entries()) {
+    if (!APPLICATION_DOCUMENT_ALLOWED_TYPES.has(file.type) || file.size > APPLICATION_DOCUMENT_MAX_SIZE) {
+      failedCount += 1
+      continue
+    }
+
+    const fileExt = file.name.split(".").pop() || "bin"
+    const safeName = sanitizeFileName(file.name.replace(/\.[^.]+$/, ""))
+    const filePath = `documents/${applicationType}/${applicationId}/document-${index + 1}-${Date.now()}-${safeName}.${fileExt}`
+
+    const { data, error } = await supabaseAdmin.storage
+      .from(APPLICATION_DOCUMENT_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+      })
+
+    if (error) {
+      console.error("Document upload error:", error)
+      failedCount += 1
+      continue
+    }
+
+    const { data: urlData } = supabaseAdmin.storage
+      .from(APPLICATION_DOCUMENT_BUCKET)
+      .getPublicUrl(data.path)
+
+    uploadedDocuments.push({
+      url: urlData.publicUrl,
+      type: `document-${index + 1}`,
+      name: file.name,
+      uploadedAt: new Date().toISOString(),
+    })
+  }
+
+  return { uploadedDocuments, failedCount }
+}
+
+async function saveUploadedDocuments(
+  tableName: "vendor_applications" | "professional_applications" | "delivery_applications",
+  applicationId: string,
+  documents: DocumentUpload[],
+) {
+  if (documents.length === 0) {
+    return
+  }
+
+  const { error } = await supabaseAdmin
+    .from(tableName)
+    .update({ documents })
+    .eq("id", applicationId)
+
+  if (error) {
+    throw new Error(error.message)
+  }
+}
+
+function buildRegistrationMessage(baseMessage: string, failedCount: number) {
+  if (failedCount === 0) {
+    return baseMessage
+  }
+
+  return `${baseMessage} ${failedCount} document(s) could not be uploaded. You can re-submit them later after logging in or contact support if needed.`
+}
+
 async function signUpWithEmailVerification(email: string, password: string, metadata: any) {
   // First, sign up the user with email verification.
   // Uses the server-side implicit-flow client so no PKCE code verifier is
@@ -67,6 +162,13 @@ async function signUpWithEmailVerification(email: string, password: string, meta
   // (to prevent email enumeration). Surface this as a clear error.
   if (!signUpData?.user) {
     return { success: false, error: "An account with this email may already exist. Please try signing in instead.", data: null }
+  }
+
+  // When email is already registered, Supabase returns a fake user object with
+  // an empty identities array and a UUID that does NOT exist in auth.users.
+  // Inserting with that UUID causes the vendor_applications_user_id_fkey FK to fail.
+  if (!signUpData.user.identities || signUpData.user.identities.length === 0) {
+    return { success: false, error: "An account with this email already exists. Please sign in instead.", data: null }
   }
 
   return { success: true, data: signUpData, error: null }
@@ -97,6 +199,8 @@ export async function registerVendor(formData: FormData) {
       account_number: formData.get("accountNumber") as string,
       status: "pending",
     }
+
+    const registrationFiles = getRegistrationFiles(formData)
 
     // Create user account with email verification
     const signUpResult = await signUpWithEmailVerification(
@@ -130,10 +234,20 @@ export async function registerVendor(formData: FormData) {
       return { success: false, error: dbError.message }
     }
 
+    const { uploadedDocuments, failedCount } = await uploadApplicationDocuments(
+      "vendor",
+      applicationData.id,
+      registrationFiles,
+    )
+
+    await saveUploadedDocuments("vendor_applications", applicationData.id, uploadedDocuments)
+
     return {
       success: true,
-      message:
+      message: buildRegistrationMessage(
         "Vendor application submitted successfully! Please check your email and click the verification link before logging in. Once your email is verified and application approved, you'll be able to list products.",
+        failedCount,
+      ),
       applicationId: applicationData.id,
     }
   } catch (error) {
@@ -163,6 +277,8 @@ export async function registerProfessional(formData: FormData) {
       epra_license: formData.get("epraLicense") as string,
       status: "pending",
     }
+
+    const registrationFiles = getRegistrationFiles(formData)
 
     // Create user account with email verification
     const signUpResult = await signUpWithEmailVerification(
@@ -196,10 +312,20 @@ export async function registerProfessional(formData: FormData) {
       return { success: false, error: dbError.message }
     }
 
+    const { uploadedDocuments, failedCount } = await uploadApplicationDocuments(
+      "professional",
+      applicationData.id,
+      registrationFiles,
+    )
+
+    await saveUploadedDocuments("professional_applications", applicationData.id, uploadedDocuments)
+
     return {
       success: true,
-      message:
+      message: buildRegistrationMessage(
         "Professional application submitted successfully! Please check your email and click the verification link before logging in. Once your email is verified and application approved, you'll have access to professional features.",
+        failedCount,
+      ),
       applicationId: applicationData.id,
     }
   } catch (error) {
@@ -294,6 +420,8 @@ export async function registerDelivery(formData: FormData) {
       status: "pending",
     }
 
+    const registrationFiles = getRegistrationFiles(formData)
+
     // Create user account with email verification
     const signUpResult = await signUpWithEmailVerification(
       deliveryData.email,
@@ -326,10 +454,20 @@ export async function registerDelivery(formData: FormData) {
       return { success: false, error: dbError.message }
     }
 
+    const { uploadedDocuments, failedCount } = await uploadApplicationDocuments(
+      "delivery",
+      applicationData.id,
+      registrationFiles,
+    )
+
+    await saveUploadedDocuments("delivery_applications", applicationData.id, uploadedDocuments)
+
     return {
       success: true,
-      message:
+      message: buildRegistrationMessage(
         "Delivery application submitted successfully! Please check your email and click the verification link before logging in. Once your email is verified and application approved, you'll be able to receive delivery assignments.",
+        failedCount,
+      ),
       applicationId: applicationData.id,
     }
   } catch (error) {

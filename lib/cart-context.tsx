@@ -124,7 +124,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       dbItems.forEach((db) => {
         const localMatch = items.find((i) => i.productId === db.productId)
         if (localMatch) {
-          const qty = Math.max(db.quantity, localMatch.quantity)
+          const desired = Math.max(db.quantity, localMatch.quantity)
+          const qty = db.stock != null ? Math.min(desired, db.stock) : desired
           merged.push({ ...db, quantity: qty })
         } else {
           merged.push(db)
@@ -159,7 +160,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   /*                         Mutating Helpers                               */
   /* ---------------------------------------------------------------------- */
   const addToCart = async (item: CartItem, options?: { silent?: boolean }) => {
-    const maxQty = item.stock ?? 99
+    const maxQty = item.stock != null ? item.stock : Number.MAX_SAFE_INTEGER
     setItems((prev) => {
       const existing = prev.find((i) => i.productId === item.productId)
       if (existing) {

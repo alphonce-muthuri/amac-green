@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
-import { FieldErrors, useForm } from "react-hook-form"
+import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
@@ -44,6 +45,7 @@ const customerSchema = z
 type CustomerFormValues = z.infer<typeof customerSchema>
 
 export default function CustomerRegistration() {
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -116,27 +118,14 @@ export default function CustomerRegistration() {
     const result = await registerCustomer(submissionData)
 
     if (result.success) {
-      toast({ title: "Success", description: result.message })
       sessionStorage.removeItem(draftStorageKey)
-      // Don't auto-redirect, let user read the verification message
+      router.push("/register/success?role=customer")
+      return
     } else {
-      toast({
-        title: "Couldn't create account",
-        description: getFriendlyRegistrationError(result.error),
-        variant: "destructive",
-      })
+      toast({ description: getFriendlyRegistrationError(result.error), variant: "destructive" })
     }
 
     setIsSubmitting(false)
-  }
-
-  const onInvalid = (formErrors: FieldErrors<CustomerFormValues>) => {
-    const firstError = Object.values(formErrors)[0]
-    const message =
-      firstError && typeof firstError === "object" && "message" in firstError
-        ? String(firstError.message)
-        : "Please fix the highlighted fields and try again."
-    toast({ title: "Please check your details", description: message, variant: "destructive" })
   }
 
   return (
@@ -159,7 +148,7 @@ export default function CustomerRegistration() {
               <CardDescription>Please provide your details to create your account</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-              <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name *</Label>

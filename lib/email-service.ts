@@ -1,22 +1,51 @@
-// Email configuration
-const emailConfig = {
-  host: process.env.BREVO_SMTP_SERVER || 'smtp-relay.brevo.com',
-  port: parseInt(process.env.BREVO_SMTP_PORT || '587'),
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.BREVO_SMTP_LOGIN || '',
-    pass: process.env.BREVO_SMTP_PASSWORD || '',
-  },
-}
-
-// Create transporter function that imports nodemailer dynamically (server-side only)
-async function createTransporter() {
+// Centralize Resend setup so the rest of the app can reuse
+// the same email payload shape and return values.
+async function createResendClient() {
   if (typeof window !== 'undefined') {
     throw new Error('Email service can only be used on the server side')
   }
-  
-  const nodemailer = await import('nodemailer')
-  return nodemailer.default.createTransport(emailConfig)
+
+  const { Resend } = await import('resend')
+  const apiKey = process.env.RESEND_API_KEY
+
+  if (!apiKey) {
+    throw new Error('RESEND_API_KEY is not configured')
+  }
+
+  return new Resend(apiKey)
+}
+
+type SendEmailOptions = {
+  to: string
+  subject: string
+  html: string
+}
+
+function getFromAddress() {
+  const fromEmail = process.env.RESEND_FROM_EMAIL
+
+  if (!fromEmail) {
+    throw new Error('RESEND_FROM_EMAIL is not configured')
+  }
+
+  const fromName = process.env.RESEND_FROM_NAME
+  return fromName ? `${fromName} <${fromEmail}>` : fromEmail
+}
+
+async function sendEmail({ to, subject, html }: SendEmailOptions) {
+  const resend = await createResendClient()
+  const result = await resend.emails.send({
+    from: getFromAddress(),
+    to,
+    subject,
+    html,
+  })
+
+  if (result.error) {
+    throw new Error(result.error.message)
+  }
+
+  return { messageId: result.data?.id ?? null }
 }
 
 // Email templates
@@ -363,7 +392,6 @@ export async function sendVendorApprovalEmail(
   const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL}/vendor`
   
   const mailOptions = {
-    from: `${process.env.BREVO_FROM_NAME} <${process.env.BREVO_FROM_EMAIL}>`,
     to: email,
     subject: emailTemplates.vendorApproval.subject,
     html: emailTemplates.vendorApproval.html({ name, companyName, loginUrl }),
@@ -371,8 +399,7 @@ export async function sendVendorApprovalEmail(
 
   try {
     console.log('[EMAIL] Sending vendor approval email to:', email)
-    const transporter = await createTransporter()
-    const result = await transporter.sendMail(mailOptions)
+    const result = await sendEmail(mailOptions)
     console.log('[EMAIL] Vendor approval email sent successfully:', result.messageId)
     return { success: true, messageId: result.messageId }
   } catch (error) {
@@ -389,7 +416,6 @@ export async function sendProfessionalApprovalEmail(
   const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL}/professional`
   
   const mailOptions = {
-    from: `${process.env.BREVO_FROM_NAME} <${process.env.BREVO_FROM_EMAIL}>`,
     to: email,
     subject: emailTemplates.professionalApproval.subject,
     html: emailTemplates.professionalApproval.html({ name, companyName, loginUrl }),
@@ -397,8 +423,7 @@ export async function sendProfessionalApprovalEmail(
 
   try {
     console.log('[EMAIL] Sending professional approval email to:', email)
-    const transporter = await createTransporter()
-    const result = await transporter.sendMail(mailOptions)
+    const result = await sendEmail(mailOptions)
     console.log('[EMAIL] Professional approval email sent successfully:', result.messageId)
     return { success: true, messageId: result.messageId }
   } catch (error) {
@@ -414,7 +439,6 @@ export async function sendDeliveryApprovalEmail(
   const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL}/delivery`
   
   const mailOptions = {
-    from: `${process.env.BREVO_FROM_NAME} <${process.env.BREVO_FROM_EMAIL}>`,
     to: email,
     subject: emailTemplates.deliveryApproval.subject,
     html: emailTemplates.deliveryApproval.html({ name, loginUrl }),
@@ -422,8 +446,7 @@ export async function sendDeliveryApprovalEmail(
 
   try {
     console.log('[EMAIL] Sending delivery approval email to:', email)
-    const transporter = await createTransporter()
-    const result = await transporter.sendMail(mailOptions)
+    const result = await sendEmail(mailOptions)
     console.log('[EMAIL] Delivery approval email sent successfully:', result.messageId)
     return { success: true, messageId: result.messageId }
   } catch (error) {
@@ -466,7 +489,6 @@ export async function sendNewJobNotificationToProfessionals(jobData: {
     // Send email to each professional
     for (const professional of professionals) {
       const mailOptions = {
-        from: `${process.env.BREVO_FROM_NAME} <${process.env.BREVO_FROM_EMAIL}>`,
         to: professional.email,
         subject: emailTemplates.newInstallationJob.subject,
         html: emailTemplates.newInstallationJob.html({
@@ -482,8 +504,7 @@ export async function sendNewJobNotificationToProfessionals(jobData: {
 
       try {
         console.log('[EMAIL] Sending new job notification to:', professional.email)
-        const transporter = await createTransporter()
-        const result = await transporter.sendMail(mailOptions)
+        const result = await sendEmail(mailOptions)
         results.push({ email: professional.email, success: true, messageId: result.messageId })
       } catch (emailError) {
         console.error('[EMAIL] Error sending to', professional.email, ':', emailError)
@@ -516,7 +537,6 @@ export async function sendNewBidNotificationToCustomer(bidData: {
   const jobUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/installations`
   
   const mailOptions = {
-    from: `${process.env.BREVO_FROM_NAME} <${process.env.BREVO_FROM_EMAIL}>`,
     to: bidData.customerEmail,
     subject: emailTemplates.newBidReceived.subject,
     html: emailTemplates.newBidReceived.html({
@@ -530,8 +550,7 @@ export async function sendNewBidNotificationToCustomer(bidData: {
 
   try {
     console.log('[EMAIL] Sending new bid notification to:', bidData.customerEmail)
-    const transporter = await createTransporter()
-    const result = await transporter.sendMail(mailOptions)
+    const result = await sendEmail(mailOptions)
     console.log('[EMAIL] New bid notification sent successfully:', result.messageId)
     return { success: true, messageId: result.messageId }
   } catch (error) {
@@ -543,7 +562,6 @@ export async function sendNewBidNotificationToCustomer(bidData: {
 // Test email function
 export async function sendTestEmail(email: string) {
   const mailOptions = {
-    from: `${process.env.BREVO_FROM_NAME} <${process.env.BREVO_FROM_EMAIL}>`,
     to: email,
     subject: 'Test Email from AMAC Green',
     html: `
@@ -554,8 +572,7 @@ export async function sendTestEmail(email: string) {
   }
 
   try {
-    const transporter = await createTransporter()
-    const result = await transporter.sendMail(mailOptions)
+    const result = await sendEmail(mailOptions)
     return { success: true, messageId: result.messageId }
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
