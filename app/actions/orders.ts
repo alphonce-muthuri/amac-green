@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-server"
 import { createServerClient } from "@/lib/supabase-server"
 import { cookies } from "next/headers"
 import type { CreateOrderData } from "@/lib/types/order"
-import { requireAdmin, ADMIN_EMAILS } from "@/lib/require-admin"
+import { requireAdmin } from "@/lib/require-admin"
 
 // Generate a proper UUID for simulation
 function generateUUID() {
@@ -351,7 +351,7 @@ export async function updateOrderStatus(orderId: string, status: string, notes?:
     }
 
     // Only vendors who have items in this order, or admins, may update its status.
-    const isAdmin = ADMIN_EMAILS.includes((user.email ?? "").toLowerCase())
+    const isAdmin = user.user_metadata?.role === "admin"
     if (!isAdmin) {
       const { data: vendorItems, error: vendorErr } = await supabaseAdmin
         .from("order_items")
@@ -423,7 +423,7 @@ export async function getOrder(orderId: string) {
       return { success: false, error: "Order not found" }
     }
 
-    const isAdmin = ADMIN_EMAILS.includes((user.email ?? "").toLowerCase())
+    const isAdmin = user.user_metadata?.role === "admin"
     const isCustomer = data.customer_id === user.id
     const isVendor = (data.order_items as any[])?.some((item: any) => item.vendor_id === user.id)
 
